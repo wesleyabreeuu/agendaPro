@@ -346,6 +346,11 @@ return [
             'icon' => 'fas fa-fw fa-bell',
             'active' => ['lembrete*']
         ],
+         [
+            'text' => 'ToDo',
+            'route' => 'todo.index',
+            'icon' => 'fas fa-tasks',
+        ],
 
     ],
 

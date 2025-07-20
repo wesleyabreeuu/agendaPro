@@ -16,6 +16,10 @@ class Compromisso extends Model
         'data_inicio',
         'data_fim',
         'dia_inteiro',
+        'recorrencia',
+        'recorrencia_intervalo',
+        'data_fim_recorrencia',
+        'telefone',
     ];
 
     protected $casts = [

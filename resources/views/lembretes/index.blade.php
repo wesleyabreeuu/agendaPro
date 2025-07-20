@@ -15,6 +15,12 @@
         </x-adminlte-alert>
     @endif
 
+    @if (session('error'))
+        <x-adminlte-alert theme="danger" title="Erro!">
+            {{ session('error') }}
+        </x-adminlte-alert>
+    @endif
+
     <x-adminlte-datatable id="tabelaLembretes" :heads="['Compromisso', 'Minutos Antes', 'Ações']" striped hoverable bordered>
         @foreach ($lembretes as $lembrete)
             <tr>
@@ -22,6 +28,11 @@
                 <td>{{ $lembrete->minutos_antes }} min</td>
                 <td>
                     <a href="{{ route('lembretes.edit', $lembrete->id) }}" class="btn btn-sm btn-warning">Editar</a>
+                    
+                    <a href="{{ route('lembretes.enviar-whatsapp', $lembrete->id) }}" 
+                       class="btn btn-sm btn-success"
+                       onclick="return confirm('Deseja enviar este lembrete por WhatsApp?')">Enviar WhatsApp</a>
+
                     <form action="{{ route('lembretes.destroy', $lembrete->id) }}" method="POST" style="display:inline-block">
                         @csrf
                         @method('DELETE')

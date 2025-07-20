@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Lembrete;
 use App\Models\Compromisso;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use App\Services\WhatsAppService;
 
 class LembreteController extends Controller
 {
@@ -56,4 +58,32 @@ class LembreteController extends Controller
         $lembrete->delete();
         return redirect()->route('lembretes.index')->with('success', 'Lembrete removido com sucesso!');
     }
+
+    public function enviarWhatsApp($id)
+    {
+        $lembrete = Lembrete::with('compromisso')->findOrFail($id);
+        $compromisso = $lembrete->compromisso;
+
+        if (!$compromisso || !$compromisso->telefone) {
+            return back()->with('error', 'Compromisso sem telefone cadastrado.');
+        }
+
+        $telefone = $compromisso->telefone;
+
+        $data = \Carbon\Carbon::parse($compromisso->data_inicio)->format('d/m/Y H:i');
+        $mensagem = "Olá! Lembrete: seu compromisso '{$compromisso->titulo}' está agendado para {$data}.";
+
+        \Log::info("Enviando mensagem para {$telefone}: {$mensagem}");
+
+        $whatsapp = new WhatsAppService();
+        $resultado = $whatsapp->enviarMensagem($telefone, $mensagem);
+
+        if ($resultado) {
+            return back()->with('success', 'Mensagem enviada via WhatsApp!');
+        } else {
+            return back()->with('error', 'Falha ao enviar mensagem WhatsApp.');
+        }
+    }
+
+
 }

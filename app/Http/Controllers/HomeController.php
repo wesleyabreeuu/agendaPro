@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Compromisso;
 use App\Models\Lembrete;
+use App\Models\Todo;
 use Carbon\Carbon;
 
 class HomeController extends Controller
@@ -20,12 +21,19 @@ class HomeController extends Controller
             $query->where('usuarios_id', $userId);
         })->count();
 
+        $totalTarefasHoje = Todo::whereDate('data', Carbon::today())->count();
+
         $proximosCompromissos = Compromisso::where('usuarios_id', $userId)
             ->where('data_inicio', '>=', Carbon::now())
             ->orderBy('data_inicio', 'asc')
             ->take(4)
             ->get();
 
-        return view('home', compact('totalCompromissos', 'totalLembretes', 'proximosCompromissos'));
+        return view('home', compact(
+            'totalCompromissos',
+            'totalLembretes',
+            'totalTarefasHoje',
+            'proximosCompromissos'
+        ));
     }
 }
