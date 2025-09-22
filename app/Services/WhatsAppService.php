@@ -3,26 +3,43 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class WhatsAppService
 {
-    protected $apiUrl = 'http://wppconnect-api:21465/api/THISISMYSECURETOKEN/send-message';
-    protected $token = 'THISISMYSECURETOKEN';
-    protected $session = 'meu-teste';
+    private string $base;
+    private string $session;
+    private string $token;
 
-    public function enviarMensagem($numero, $mensagem)
+    public function __construct()
     {
-        $response = Http::withHeaders([
-            'Authorization' => "Bearer {$this->token}"
-        ])->post($this->apiUrl, [
-            'session' => $this->session,
-            'phone' => $numero, // Ex: 5511999999999
+        $this->base    = rtrim(config('services.wpp.base'), '/'); // http://wppconnect-api:21465
+        $this->session = config('services.wpp.session');          // agendapro
+        $this->token   = config('services.wpp.token');            // seu token
+    }
+
+    public function enviarMensagem(string $numero, string $mensagem): array
+    {
+        $numero = preg_replace('/\D+/', '', $numero);
+
+        $url = "{$this->base}/api/{$this->session}/send-message";
+
+        $resp = Http::withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'Content-Type'  => 'application/json',
+        ])->post($url, [
+            'phone'   => $numero,
             'message' => $mensagem,
         ]);
 
-        \Log::info("WhatsApp response: " . $response->body());
+        if (! $resp->ok()) {
+            Log::error('WPP send-message failed', [
+                'http' => $resp->status(),
+                'url'  => $url,
+                'body' => $resp->body(),
+            ]);
+        }
 
-        return $response->successful();
+        return $resp->json() ?? ['status' => 'error', 'http' => $resp->status()];
     }
 }
-

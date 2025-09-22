@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    'wpp' => [
+    'base'    => env('WPP_BASE_URL', 'http://wppconnect:21465'),
+    'session' => env('WPP_SESSION', 'agendapro'),
+    'token'   => env('WPP_TOKEN', 'agendapro123'),
+],
+
+        'whatsapp' => [
+        'enabled' => env('WHATSAPP_ENABLED', false),
+        // 'base_url' => env('WPP_BASE_URL'),
+        // 'secret'   => env('WPP_SECRET'),
+        // 'session'  => env('WPP_SESSION'),
+    ],
+
+
+
 ];
