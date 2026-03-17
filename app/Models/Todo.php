@@ -9,5 +9,19 @@ class Todo extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['data', 'hora', 'descricao', 'urgencia'];
+    protected $table = 'todos';
+
+    protected $fillable = [
+        'data',
+        'hora',
+        'descricao',
+        'urgencia',
+        'status',
+        'finalizado_em',
+    ];
+
+    protected $casts = [
+        'data' => 'date',
+        'finalizado_em' => 'datetime',
+    ];
 }

@@ -17,21 +17,35 @@ Auth::routes();
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+
     Route::resource('usuarios', UsuarioController::class)->middleware('auth');
     Route::resource('categorias', CategoriaController::class)->middleware('auth');
-    Route::resource('compromissos', CompromissoController::class)->middleware('auth');
+    Route::resource('compromissos', CompromissoController::class)
+    ->except(['show'])
+    ->middleware('auth');
+
     Route::resource('lembretes', LembreteController::class)->middleware('auth');
-    Route::get('/todo', [TodoController::class, 'index'])->name('todo.index');
-    Route::post('/todo/store', [TodoController::class, 'store'])->name('todo.store');
-    Route::get('/todo/{id}/edit', [TodoController::class, 'edit'])->name('todo.edit');
-    Route::put('/todo/{id}', [TodoController::class, 'update'])->name('todo.update');
-    Route::delete('/todo/{id}', [TodoController::class, 'destroy'])->name('todo.destroy');
-    Route::get('/teste-whatsapp', [\App\Http\Controllers\LembreteController::class, 'enviarTesteWhatsApp']);
-    Route::get('/lembretes/{id}/enviar-whatsapp', [LembreteController::class, 'enviarWhatsApp'])->name('lembretes.enviar-whatsapp');
 
+    /**
+     * TODO
+     * - Mantém o resource (index/store/edit/update/destroy etc)
+     * - Adiciona apenas as rotas EXTRAS: kanban + status
+     * - Evita conflito: kanban precisa vir ANTES do resource
+     */
+    Route::get('todo/kanban', [TodoController::class, 'kanban'])->name('todo.kanban');
 
+    Route::patch('todo/{todo}/status', [TodoController::class, 'status'])
+        ->whereNumber('todo')
+        ->name('todo.status');
 
+    Route::resource('todo', TodoController::class)
+        ->whereNumber('todo');
 
-
+    // outras rotas que você já tinha
+    Route::get('/teste-whatsapp', [LembreteController::class, 'enviarTesteWhatsApp']);
+    Route::get('/lembretes/{id}/enviar-whatsapp', [LembreteController::class, 'enviarWhatsApp'])
+        ->name('lembretes.enviar-whatsapp');
+    Route::get('compromissos/calendario', [CompromissoController::class, 'calendario'])->name('compromissos.calendario');
+    Route::get('compromissos/calendario/eventos', [CompromissoController::class, 'calendarioEventos'])->name('compromissos.calendario.eventos');
 
 });

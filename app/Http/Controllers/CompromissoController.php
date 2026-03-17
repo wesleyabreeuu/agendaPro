@@ -254,4 +254,40 @@ class CompromissoController extends Controller
             'status'       => 'pending',
         ]);
     }
+
+    public function calendario()
+{
+    return view('compromissos.calendario');
+}
+
+public function calendarioEventos(Request $request)
+{
+    // FullCalendar envia start/end (range visível)
+    $start = Carbon::parse($request->get('start'))->startOfDay();
+    $end   = Carbon::parse($request->get('end'))->endOfDay();
+
+    $eventos = Compromisso::whereBetween('data', [$start->toDateString(), $end->toDateString()])
+        ->orderBy('data')
+        ->orderBy('hora')
+        ->get()
+        ->map(function ($c) {
+            // Ajuste os campos abaixo conforme seu banco:
+            // Ex: $c->titulo, $c->descricao, $c->data, $c->hora
+            $inicio = Carbon::parse($c->data . ' ' . ($c->hora ?? '00:00'))->toIso8601String();
+
+            return [
+                'id' => $c->id,
+                'title' => $c->titulo ?? $c->descricao ?? 'Compromisso',
+                'start' => $inicio,
+                'allDay' => false,
+                'extendedProps' => [
+                    'descricao' => $c->descricao ?? '',
+                    'local' => $c->local ?? '',
+                    'hora' => $c->hora ?? '',
+                ],
+            ];
+        });
+
+    return response()->json($eventos);
+}
 }

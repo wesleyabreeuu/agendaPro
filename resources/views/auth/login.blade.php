@@ -1,33 +1,53 @@
-@extends('adminlte::auth.auth-page', ['auth_type' => 'login'])
+@extends('adminlte::auth.login')
 
 @section('title', 'Login - AgendaPro')
 
 @section('auth_header', 'Acesse sua conta')
 
 @section('auth_body')
-    <form action="{{ route('login') }}" method="POST">
-        @csrf
+<form method="POST" action="{{ route('login') }}">
+    @csrf
 
-        <div class="form-group">
-            <label for="email">E-mail</label>
-            <input id="email" type="email" class="form-control" name="email"
-                   value="{{ old('email') }}" required autofocus>
+    <div class="input-group mb-3">
+        <input type="email" name="email" class="form-control"
+               value="{{ old('email') }}" placeholder="E-mail" required autofocus>
+        <div class="input-group-append">
+            <div class="input-group-text">
+                <span class="fas fa-envelope"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-group mb-3">
+        <input type="password" name="password" class="form-control"
+               placeholder="Senha" required>
+        <div class="input-group-append">
+            <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-8">
+            <div class="icheck-primary">
+                <input type="checkbox" name="remember" id="remember">
+                <label for="remember">
+                    Lembrar-me
+                </label>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label for="password">Senha</label>
-            <input id="password" type="password" class="form-control" name="password" required>
+        <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block">
+                Entrar
+            </button>
         </div>
-
-        <div class="form-check mb-3">
-            <input type="checkbox" name="remember" class="form-check-input" id="remember" {{ old('remember') ? 'checked' : '' }}>
-            <label class="form-check-label" for="remember">Lembrar-me</label>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
-    </form>
+    </div>
+</form>
 @endsection
 
 @section('auth_footer')
-    <a href="{{ route('password.request') }}">Esqueceu sua senha?</a>
+<a href="{{ route('password.request') }}">Esqueceu sua senha?</a>
+
 @endsection

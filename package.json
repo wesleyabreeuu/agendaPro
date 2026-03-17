@@ -17,6 +17,9 @@
         "vite": "^6.2.4"
     },
     "dependencies": {
+        "@fullcalendar/core": "^6.1.20",
+        "@fullcalendar/daygrid": "^6.1.20",
+        "@fullcalendar/interaction": "^6.1.20",
         "admin-lte": "^3.2.0",
         "jquery": "^3.7.1",
         "popper.js": "^1.16.1"

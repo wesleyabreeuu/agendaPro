@@ -262,8 +262,8 @@ return [
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
-    'password_reset_url' => 'password/reset',
-    'password_email_url' => 'password/email',
+    'password_reset_url' => 'password.request',
+    'password_email_url' => 'password.email',
     'profile_url' => false,
     'disable_darkmode_routes' => false,
 
@@ -350,6 +350,18 @@ return [
             'text' => 'ToDo',
             'route' => 'todo.index',
             'icon' => 'fas fa-tasks',
+        ],
+                [
+            'text' => ' Kanban',
+            'url' => '/todo/kanban',
+            'icon' => 'fas fa-fw fa-bell',
+            'active' => ['todo.kanban']
+        ],
+
+        [
+            'text' => 'Calendário',
+            'route' => 'compromissos.calendario',
+            'icon' => 'fas fa-calendar-alt',
         ],
 
     ],
