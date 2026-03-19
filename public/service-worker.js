@@ -20,3 +20,13 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const targetUrl = event.notification.data && event.notification.data.url
+    ? event.notification.data.url
+    : '/home';
+
+  event.waitUntil(clients.openWindow(targetUrl));
+});

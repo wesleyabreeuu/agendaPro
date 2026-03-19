@@ -30,7 +30,7 @@
         </div>
         <div class="modal-body">
           <p><strong>Data/Hora:</strong> <span id="modalDataHora"></span></p>
-          <p><strong>Local:</strong> <span id="modalLocal"></span></p>
+          <p><strong>Origem:</strong> <span id="modalCategoria"></span></p>
           <p><strong>Descrição:</strong></p>
           <div class="alert alert-light mb-0" id="modalDescricao"></div>
         </div>
@@ -43,6 +43,8 @@
       </div>
     </div>
   </div>
+
+  @include('partials.reminder-poller')
 @stop
 
 @push('css')
@@ -63,6 +65,10 @@
     .fc .fc-daygrid-event {
       border-radius: 8px;
       padding: 2px 6px;
+    }
+
+    .fc-event-todo {
+      opacity: .9;
     }
   </style>
 @endpush
@@ -98,12 +104,17 @@
           const dataHora = start ? start.toLocaleString('pt-BR') : '-';
 
           document.getElementById('modalDataHora').innerText = dataHora;
-          document.getElementById('modalLocal').innerText = (e.extendedProps && e.extendedProps.local) ? e.extendedProps.local : '-';
+          document.getElementById('modalCategoria').innerText = (e.extendedProps && e.extendedProps.categoria) ? e.extendedProps.categoria : '-';
           document.getElementById('modalDescricao').innerText = (e.extendedProps && e.extendedProps.descricao) ? e.extendedProps.descricao : '-';
-
-          document.getElementById('modalEditarLink').href = `/compromissos/${e.id}/edit`;
+          document.getElementById('modalEditarLink').href = (e.extendedProps && e.extendedProps.editUrl) ? e.extendedProps.editUrl : '#';
 
           $('#modalDetalhe').modal('show');
+        },
+
+        eventDidMount: function(info) {
+          if (info.event.extendedProps.tipo === 'todo') {
+            info.el.classList.add('fc-event-todo');
+          }
         }
       });
 

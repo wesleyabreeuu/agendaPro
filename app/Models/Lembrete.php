@@ -12,6 +12,11 @@ class Lembrete extends Model
     protected $fillable = [
         'compromisso_id',
         'minutos_antes',
+        'notificado_em',
+    ];
+
+    protected $casts = [
+        'notificado_em' => 'datetime',
     ];
 
     public function compromisso()

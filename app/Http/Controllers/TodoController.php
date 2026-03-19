@@ -5,18 +5,21 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Todo;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class TodoController extends Controller
 {
     public function index(Request $request)
     {
         $dataSelecionada = $request->input('data', Carbon::now()->toDateString());
+        $visualizacao = $request->input('view', 'lista');
 
-        $tarefas = Todo::where('data', $dataSelecionada)
+        $tarefas = Todo::ownedBy(Auth::id())
+            ->where('data', $dataSelecionada)
             ->orderBy('hora')
             ->get();
 
-        return view('todo.index', compact('tarefas', 'dataSelecionada'));
+        return view('todo.index', compact('tarefas', 'dataSelecionada', 'visualizacao'));
     }
 
     public function store(Request $request)
@@ -30,6 +33,7 @@ class TodoController extends Controller
 
         // garante status default (se seu banco/model tiver esse campo)
         Todo::create([
+            'user_id' => Auth::id(),
             'data' => $request->data,
             'hora' => $request->hora,
             'descricao' => $request->descricao,
@@ -44,7 +48,7 @@ class TodoController extends Controller
 
     public function edit($id)
     {
-        $tarefa = Todo::findOrFail($id);
+        $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
         return view('todo.edit', compact('tarefa'));
     }
 
@@ -58,14 +62,16 @@ class TodoController extends Controller
             'status' => 'nullable|in:aguardando,execucao,finalizado', // opcional
         ]);
 
-        $tarefa = Todo::findOrFail($id);
+        $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
+        $status = $request->status ?? $tarefa->status;
 
         $tarefa->update([
             'data' => $request->data,
             'hora' => $request->hora,
             'descricao' => $request->descricao,
             'urgencia' => $request->urgencia,
-            'status' => $request->status ?? $tarefa->status, // mantém se não vier
+            'status' => $status,
+            'finalizado_em' => $status === 'finalizado' ? now() : null,
         ]);
 
         return redirect()
@@ -80,8 +86,9 @@ class TodoController extends Controller
                 'status' => 'required|in:aguardando,execucao,finalizado',
             ]);
 
-            $tarefa = Todo::findOrFail($id);
+            $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
             $tarefa->status = $request->status;
+            $tarefa->finalizado_em = $request->status === 'finalizado' ? now() : null;
             $tarefa->save();
 
             // ✅ Se for AJAX, retorna JSON (evita redirect)
@@ -96,7 +103,7 @@ class TodoController extends Controller
     // ✅ MÉTODO QUE ESTAVA FALTANDO (resolve o erro do DELETE destroy)
     public function destroy($id)
     {
-        $tarefa = Todo::findOrFail($id);
+        $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
         $data = $tarefa->data;
 
         $tarefa->delete();
@@ -105,17 +112,4 @@ class TodoController extends Controller
             ->route('todo.index', ['data' => $data])
             ->with('success', 'Tarefa excluída com sucesso!');
     }
-
-        public function kanban(Request $request)
-    {
-        $dataSelecionada = $request->input('data', now()->toDateString());
-
-        $tarefas = Todo::where('data', $dataSelecionada)
-            ->orderBy('hora')
-            ->get()
-            ->groupBy(fn($t) => $t->status ?? 'aguardando');
-
-        return view('todo.kanban', compact('tarefas', 'dataSelecionada'));
-    }
-
 }

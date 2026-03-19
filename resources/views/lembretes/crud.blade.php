@@ -32,4 +32,6 @@
             {{ isset($lembrete) ? 'Atualizar' : 'Salvar' }}
         </button>
     </form>
+
+    @include('partials.reminder-poller')
 @stop

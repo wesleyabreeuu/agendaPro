@@ -58,10 +58,10 @@
             <div class="card bg-gradient-info text-white shadow">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6>Usuários</h6>
-                        <h3>{{ $totalUsuarios ?? '1' }}</h3>
+                        <h6>Quadros Kanban</h6>
+                        <h3>{{ $totalQuadrosKanban }}</h3>
                     </div>
-                    <i class="fas fa-users fa-2x"></i>
+                    <i class="fas fa-columns fa-2x"></i>
                 </div>
             </div>
         </div>
@@ -140,3 +140,5 @@
     }
 </style>
 @endpush
+
+@include('partials.reminder-poller')

@@ -155,4 +155,6 @@
     </button>
 </form>
 
+@include('partials.reminder-poller')
+
 @endsection

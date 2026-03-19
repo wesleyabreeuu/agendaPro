@@ -37,6 +37,15 @@
                 </select>
             </div>
 
+            <div class="mb-3">
+                <label for="status">Status:</label>
+                <select name="status" class="form-control" required>
+                    <option value="aguardando" {{ $tarefa->status == 'aguardando' ? 'selected' : '' }}>Aguardando</option>
+                    <option value="execucao" {{ $tarefa->status == 'execucao' ? 'selected' : '' }}>Em execução</option>
+                    <option value="finalizado" {{ $tarefa->status == 'finalizado' ? 'selected' : '' }}>Finalizado</option>
+                </select>
+            </div>
+
             <div class="d-flex justify-content-between">
                 <a href="{{ route('todo.index', ['data' => $tarefa->data]) }}" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">Salvar Alterações</button>
@@ -44,4 +53,6 @@
         </form>
     </div>
 </div>
+
+@include('partials.reminder-poller')
 @stop

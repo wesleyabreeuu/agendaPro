@@ -3,166 +3,113 @@
 @section('title', 'Tarefas Diárias')
 
 @section('content_header')
-  <h1 class="mb-3">Tarefas Diárias</h1>
-@stop
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <h1 class="mb-2">Tarefas Diárias</h1>
 
-@section('content')
-<div class="row">
-  <div class="col-md-6">
-    <label for="data">Selecione o dia:</label>
-    <input
-      type="date"
-      id="data"
-      name="data"
-      class="form-control"
-      value="{{ $dataSelecionada }}"
-      onchange="window.location.href='?data=' + this.value;"
-    >
-  </div>
+  <div class="d-flex align-items-end flex-wrap gap-2">
+    <div>
+      <label for="data" class="mb-1">Selecione o dia</label>
+      <input
+        type="date"
+        id="data"
+        name="data"
+        class="form-control"
+        value="{{ $dataSelecionada }}"
+        onchange="mudarData(this.value)"
+      >
+    </div>
 
-  <div class="col-md-6 d-flex align-items-end justify-content-end">
-    <button type="button" class="btn btn-success mt-3" onclick="abrirModal()">
+    <div>
+      <label for="view" class="mb-1">Visualização</label>
+      <select id="view" class="form-control" onchange="mudarVisualizacao(this.value)">
+        <option value="lista" {{ $visualizacao === 'lista' ? 'selected' : '' }}>Lista</option>
+        <option value="cards" {{ $visualizacao === 'cards' ? 'selected' : '' }}>Cards</option>
+      </select>
+    </div>
+
+    <a href="{{ route('kanban.index') }}" class="btn btn-outline-secondary">
+      <i class="fas fa-columns"></i> Kanban
+    </a>
+
+    <button type="button" class="btn btn-success" onclick="abrirModal()">
       <i class="fas fa-plus-circle"></i> Nova Tarefa
     </button>
   </div>
 </div>
+@stop
 
-<hr class="my-4">
-
+@section('content')
 @if(session('success'))
   <div class="alert alert-success">
     <i class="fas fa-check-circle"></i> {{ session('success') }}
   </div>
 @endif
 
-@if($tarefas->count())
-  <div class="mt-4">
-    <h5>
-      Tarefas para o dia
-      {{ \Carbon\Carbon::parse($dataSelecionada)->format('d/m/Y') }}
-    </h5>
+@php
+  $periodos = [
+    'manha' => ['label' => 'Manhã', 'icon' => 'fa-sun'],
+    'tarde' => ['label' => 'Tarde', 'icon' => 'fa-cloud-sun'],
+    'noite' => ['label' => 'Noite', 'icon' => 'fa-moon'],
+  ];
 
-    <ul class="list-group mt-3">
-      @foreach($tarefas as $tarefa)
-        @php
-          $urgBadge = match($tarefa->urgencia) {
-            'alta' => 'danger',
-            'media' => 'warning',
-            default => 'success',
-          };
+  $tarefasPorPeriodo = $tarefas->groupBy(function ($tarefa) {
+    $hora = \Carbon\Carbon::parse($tarefa->hora)->format('H');
+    if ($hora < 12) {
+      return 'manha';
+    }
+    if ($hora < 18) {
+      return 'tarde';
+    }
+    return 'noite';
+  });
+@endphp
 
-          $urgLabel = match($tarefa->urgencia) {
-            'alta' => 'Alta',
-            'media' => 'Média',
-            default => 'Baixa',
-          };
-
-          $status = $tarefa->status ?? 'aguardando';
-
-          $statusBadge = match($status) {
-            'execucao' => 'primary',
-            'finalizado' => 'secondary',
-            default => 'info',
-          };
-
-          $statusLabel = match($status) {
-            'execucao' => 'Em execução',
-            'finalizado' => 'Finalizado',
-            default => 'Aguardando início',
-          };
-
-          $isDone = ($status === 'finalizado');
-        @endphp
-
-        <li class="list-group-item task-item {{ $isDone ? 'task-done' : '' }}">
-          <div class="d-flex justify-content-between align-items-start gap-3">
-
-            <div class="d-flex align-items-start gap-3 w-100">
-              {{-- Checkbox finaliza/desfaz --}}
-              <form method="POST" action="{{ route('todo.status', $tarefa->id) }}" class="pt-1">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" name="status" value="{{ $isDone ? 'aguardando' : 'finalizado' }}">
-                <input
-                  class="form-check-input"
-                  type="checkbox"
-                  onchange="this.form.submit()"
-                  {{ $isDone ? 'checked' : '' }}
-                >
-              </form>
-
-              <div class="w-100">
-                <div class="d-flex align-items-center flex-wrap gap-2">
-                  <strong>{{ \Carbon\Carbon::parse($tarefa->hora)->format('H:i') }}</strong>
-
-                  <span class="badge badge-{{ $urgBadge }}">
-                    Urgência: {{ $urgLabel }}
-                  </span>
-
-                  <span class="badge badge-{{ $statusBadge }}">
-                    {{ $statusLabel }}
-                  </span>
-                </div>
-
-                <div class="mt-2">
-                  <span class="task-text">{{ $tarefa->descricao }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-              {{-- Seletor de status --}}
-              <form method="POST" action="{{ route('todo.status', $tarefa->id) }}">
-                @csrf
-                @method('PATCH')
-                <select name="status" class="form-control form-control-sm" onchange="this.form.submit()">
-                  <option value="aguardando" {{ $status==='aguardando' ? 'selected' : '' }}>Aguardando</option>
-                  <option value="execucao" {{ $status==='execucao' ? 'selected' : '' }}>Em execução</option>
-                  <option value="finalizado" {{ $status==='finalizado' ? 'selected' : '' }}>Finalizado</option>
-                </select>
-              </form>
-
-              <div class="btn-group btn-group-sm" role="group">
-                <a href="{{ route('todo.edit', $tarefa->id) }}" class="btn btn-outline-primary">
-                  <i class="fas fa-edit"></i>
-                </a>
-
-                <form
-                  method="POST"
-                  action="{{ route('todo.destroy', $tarefa->id) }}"
-                  onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')"
-                >
-                  @csrf
-                  @method('DELETE')
-                  <button type="submit" class="btn btn-outline-danger">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </form>
-              </div>
-            </div>
-
-          </div>
-        </li>
-      @endforeach
-    </ul>
+@if($tarefas->isEmpty())
+  <div class="alert alert-info mt-4">
+    <i class="fas fa-info-circle"></i> Nenhuma tarefa para {{ \Carbon\Carbon::parse($dataSelecionada)->format('d/m/Y') }}.
   </div>
 @else
-  <div class="mt-4 alert alert-info">
-    <i class="fas fa-info-circle"></i> Nenhuma tarefa para o dia selecionado.
+  <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+    <h5 class="mb-2">Agenda de {{ \Carbon\Carbon::parse($dataSelecionada)->format('d/m/Y') }}</h5>
+    <span class="text-muted">{{ $tarefas->count() }} tarefa(s)</span>
   </div>
+
+  @if($visualizacao === 'cards')
+    <div class="row">
+      @foreach($periodos as $chave => $periodo)
+        <div class="col-lg-4 mb-4">
+          <div class="period-card h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0"><i class="fas {{ $periodo['icon'] }} mr-2"></i>{{ $periodo['label'] }}</h5>
+              <span class="badge badge-light">{{ ($tarefasPorPeriodo[$chave] ?? collect())->count() }}</span>
+            </div>
+
+            @forelse($tarefasPorPeriodo[$chave] ?? collect() as $tarefa)
+              @include('todo.partials.task-card', ['tarefa' => $tarefa, 'compacto' => false])
+            @empty
+              <div class="empty-slot">Nenhuma tarefa neste período.</div>
+            @endforelse
+          </div>
+        </div>
+      @endforeach
+    </div>
+  @else
+    <div class="timeline-wrapper">
+      @foreach($tarefas as $tarefa)
+        @include('todo.partials.task-card', ['tarefa' => $tarefa, 'compacto' => true])
+      @endforeach
+    </div>
+  @endif
 @endif
 
-{{-- Modal (AdminLTE / Bootstrap 4) --}}
-<div class="modal fade" id="modalTarefa" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="modalTarefa" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <form method="POST" action="{{ route('todo.store') }}" class="modal-content">
       @csrf
       <input type="hidden" name="data" id="modalData">
 
       <div class="modal-header">
-        <h5 class="modal-title" id="modalLabel">Nova Tarefa</h5>
-
-        {{-- FECHAR (BS4) --}}
+        <h5 class="modal-title">Nova tarefa do dia</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -170,17 +117,17 @@
 
       <div class="modal-body">
         <div class="form-group">
-          <label for="hora">Hora:</label>
+          <label>Hora</label>
           <input type="time" name="hora" class="form-control" required>
         </div>
 
         <div class="form-group">
-          <label for="descricao">Descrição:</label>
+          <label>Descrição</label>
           <input type="text" name="descricao" class="form-control" required>
         </div>
 
         <div class="form-group">
-          <label for="urgencia">Urgência:</label>
+          <label>Urgência</label>
           <select name="urgencia" class="form-control" required>
             <option value="baixa">Baixa</option>
             <option value="media" selected>Média</option>
@@ -196,19 +143,80 @@
     </form>
   </div>
 </div>
+
+@include('partials.reminder-poller')
 @stop
 
 @push('css')
 <style>
-  .task-item{
-    border-radius: 10px;
+  .timeline-wrapper{
+    display: grid;
+    gap: 14px;
+  }
+  .task-card{
+    background: #fff;
+    border: 1px solid #e8ecf3;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+  }
+  .task-card.done{
+    opacity: .65;
+  }
+  .task-card.done .task-text{
+    text-decoration: line-through;
+  }
+  .task-head{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
     margin-bottom: 10px;
   }
-  .task-done{
-    opacity: .55;
+  .task-meta{
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
   }
-  .task-done .task-text{
-    text-decoration: line-through;
+  .urgency-tag{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: .8rem;
+    font-weight: 700;
+  }
+  .urgency-baixa{ background: #e8f7ed; color: #157347; }
+  .urgency-media{ background: #fff4d6; color: #9a6700; }
+  .urgency-alta{ background: #fde8e7; color: #b42318; }
+  .status-pill{
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: .78rem;
+    background: #eff4ff;
+    color: #2457d6;
+    font-weight: 600;
+  }
+  .period-card{
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+    border: 1px solid #dbe5f0;
+    border-radius: 22px;
+    padding: 18px;
+  }
+  .empty-slot{
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 22px 14px;
+    text-align: center;
+    color: #64748b;
+    background: rgba(255,255,255,.6);
+  }
+  .task-actions{
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
   }
 </style>
 @endpush
@@ -216,22 +224,20 @@
 @push('js')
 <script>
   function abrirModal() {
-    const dataSelecionada = document.getElementById('data').value;
+    document.getElementById('modalData').value = document.getElementById('data').value;
+    $('#modalTarefa').modal('show');
+  }
 
-    if (!dataSelecionada) {
-      alert('Selecione uma data primeiro.');
-      return;
-    }
+  function mudarData(valor) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('data', valor);
+    window.location.href = url.toString();
+  }
 
-    document.getElementById('modalData').value = dataSelecionada;
-
-    // AdminLTE 3 / Bootstrap 4
-    if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
-      $('#modalTarefa').modal('show');
-    } else {
-      console.error('Bootstrap modal/jQuery não carregados. Verifique AdminLTE assets.');
-      alert('Erro: modal não disponível. Verifique se o AdminLTE está carregando os scripts.');
-    }
+  function mudarVisualizacao(valor) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('view', valor);
+    window.location.href = url.toString();
   }
 </script>
 @endpush

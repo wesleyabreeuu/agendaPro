@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Compromisso;
 use App\Models\Categoria;
 use App\Models\ScheduledMessage;
+use App\Models\Todo;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -37,7 +39,7 @@ class CompromissoController extends Controller
 
     public function edit($id)
     {
-        $compromisso = Compromisso::findOrFail($id);
+        $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($id);
         $categorias = Categoria::all();
         $modo = 'edit';
         return view('compromissos.crud', compact('modo', 'compromisso', 'categorias'));
@@ -114,6 +116,8 @@ class CompromissoController extends Controller
             'data_fim_recorrencia'  => $request->data_fim_recorrencia,
             'telefone'              => $request->telefone,
         ]);
+
+        $compromisso->lembretes()->update(['notificado_em' => null]);
 
         // cancelar lembrete pendente (se solicitado)
         if ($request->boolean('cancelar_lembrete')) {
@@ -256,38 +260,64 @@ class CompromissoController extends Controller
     }
 
     public function calendario()
-{
-    return view('compromissos.calendario');
-}
+    {
+        return view('compromissos.calendario');
+    }
 
-public function calendarioEventos(Request $request)
-{
-    // FullCalendar envia start/end (range visível)
-    $start = Carbon::parse($request->get('start'))->startOfDay();
-    $end   = Carbon::parse($request->get('end'))->endOfDay();
+    public function calendarioEventos(Request $request): JsonResponse
+    {
+        $inicio = $request->filled('start') ? Carbon::parse($request->start) : now()->startOfMonth();
+        $fim = $request->filled('end') ? Carbon::parse($request->end) : now()->endOfMonth();
+        $userId = Auth::id();
 
-    $eventos = Compromisso::whereBetween('data', [$start->toDateString(), $end->toDateString()])
-        ->orderBy('data')
-        ->orderBy('hora')
-        ->get()
-        ->map(function ($c) {
-            // Ajuste os campos abaixo conforme seu banco:
-            // Ex: $c->titulo, $c->descricao, $c->data, $c->hora
-            $inicio = Carbon::parse($c->data . ' ' . ($c->hora ?? '00:00'))->toIso8601String();
+        $compromissos = Compromisso::with('categoria')
+            ->where('usuarios_id', $userId)
+            ->where('data_inicio', '<=', $fim)
+            ->where(function ($query) use ($inicio) {
+                $query->whereNull('data_fim')
+                    ->orWhere('data_fim', '>=', $inicio);
+            })
+            ->get()
+            ->map(function (Compromisso $compromisso) {
+                return [
+                    'id' => 'compromisso-'.$compromisso->id,
+                    'title' => $compromisso->titulo,
+                    'start' => $compromisso->data_inicio?->toIso8601String(),
+                    'end' => $compromisso->data_fim?->toIso8601String(),
+                    'allDay' => (bool) $compromisso->dia_inteiro,
+                    'backgroundColor' => '#1f6feb',
+                    'borderColor' => '#1f6feb',
+                    'extendedProps' => [
+                        'tipo' => 'compromisso',
+                        'descricao' => $compromisso->descricao,
+                        'categoria' => $compromisso->categoria->nome ?? 'Sem categoria',
+                        'editUrl' => route('compromissos.edit', $compromisso->id),
+                    ],
+                ];
+            });
 
-            return [
-                'id' => $c->id,
-                'title' => $c->titulo ?? $c->descricao ?? 'Compromisso',
-                'start' => $inicio,
-                'allDay' => false,
-                'extendedProps' => [
-                    'descricao' => $c->descricao ?? '',
-                    'local' => $c->local ?? '',
-                    'hora' => $c->hora ?? '',
-                ],
-            ];
-        });
+        $tarefas = Todo::ownedBy($userId)
+            ->whereBetween('data', [$inicio->toDateString(), $fim->toDateString()])
+            ->get()
+            ->map(function (Todo $todo) {
+                $start = Carbon::parse($todo->data->format('Y-m-d').' '.$todo->hora);
 
-    return response()->json($eventos);
-}
+                return [
+                    'id' => 'todo-'.$todo->id,
+                    'title' => $todo->descricao,
+                    'start' => $start->toIso8601String(),
+                    'allDay' => false,
+                    'backgroundColor' => '#15803d',
+                    'borderColor' => '#15803d',
+                    'extendedProps' => [
+                        'tipo' => 'todo',
+                        'descricao' => 'Tarefa do ToDo com urgência '.mb_strtoupper($todo->urgencia).'.',
+                        'categoria' => 'ToDo',
+                        'editUrl' => route('todo.edit', $todo->id),
+                    ],
+                ];
+            });
+
+        return response()->json($compromissos->concat($tarefas)->values());
+    }
 }

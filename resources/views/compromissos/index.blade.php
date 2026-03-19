@@ -13,7 +13,10 @@
         </x-adminlte-alert>
     @endif
 
-    <a href="{{ route('compromissos.create') }}" class="btn btn-primary mb-3">+ Novo Compromisso</a>
+    <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+        <a href="{{ route('compromissos.create') }}" class="btn btn-primary">+ Novo Compromisso</a>
+        <a href="{{ route('compromissos.calendario') }}" class="btn btn-outline-secondary">Ver calendário</a>
+    </div>
 
 
 
@@ -51,4 +54,5 @@
             el.style.display = (el.style.display === 'none') ? 'table-row' : 'none';
         }
     </script>
+    @include('partials.reminder-poller')
 @stop
