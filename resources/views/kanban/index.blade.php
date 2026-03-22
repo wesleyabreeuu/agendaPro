@@ -91,13 +91,45 @@
                 @forelse($tarefas[$status] ?? collect() as $tarefa)
                   @include('kanban.partials.card', ['tarefa' => $tarefa])
                 @empty
-                  <div class="kanban-empty">Sem tarefas aqui.</div>
                 @endforelse
               </div>
             </div>
           </div>
         @endforeach
       </div>
+
+      @if($board)
+        @foreach($tarefas as $status => $tarefasStatus)
+          @foreach($tarefasStatus as $tarefa)
+            @if($tarefa->status === 'atrasado' && $tarefa->data_limite)
+              <div class="modal fade" id="modalExtendDeadline-{{ $tarefa->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <form method="POST" action="{{ route('kanban.tasks.extend-deadline', $tarefa->id) }}" class="modal-content">
+                    @csrf
+                    <div class="modal-header">
+                      <h5 class="modal-title">Estender prazo - {{ $tarefa->titulo }}</h5>
+                      <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="form-group">
+                        <label>Novo prazo</label>
+                        <input type="date" name="data_limite" class="form-control" value="{{ $tarefa->data_limite->format('Y-m-d') }}" required>
+                      </div>
+                      <div class="alert alert-info mb-0">
+                        <small>Data anterior: <strong>{{ $tarefa->data_limite->format('d/m/Y') }}</strong></small>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary">Estender prazo</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            @endif
+          @endforeach
+        @endforeach
+      @endif
     @endif
   </div>
 </div>
@@ -268,6 +300,8 @@
 @push('js')
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
+  let pendingMove = null;
+
   document.querySelectorAll('.kanban-column').forEach((column) => {
     new Sortable(column, {
       group: 'agenda-kanban',
@@ -290,15 +324,89 @@
           body: JSON.stringify({ status, ordem })
         });
 
+        const data = await response.json().catch(() => null);
+
         if (!response.ok) {
-          const data = await response.json().catch(() => null);
-          if (data && data.message) {
+          // Se requer confirmação para mover para atrasado
+          if (data && data.requiresConfirmation) {
+            pendingMove = { id, status, ordem };
+            showMoveToDelayedConfirmation(data.message, data.currentDeadline);
+            // Não recarrega aqui, deixa o modal aparecer
+          } else if (data && data.message) {
             alert(data.message);
+            window.location.reload();
+          } else {
+            window.location.reload();
           }
-          window.location.reload();
         }
       }
     });
   });
+
+  function showMoveToDelayedConfirmation(message, currentDeadline) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'modalMoveDelayed';
+    modal.setAttribute('tabindex', '-1');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML = `
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Mover para Em Atraso</h5>
+            <button type="button" class="close" onclick="cancelMoveToDelayed()"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <p>${message}</p>
+            <div class="alert alert-warning mb-0">
+              <small><strong>Data atual:</strong> ${new Date().toLocaleDateString('pt-BR')}</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="cancelMoveToDelayed()">Cancelar</button>
+            <button type="button" class="btn btn-danger" onclick="confirmMoveToDelayed()">Confirmar e Marcar como Atrasado</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    $('#modalMoveDelayed').modal('show');
+  }
+
+  function cancelMoveToDelayed() {
+    pendingMove = null;
+    window.location.reload();
+  }
+
+  function confirmMoveToDelayed() {
+    if (!pendingMove) return;
+
+    const { id, status, ordem } = pendingMove;
+    const url = "{{ route('kanban.tasks.status', ['task' => '__ID__']) }}".replace('__ID__', id);
+
+    fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': "{{ csrf_token() }}",
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify({ status, ordem, confirmed: true })
+    }).then(response => {
+      if (response.ok) {
+        $('#modalMoveDelayed').modal('hide');
+        setTimeout(() => window.location.reload(), 300);
+      } else {
+        alert('Erro ao mover tarefa. Tente novamente.');
+        window.location.reload();
+      }
+    }).catch(() => {
+      alert('Erro ao conectar com o servidor.');
+      window.location.reload();
+    });
+  }
 </script>
 @endpush

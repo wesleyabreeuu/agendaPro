@@ -155,8 +155,8 @@ return [
 
     'layout_topnav' => null,
     'layout_boxed' => null,
-    'layout_fixed_sidebar' => null,
-    'layout_fixed_navbar' => null,
+    'layout_fixed_sidebar' => true,
+    'layout_fixed_navbar' => true,
     'layout_fixed_footer' => null,
     'layout_dark_mode' => null,
 
@@ -362,6 +362,20 @@ return [
             'text' => 'Calendário',
             'route' => 'compromissos.calendario',
             'icon' => 'fas fa-calendar-alt',
+        ],
+
+        [
+            'text' => ' Controle Financeiro',
+            'route' => 'financeiro.dashboard',
+            'icon' => 'fas fa-fw fa-chart-bar',
+            'active' => ['financeiro*']
+        ],
+
+        [
+            'text' => ' Saúde & Fitness',
+            'route' => 'saude.dashboard',
+            'icon' => 'fas fa-fw fa-heartbeat',
+            'active' => ['saude*']
         ],
 
     ],

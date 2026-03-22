@@ -1,57 +1,82 @@
-# 📅 AgendaPro
+# AgendaPro
 
-**AgendaPro** é um sistema completo de agendamento e organização de compromissos e tarefas, desenvolvido em Laravel com interface baseada em AdminLTE. Ele foi pensado para uso pessoal, familiar ou para pequenos negócios que desejam ter controle eficiente e digitalizado de sua agenda.
+AgendaPro e um sistema de organizacao pessoal com compromissos, lembretes, tarefas, financeiro, saude e integracoes externas.
 
----
+## Funcionalidades
+- Compromissos e calendario
+- Lembretes
+- ToDo
+- Kanban
+- Controle financeiro
+- Saude e fitness
+- Integracao com WhatsApp
+- Integracao com Strava para importar atividades automaticamente
 
-## 🚀 Funcionalidades principais
-- Cadastro e gestão de compromissos
-- Lembretes automáticos
-- Controle de tarefas (ToDo list)
-- Compromissos recorrentes
-- Integração com API WhatsApp (em desenvolvimento)
-- Interface intuitiva e responsiva
+## Stack
+- PHP 8.2+
+- Laravel 12
+- Blade + AdminLTE
+- MySQL
+- Docker + Sail
 
----
-
-## ⚙️ Tecnologias utilizadas
-- **Backend:** PHP 8+, Laravel
-- **Frontend:** Blade, AdminLTE, Bootstrap
-- **Banco de dados:** MySQL
-- **Containerização:** Docker + Docker Compose
-- **AJAX:** Atualizações dinâmicas e carregamento assíncrono
-- **Outros:** Integração com APIs externas (ex.: WhatsApp)
-
----
-
-## 💻 Como executar localmente
-
-1️⃣ Clone o repositório:
+## Execucao local
+1. Instale as dependencias:
 ```bash
-git clone https://github.com/wesleyabreeuu/agendaPro.git
-
-2️⃣ Acesse o diretório do projeto:
-
-bash
-cd agendaPro
-
-3️⃣ Suba os containers Docker:
-
-bash
-docker-compose up -d --build
-
-4️⃣ Instale as dependências:
-
-bash
 composer install
-npm install && npm run dev
+npm install
+```
 
-5️⃣ Configure o .env:
-
-bash
+2. Configure o ambiente:
+```bash
 cp .env.example .env
 php artisan key:generate
+```
 
-6️⃣ Rode as migrations:
-bash
+3. Suba os containers:
+```bash
+./vendor/bin/sail up -d
+```
+
+4. Rode as migrations:
+```bash
+./vendor/bin/sail artisan migrate
+```
+
+## Integracao com Strava
+Essa integracao permite conectar a conta do usuario ao Strava e importar automaticamente atividades novas para o modulo de saude.
+
+### Variaveis de ambiente
+Adicione no `.env`:
+
+```env
+APP_URL=https://systemagendapro.com.br
+
+STRAVA_CLIENT_ID=
+STRAVA_CLIENT_SECRET=
+STRAVA_VERIFY_TOKEN=strava_agendapro_2026
+STRAVA_WEBHOOK_CALLBACK_URL=https://systemagendapro.com.br/integracoes/strava/webhook
+```
+
+### Configuracao no Strava
+No app criado em `https://www.strava.com/settings/api`, use:
+
+- Authorization Callback Domain: `systemagendapro.com.br`
+- Callback OAuth efetiva: `https://systemagendapro.com.br/integracoes/strava/callback`
+- Webhook: `https://systemagendapro.com.br/integracoes/strava/webhook`
+
+### Passos de deploy em producao
+1. Gere um novo `client secret` no Strava se o atual ja tiver sido exposto.
+2. Publique o codigo em producao.
+3. Atualize o `.env` com as variaveis do Strava.
+4. Rode:
+
+```bash
+php artisan config:clear
 php artisan migrate
+php artisan strava:webhook:subscribe
+```
+
+### Observacoes importantes
+- O webhook do Strava exige URL publica com HTTPS.
+- O botao de conectar/desconectar Strava aparece no dashboard de Saude.
+- Atividades importadas recebem origem `Strava` para evitar duplicidade.

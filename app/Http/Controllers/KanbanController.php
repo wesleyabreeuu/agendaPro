@@ -160,6 +160,16 @@ class KanbanController extends Controller
             'ordem' => 'nullable|integer|min:0',
         ]);
 
+        // Se tentar mover para "atrasado" quando está em outro status (sem confirmação)
+        if ($task->status !== 'atrasado' && $request->status === 'atrasado' && !$request->boolean('confirmed')) {
+            return response()->json([
+                'ok' => false,
+                'requiresConfirmation' => true,
+                'message' => 'Esta tarefa ainda está no prazo. Ao movê-la para "Em atraso", sua data final será atualizada para hoje e a tarefa será marcada como atrasada. Deseja continuar?',
+                'currentDeadline' => $task->data_limite?->format('d/m/Y'),
+            ], 422);
+        }
+
         if ($task->status === 'atrasado' && $request->status !== 'atrasado') {
             return response()->json([
                 'ok' => false,
@@ -167,12 +177,37 @@ class KanbanController extends Controller
             ], 422);
         }
 
-        $task->update([
+        $updateData = [
             'status' => $request->status,
             'ordem' => $request->integer('ordem', $task->ordem),
-        ]);
+        ];
+
+        // Se está confirmando mover para atrasado, atualiza também a data_limite para hoje
+        if ($request->status === 'atrasado' && $request->boolean('confirmed')) {
+            $updateData['data_limite'] = now()->toDateString();
+        }
+
+        $task->update($updateData);
 
         return response()->json(['ok' => true]);
+    }
+
+    public function extendDeadline(Request $request, KanbanTask $task): RedirectResponse
+    {
+        $this->authorizeTask($task);
+
+        $request->validate([
+            'data_limite' => 'required|date|after_or_equal:today',
+        ]);
+
+        $task->update([
+            'data_limite' => $request->data_limite,
+            'status' => 'aguardando',
+        ]);
+
+        return redirect()
+            ->route('kanban.index', ['board' => $task->kanban_board_id])
+            ->with('success', 'Prazo estendido com sucesso. A tarefa foi movida para "Aguardando".');
     }
 
     private function authorizeBoard(KanbanBoard $board): void

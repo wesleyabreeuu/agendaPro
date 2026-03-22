@@ -41,11 +41,18 @@ return [
     'token'   => env('WPP_TOKEN', 'agendapro123'),
 ],
 
-        'whatsapp' => [
+    'whatsapp' => [
         'enabled' => env('WHATSAPP_ENABLED', false),
         // 'base_url' => env('WPP_BASE_URL'),
         // 'secret'   => env('WPP_SECRET'),
         // 'session'  => env('WPP_SESSION'),
+    ],
+
+    'strava' => [
+        'client_id' => env('STRAVA_CLIENT_ID'),
+        'client_secret' => env('STRAVA_CLIENT_SECRET'),
+        'verify_token' => env('STRAVA_VERIFY_TOKEN'),
+        'webhook_callback_url' => env('STRAVA_WEBHOOK_CALLBACK_URL'),
     ],
 
 

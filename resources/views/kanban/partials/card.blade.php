@@ -10,13 +10,20 @@
   <div class="d-flex justify-content-between align-items-start mb-2">
     <strong>{{ $tarefa->titulo }}</strong>
 
-    <form method="POST" action="{{ route('kanban.tasks.destroy', $tarefa->id) }}" onsubmit="return confirm('Excluir esta tarefa?')">
-      @csrf
-      @method('DELETE')
-      <button type="submit" class="btn btn-xs btn-outline-danger">
-        <i class="fas fa-trash"></i>
-      </button>
-    </form>
+    <div class="d-flex gap-1">
+      @if($tarefa->status === 'atrasado' && $tarefa->data_limite)
+        <button type="button" class="btn btn-xs btn-outline-info" data-toggle="modal" data-target="#modalExtendDeadline-{{ $tarefa->id }}" title="Estender prazo">
+          <i class="fas fa-calendar-plus"></i>
+        </button>
+      @endif
+      <form method="POST" action="{{ route('kanban.tasks.destroy', $tarefa->id) }}" onsubmit="return confirm('Excluir esta tarefa?')" style="display: inline;">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="btn btn-xs btn-outline-danger">
+          <i class="fas fa-trash"></i>
+        </button>
+      </form>
+    </div>
   </div>
 
   @if($tarefa->descricao)

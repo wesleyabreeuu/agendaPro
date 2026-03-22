@@ -9,10 +9,17 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\CompromissoController;
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\FinanceiroController;
+use App\Http\Controllers\SaudeController;
+use App\Http\Controllers\StravaController;
 
 Route::get('/', function () {
     return view('auth/login');
 });
+
+Route::get('integracoes/strava/callback', [StravaController::class, 'callback'])->middleware('auth')->name('strava.callback');
+Route::get('integracoes/strava/webhook', [StravaController::class, 'webhookVerify'])->name('strava.webhook.verify');
+Route::post('integracoes/strava/webhook', [StravaController::class, 'webhook'])->name('strava.webhook');
 
 Auth::routes();
 
@@ -50,5 +57,41 @@ Route::middleware('auth')->group(function () {
     Route::put('kanban/tasks/{task}', [KanbanController::class, 'updateTask'])->name('kanban.tasks.update');
     Route::delete('kanban/tasks/{task}', [KanbanController::class, 'destroyTask'])->name('kanban.tasks.destroy');
     Route::patch('kanban/tasks/{task}/status', [KanbanController::class, 'status'])->name('kanban.tasks.status');
+    Route::post('kanban/tasks/{task}/extend-deadline', [KanbanController::class, 'extendDeadline'])->name('kanban.tasks.extend-deadline');
+
+    // Rotas Financeiro
+    Route::prefix('financeiro')->name('financeiro.')->group(function () {
+        Route::get('/', [FinanceiroController::class, 'dashboard'])->name('dashboard');
+        Route::get('transacoes', [FinanceiroController::class, 'transacoes'])->name('transacoes');
+        Route::post('transacoes', [FinanceiroController::class, 'storeTransacao'])->name('store-transacao');
+        Route::get('transacoes/{transacao}/edit', [FinanceiroController::class, 'editTransacao'])->name('edit-transacao');
+        Route::put('transacoes/{transacao}', [FinanceiroController::class, 'updateTransacao'])->name('update-transacao');
+        Route::delete('transacoes/{transacao}', [FinanceiroController::class, 'destroyTransacao'])->name('destroy-transacao');
+        Route::post('categorias', [FinanceiroController::class, 'storeCategoria'])->name('store-categoria');
+        Route::get('contas', [FinanceiroController::class, 'contas'])->name('contas');
+        Route::post('contas', [FinanceiroController::class, 'storeConta'])->name('store-conta');
+        Route::get('relatorios', [FinanceiroController::class, 'relatorios'])->name('relatorios');
+    });
+
+    // Rotas Saúde
+    Route::prefix('saude')->name('saude.')->group(function () {
+        Route::get('/', [SaudeController::class, 'dashboard'])->name('dashboard');
+        Route::get('atividades', [SaudeController::class, 'atividades'])->name('atividades');
+        Route::post('atividades', [SaudeController::class, 'storeAtividade'])->name('store-atividade');
+        Route::post('categorias', [SaudeController::class, 'storeCategoria'])->name('store-categoria');
+        Route::get('atividades/{atividade}/edit', [SaudeController::class, 'editAtividade'])->name('edit-atividade');
+        Route::put('atividades/{atividade}', [SaudeController::class, 'updateAtividade'])->name('update-atividade');
+        Route::delete('atividades/{atividade}', [SaudeController::class, 'destroyAtividade'])->name('destroy-atividade');
+        Route::get('calendario', [SaudeController::class, 'calendario'])->name('calendario');
+        Route::get('metas', [SaudeController::class, 'metas'])->name('metas');
+        Route::post('metas', [SaudeController::class, 'storeMeta'])->name('store-meta');
+        Route::delete('metas/{meta}', [SaudeController::class, 'destroyMeta'])->name('destroy-meta');
+        Route::get('relatorios', [SaudeController::class, 'relatorios'])->name('relatorios');
+    });
+
+    Route::prefix('integracoes/strava')->name('strava.')->group(function () {
+        Route::get('connect', [StravaController::class, 'redirectToStrava'])->name('connect');
+        Route::post('disconnect', [StravaController::class, 'disconnect'])->name('disconnect');
+    });
 
 });
