@@ -92,6 +92,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('integracoes/strava')->name('strava.')->group(function () {
         Route::get('connect', [StravaController::class, 'redirectToStrava'])->name('connect');
         Route::post('disconnect', [StravaController::class, 'disconnect'])->name('disconnect');
+        Route::post('sync', [StravaController::class, 'sync'])->name('sync');
     });
 
 });

@@ -48,9 +48,25 @@ class StravaController extends Controller
         }
 
         $this->stravaService->persistTokenPayload(Auth::user(), $payload);
+        $importadas = $this->stravaService->syncRecentActivities(Auth::user(), 30);
 
         return redirect()->route('saude.dashboard')
-            ->with('success', 'Strava conectado com sucesso. Novas atividades serao importadas automaticamente.');
+            ->with('success', "Strava conectado com sucesso. {$importadas} atividade(s) recente(s) foram importadas e as proximas serao sincronizadas automaticamente.");
+    }
+
+    public function sync(): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (!$user->hasStravaConnected()) {
+            return redirect()->route('saude.dashboard')
+                ->with('error', 'Conecte sua conta do Strava antes de sincronizar.');
+        }
+
+        $importadas = $this->stravaService->syncRecentActivities($user, 90);
+
+        return redirect()->route('saude.dashboard')
+            ->with('success', "Sincronizacao concluida. {$importadas} atividade(s) foram importadas ou atualizadas.");
     }
 
     public function disconnect(): RedirectResponse

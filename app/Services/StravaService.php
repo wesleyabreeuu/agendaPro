@@ -6,7 +6,6 @@ use App\Models\AtividadeFisica;
 use App\Models\CategoriaAtividadeFisica;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
@@ -140,6 +139,42 @@ class StravaService
         $response->throw();
 
         return $response->json();
+    }
+
+    public function syncRecentActivities(User $user, int $days = 30, int $perPage = 100): int
+    {
+        $user = $this->refreshToken($user);
+        $after = now()->subDays($days)->startOfDay()->timestamp;
+        $page = 1;
+        $imported = 0;
+
+        do {
+            $response = Http::timeout(20)
+                ->acceptJson()
+                ->withToken($user->strava_access_token)
+                ->get(self::API_BASE . '/athlete/activities', [
+                    'after' => $after,
+                    'page' => $page,
+                    'per_page' => $perPage,
+                ]);
+
+            $response->throw();
+
+            $activities = $response->json();
+
+            if (!is_array($activities) || empty($activities)) {
+                break;
+            }
+
+            foreach ($activities as $activity) {
+                $this->upsertActivityFromStrava($user, $activity);
+                $imported++;
+            }
+
+            $page++;
+        } while (count($activities) === $perPage);
+
+        return $imported;
     }
 
     public function upsertActivityFromStrava(User $user, array $activity): AtividadeFisica

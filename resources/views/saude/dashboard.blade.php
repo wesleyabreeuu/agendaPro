@@ -57,12 +57,20 @@
         </div>
         <div>
             @if(auth()->user()->hasStravaConnected())
-                <form method="POST" action="{{ route('strava.disconnect') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger">
-                        <i class="fab fa-strava"></i> Desconectar Strava
-                    </button>
-                </form>
+                <div class="d-flex flex-wrap gap-2">
+                    <form method="POST" action="{{ route('strava.sync') }}" class="mr-2">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="fas fa-sync-alt"></i> Sincronizar agora
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('strava.disconnect') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="fab fa-strava"></i> Desconectar Strava
+                        </button>
+                    </form>
+                </div>
             @else
                 <a href="{{ route('strava.connect') }}" class="btn btn-outline-warning">
                     <i class="fab fa-strava"></i> Conectar Strava
