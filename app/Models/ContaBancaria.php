@@ -14,6 +14,7 @@ class ContaBancaria extends Model
     protected $fillable = [
         'user_id',
         'nome',
+        'instituicao',
         'tipo',
         'saldo_inicial',
         'saldo_atual',

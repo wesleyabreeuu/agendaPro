@@ -1,10 +1,13 @@
 @extends('adminlte::page')
 
-@section('title', 'Minhas Contas')
+@section('title', 'Contas e Carteiras')
 
 @section('content_header')
-<div class="d-flex justify-content-between align-items-center">
-    <h1>Contas Bancárias</h1>
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div>
+        <h1 class="mb-1">Contas e Carteiras</h1>
+        <p class="text-muted mb-0">Cadastre bancos, cartões ou carteiras e ajuste o saldo com depósitos quando precisar.</p>
+    </div>
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalConta">
         <i class="fas fa-plus-circle"></i> Nova Conta
     </button>
@@ -20,74 +23,93 @@
 @endif
 
 <div class="row">
-    @forelse($contas as $conta)
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">{{ $conta->nome }}</h5>
-                    <small class="text-muted">{{ ucfirst($conta->tipo) }}</small>
-                </div>
+    @foreach($contas as $conta)
+        <div class="col-lg-4 col-md-6 mb-4 d-flex">
+            <div class="card w-100">
                 <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">{{ $conta->nome }}</h5>
+                            <small class="text-muted">{{ $conta->instituicao ?: 'Sem banco/instituição' }} • {{ ucfirst($conta->tipo) }}</small>
+                        </div>
+                        <span class="badge {{ $conta->ativa ? 'badge-success' : 'badge-secondary' }}">{{ $conta->ativa ? 'Ativa' : 'Inativa' }}</span>
+                    </div>
+
                     <div class="mb-3">
-                        <label class="text-muted">Saldo Atual</label>
+                        <small class="text-muted d-block">Saldo atual</small>
                         <h3 class="mb-0">R$ {{ number_format($conta->saldo_atual, 2, ',', '.') }}</h3>
                     </div>
-                    <div>
-                        <label class="text-muted">Saldo Inicial</label>
-                        <p class="mb-0">R$ {{ number_format($conta->saldo_inicial, 2, ',', '.') }}</p>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Saldo inicial</small>
+                        <strong>R$ {{ number_format($conta->saldo_inicial, 2, ',', '.') }}</strong>
                     </div>
-                </div>
-                <div class="card-footer bg-white">
-                    <div class="badge {{ $conta->ativa ? 'badge-success' : 'badge-secondary' }}">
-                        {{ $conta->ativa ? 'Ativa' : 'Inativa' }}
-                    </div>
+
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#modalDeposito-{{ $conta->id }}">
+                        <i class="fas fa-arrow-down"></i> Registrar depósito
+                    </button>
                 </div>
             </div>
         </div>
-    @empty
-        <div class="col-12">
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Nenhuma conta criada. 
-                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" data-target="#modalConta">
-                    Criar agora
-                </button>
+
+        <div class="modal fade" id="modalDeposito-{{ $conta->id }}" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <form method="POST" action="{{ route('financeiro.depositar-conta', $conta->id) }}" class="modal-content">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Registrar depósito</h5>
+                        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>{{ $conta->nome }}</strong></p>
+                        <div class="form-group mb-0">
+                            <label>Valor do depósito</label>
+                            <input type="number" name="valor" step="0.01" min="0.01" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Confirmar depósito</button>
+                    </div>
+                </form>
             </div>
         </div>
-    @endforelse
+    @endforeach
 </div>
 
-<!-- Modal Nova Conta -->
 <div class="modal fade" id="modalConta" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <form method="POST" action="{{ route('financeiro.store-conta') }}" class="modal-content">
             @csrf
             <div class="modal-header">
-                <h5 class="modal-title">Nova Conta</h5>
+                <h5 class="modal-title">Nova Conta ou Carteira</h5>
                 <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Nome da Conta</label>
-                    <input type="text" name="nome" class="form-control" placeholder="Ex: Conta Santander" required>
+                    <label>Nome</label>
+                    <input type="text" name="nome" class="form-control" placeholder="Ex.: Banco principal, Carteira, Nubank" required>
                 </div>
-
+                <div class="form-group">
+                    <label>Banco / Instituição</label>
+                    <input type="text" name="instituicao" class="form-control" placeholder="Ex.: Banco do Brasil, Caixa, Uso pessoal">
+                </div>
                 <div class="form-group">
                     <label>Tipo</label>
                     <select name="tipo" class="form-control" required>
-                        <option value="bancaria">Conta Bancária</option>
-                        <option value="cartao">Cartão de Crédito</option>
-                        <option value="dinheiro">Dinheiro</option>
+                        <option value="bancaria">Conta bancária</option>
+                        <option value="cartao">Cartão</option>
+                        <option value="dinheiro">Carteira / Dinheiro</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Saldo Inicial</label>
+                <div class="form-group mb-0">
+                    <label>Saldo atual</label>
                     <input type="number" name="saldo_inicial" class="form-control" step="0.01" value="0" required>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Criar Conta</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
             </div>
         </form>
     </div>

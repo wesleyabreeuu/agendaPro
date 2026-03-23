@@ -17,31 +17,32 @@ class KanbanController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Request $request): View
+    public function index(): View
     {
         $boards = KanbanBoard::where('user_id', Auth::id())
             ->withCount('tarefas')
             ->orderBy('nome')
             ->get();
 
-        $board = $boards->firstWhere('id', (int) $request->input('board')) ?? $boards->first();
+        return view('kanban.index', compact('boards'));
+    }
 
-        if ($board) {
-            KanbanTask::whereHas('quadro', function ($query) {
-                $query->where('user_id', Auth::id());
-            })
-                ->where('status', '!=', 'finalizado')
-                ->whereDate('data_limite', '<', now()->toDateString())
-                ->update(['status' => 'atrasado']);
+    public function show(KanbanBoard $board): View
+    {
+        $this->authorizeBoard($board);
 
-            $board->load(['tarefas' => fn ($query) => $query->orderBy('ordem')->orderBy('id')]);
-        }
+        KanbanTask::whereHas('quadro', function ($query) {
+            $query->where('user_id', Auth::id());
+        })
+            ->where('status', '!=', 'finalizado')
+            ->whereDate('data_limite', '<', now()->toDateString())
+            ->update(['status' => 'atrasado']);
 
-        $tarefas = $board
-            ? $board->tarefas->groupBy(fn (KanbanTask $task) => $task->status)
-            : collect();
+        $board->load(['tarefas' => fn ($query) => $query->orderBy('ordem')->orderBy('id')]);
 
-        return view('kanban.index', compact('boards', 'board', 'tarefas'));
+        $tarefas = $board->tarefas->groupBy(fn (KanbanTask $task) => $task->status);
+
+        return view('kanban.show', compact('board', 'tarefas'));
     }
 
     public function storeBoard(Request $request): RedirectResponse
@@ -58,7 +59,7 @@ class KanbanController extends Controller
         ]);
 
         return redirect()
-            ->route('kanban.index', ['board' => $board->id])
+            ->route('kanban.show', $board->id)
             ->with('success', 'Quadro criado com sucesso.');
     }
 
@@ -74,7 +75,7 @@ class KanbanController extends Controller
         $board->update($request->only('nome', 'descricao'));
 
         return redirect()
-            ->route('kanban.index', ['board' => $board->id])
+            ->route('kanban.show', $board->id)
             ->with('success', 'Quadro atualizado com sucesso.');
     }
 
@@ -97,6 +98,15 @@ class KanbanController extends Controller
             'descricao' => 'nullable|string',
             'urgencia' => 'required|in:baixa,media,alta',
             'data_limite' => 'nullable|date',
+            'etiquetas' => 'nullable|array',
+            'etiquetas.*.nome' => 'nullable|string|max:50',
+            'etiquetas.*.cor' => ['nullable', 'string', 'max:20', 'regex:/^#(?:[0-9a-fA-F]{3}){1,2}$/'],
+            'checklist' => 'nullable|array',
+            'checklist.*.titulo' => 'nullable|string|max:255',
+            'checklist.*.done' => 'nullable',
+            'campos_personalizados' => 'nullable|array',
+            'campos_personalizados.*.nome' => 'nullable|string|max:80',
+            'campos_personalizados.*.valor' => 'nullable|string|max:255',
         ]);
 
         $ordem = (int) $board->tarefas()->where('status', 'aguardando')->max('ordem');
@@ -108,10 +118,13 @@ class KanbanController extends Controller
             'data_limite' => $request->data_limite,
             'status' => 'aguardando',
             'ordem' => $ordem + 1,
+            'etiquetas' => $this->sanitizeLabels($request->input('etiquetas', [])),
+            'checklist' => $this->sanitizeChecklist($request->input('checklist', [])),
+            'campos_personalizados' => $this->sanitizeCustomFields($request->input('campos_personalizados', [])),
         ]);
 
         return redirect()
-            ->route('kanban.index', ['board' => $board->id])
+            ->route('kanban.show', $board->id)
             ->with('success', 'Tarefa adicionada ao quadro.');
     }
 
@@ -125,18 +138,36 @@ class KanbanController extends Controller
             'urgencia' => 'required|in:baixa,media,alta',
             'data_limite' => 'nullable|date',
             'status' => 'required|in:aguardando,execucao,finalizado,atrasado',
+            'etiquetas' => 'nullable|array',
+            'etiquetas.*.nome' => 'nullable|string|max:50',
+            'etiquetas.*.cor' => ['nullable', 'string', 'max:20', 'regex:/^#(?:[0-9a-fA-F]{3}){1,2}$/'],
+            'checklist' => 'nullable|array',
+            'checklist.*.titulo' => 'nullable|string|max:255',
+            'checklist.*.done' => 'nullable',
+            'campos_personalizados' => 'nullable|array',
+            'campos_personalizados.*.nome' => 'nullable|string|max:80',
+            'campos_personalizados.*.valor' => 'nullable|string|max:255',
         ]);
 
         if ($task->status === 'atrasado' && $request->status !== 'atrasado') {
             return redirect()
-                ->route('kanban.index', ['board' => $task->kanban_board_id])
+                ->route('kanban.show', $task->kanban_board_id)
                 ->with('error', 'Itens em atraso só podem ser excluídos.');
         }
 
-        $task->update($request->only('titulo', 'descricao', 'urgencia', 'data_limite', 'status'));
+        $task->update([
+            'titulo' => $request->titulo,
+            'descricao' => $request->descricao,
+            'urgencia' => $request->urgencia,
+            'data_limite' => $request->data_limite,
+            'status' => $request->status,
+            'etiquetas' => $this->sanitizeLabels($request->input('etiquetas', [])),
+            'checklist' => $this->sanitizeChecklist($request->input('checklist', [])),
+            'campos_personalizados' => $this->sanitizeCustomFields($request->input('campos_personalizados', [])),
+        ]);
 
         return redirect()
-            ->route('kanban.index', ['board' => $task->kanban_board_id])
+            ->route('kanban.show', $task->kanban_board_id)
             ->with('success', 'Tarefa atualizada com sucesso.');
     }
 
@@ -147,7 +178,7 @@ class KanbanController extends Controller
         $task->delete();
 
         return redirect()
-            ->route('kanban.index', ['board' => $boardId])
+            ->route('kanban.show', $boardId)
             ->with('success', 'Tarefa removida com sucesso.');
     }
 
@@ -206,7 +237,7 @@ class KanbanController extends Controller
         ]);
 
         return redirect()
-            ->route('kanban.index', ['board' => $task->kanban_board_id])
+            ->route('kanban.show', $task->kanban_board_id)
             ->with('success', 'Prazo estendido com sucesso. A tarefa foi movida para "Aguardando".');
     }
 
@@ -219,5 +250,71 @@ class KanbanController extends Controller
     {
         $task->loadMissing('quadro');
         abort_unless($task->quadro && $task->quadro->user_id === Auth::id(), 403);
+    }
+
+    private function sanitizeLabels(array $labels): array
+    {
+        return collect($labels)
+            ->map(function ($label) {
+                $nome = trim((string) data_get($label, 'nome'));
+                $cor = trim((string) data_get($label, 'cor', '#2563eb'));
+
+                if ($nome === '') {
+                    return null;
+                }
+
+                if (!preg_match('/^#(?:[0-9a-fA-F]{3}){1,2}$/', $cor)) {
+                    $cor = '#2563eb';
+                }
+
+                return [
+                    'nome' => $nome,
+                    'cor' => $cor,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function sanitizeChecklist(array $items): array
+    {
+        return collect($items)
+            ->map(function ($item) {
+                $titulo = trim((string) data_get($item, 'titulo'));
+
+                if ($titulo === '') {
+                    return null;
+                }
+
+                return [
+                    'titulo' => $titulo,
+                    'done' => filter_var(data_get($item, 'done', false), FILTER_VALIDATE_BOOLEAN),
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    private function sanitizeCustomFields(array $fields): array
+    {
+        return collect($fields)
+            ->map(function ($field) {
+                $nome = trim((string) data_get($field, 'nome'));
+                $valor = trim((string) data_get($field, 'valor'));
+
+                if ($nome === '' || $valor === '') {
+                    return null;
+                }
+
+                return [
+                    'nome' => $nome,
+                    'valor' => $valor,
+                ];
+            })
+            ->filter()
+            ->values()
+            ->all();
     }
 }

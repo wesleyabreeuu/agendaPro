@@ -19,11 +19,17 @@ class KanbanTask extends Model
         'data_limite',
         'ordem',
         'finalizado_em',
+        'etiquetas',
+        'checklist',
+        'campos_personalizados',
     ];
 
     protected $casts = [
         'data_limite' => 'date',
         'finalizado_em' => 'datetime',
+        'etiquetas' => 'array',
+        'checklist' => 'array',
+        'campos_personalizados' => 'array',
     ];
 
     protected static function booted(): void
@@ -46,5 +52,19 @@ class KanbanTask extends Model
     public function quadro()
     {
         return $this->belongsTo(KanbanBoard::class, 'kanban_board_id');
+    }
+
+    public function getChecklistResumoAttribute(): array
+    {
+        $itens = collect($this->checklist ?? []);
+
+        $total = $itens->count();
+        $concluidos = $itens->where('done', true)->count();
+
+        return [
+            'total' => $total,
+            'concluidos' => $concluidos,
+            'percentual' => $total > 0 ? (int) round(($concluidos / $total) * 100) : 0,
+        ];
     }
 }

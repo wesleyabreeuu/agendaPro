@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::get('compromissos/calendario/eventos', [CompromissoController::class, 'calendarioEventos'])->name('compromissos.calendario.eventos');
 
     Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
+    Route::get('kanban/boards/{board}', [KanbanController::class, 'show'])->name('kanban.show');
     Route::post('kanban/boards', [KanbanController::class, 'storeBoard'])->name('kanban.boards.store');
     Route::put('kanban/boards/{board}', [KanbanController::class, 'updateBoard'])->name('kanban.boards.update');
     Route::delete('kanban/boards/{board}', [KanbanController::class, 'destroyBoard'])->name('kanban.boards.destroy');
@@ -67,10 +68,16 @@ Route::middleware('auth')->group(function () {
         Route::get('transacoes/{transacao}/edit', [FinanceiroController::class, 'editTransacao'])->name('edit-transacao');
         Route::put('transacoes/{transacao}', [FinanceiroController::class, 'updateTransacao'])->name('update-transacao');
         Route::delete('transacoes/{transacao}', [FinanceiroController::class, 'destroyTransacao'])->name('destroy-transacao');
+        Route::patch('transacoes/{transacao}/settle', [FinanceiroController::class, 'settleTransacao'])->name('settle-transacao');
         Route::post('categorias', [FinanceiroController::class, 'storeCategoria'])->name('store-categoria');
         Route::get('contas', [FinanceiroController::class, 'contas'])->name('contas');
         Route::post('contas', [FinanceiroController::class, 'storeConta'])->name('store-conta');
+        Route::post('contas/{conta}/deposito', [FinanceiroController::class, 'depositarConta'])->name('depositar-conta');
         Route::get('relatorios', [FinanceiroController::class, 'relatorios'])->name('relatorios');
+        Route::post('metas-economia', [FinanceiroController::class, 'storeMetaEconomia'])->name('store-meta-economia');
+        Route::delete('metas-economia/{metaEconomia}', [FinanceiroController::class, 'destroyMetaEconomia'])->name('destroy-meta-economia');
+        Route::post('metas-bens', [FinanceiroController::class, 'storeMetaBemMaterial'])->name('store-meta-bem-material');
+        Route::delete('metas-bens/{metaBemMaterial}', [FinanceiroController::class, 'destroyMetaBemMaterial'])->name('destroy-meta-bem-material');
     });
 
     // Rotas Saúde
