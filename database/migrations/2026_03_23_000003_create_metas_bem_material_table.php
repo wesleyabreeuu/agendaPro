@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('metas_bem_material', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('usuarios')->cascadeOnDelete();
             $table->string('nome_bem');
             $table->string('descricao')->nullable();
             $table->decimal('valor_bem', 12, 2);
