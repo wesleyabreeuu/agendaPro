@@ -33,3 +33,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/wpp-data/tokens/*
+!/wpp-data/tokens/.gitignore
+/wpp-data/userDataDir/*
+!/wpp-data/userDataDir/.gitignore

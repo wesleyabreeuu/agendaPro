@@ -51,19 +51,10 @@ class CompromissoController extends Controller
             abort(403, 'Usuário não autenticado');
         }
 
-        $request->validate([
-            'titulo'                  => 'required|string|max:255',
-            'categoria_id'            => 'nullable|exists:categorias,id',
-            'descricao'               => 'nullable|string',
-            'data_inicio'             => 'required|date',
-            'data_fim'                => 'nullable|date|after_or_equal:data_inicio',
-            'dia_inteiro'             => 'nullable|boolean',
-            'recorrencia'             => 'nullable|in:diaria,semanal,mensal',
-            'recorrencia_intervalo'   => 'nullable|integer|min:1',
-            'data_fim_recorrencia'    => 'nullable|date|after:data_inicio',
-            'telefone'                => 'nullable|string|max:20',
-            'lead_time'               => 'nullable|integer|in:0,15,30,60,120,1440',
-        ]);
+        $request->validate(
+            $this->rules(),
+            $this->messages()
+        );
 
         $dados = $request->all();
         $dados['usuarios_id'] = Auth::id();
@@ -89,20 +80,13 @@ class CompromissoController extends Controller
     {
         $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($id);
 
-        $request->validate([
-            'titulo'                  => 'required|string|max:255',
-            'categoria_id'            => 'nullable|exists:categorias,id',
-            'descricao'               => 'nullable|string',
-            'data_inicio'             => 'required|date',
-            'data_fim'                => 'nullable|date|after_or_equal:data_inicio',
-            'dia_inteiro'             => 'nullable|boolean',
-            'recorrencia'             => 'nullable|in:diaria,semanal,mensal',
-            'recorrencia_intervalo'   => 'nullable|integer|min:1',
-            'data_fim_recorrencia'    => 'nullable|date|after:data_inicio',
-            'telefone'                => 'nullable|string|max:20',
-            'lead_time'               => 'nullable|integer|in:0,15,30,60,120,1440',
-            'cancelar_lembrete'       => 'nullable|boolean',
-        ]);
+        $rules = $this->rules();
+        $rules['cancelar_lembrete'] = 'nullable|boolean';
+
+        $request->validate(
+            $rules,
+            $this->messages()
+        );
 
         $compromisso->update([
             'categoria_id'          => $request->categoria_id,
@@ -212,6 +196,60 @@ class CompromissoController extends Controller
     }
 
     /* ===================== Helpers ===================== */
+
+    private function rules(): array
+    {
+        return [
+            'titulo' => 'required|string|max:255',
+            'categoria_id' => 'nullable|exists:categorias,id',
+            'descricao' => 'nullable|string',
+            'data_inicio' => 'required|date',
+            'data_fim' => 'nullable|date|after_or_equal:data_inicio',
+            'dia_inteiro' => 'nullable|boolean',
+            'recorrencia' => 'nullable|in:diaria,semanal,mensal',
+            'recorrencia_intervalo' => 'nullable|integer|min:1',
+            'data_fim_recorrencia' => [
+                'nullable',
+                'date',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    $dataInicio = request()->input('data_inicio');
+
+                    if (empty($value) || empty($dataInicio)) {
+                        return;
+                    }
+
+                    $inicio = Carbon::parse($dataInicio)->startOfDay();
+                    $fim = Carbon::parse($value)->startOfDay();
+
+                    if ($fim->lt($inicio)) {
+                        $fail('A data final da repetição deve ser igual ou posterior à data de início.');
+                    }
+                },
+            ],
+            'telefone' => 'nullable|string|max:20',
+            'lead_time' => 'nullable|integer|in:0,15,30,60,120,1440',
+        ];
+    }
+
+    private function messages(): array
+    {
+        return [
+            'titulo.required' => 'Informe o título do compromisso.',
+            'titulo.max' => 'O título pode ter no máximo 255 caracteres.',
+            'categoria_id.exists' => 'A categoria selecionada é inválida.',
+            'descricao.string' => 'A descrição informada é inválida.',
+            'data_inicio.required' => 'Informe a data de início.',
+            'data_inicio.date' => 'Informe uma data de início válida.',
+            'data_fim.date' => 'Informe uma data final válida.',
+            'data_fim.after_or_equal' => 'A data final deve ser igual ou posterior à data de início.',
+            'recorrencia.in' => 'A recorrência selecionada é inválida.',
+            'recorrencia_intervalo.integer' => 'O intervalo da recorrência deve ser um número inteiro.',
+            'recorrencia_intervalo.min' => 'O intervalo da recorrência deve ser de pelo menos 1.',
+            'data_fim_recorrencia.date' => 'Informe uma data válida para o fim da repetição.',
+            'telefone.max' => 'O telefone pode ter no máximo 20 caracteres.',
+            'lead_time.in' => 'O horário do lembrete selecionado é inválido.',
+        ];
+    }
 
     private function normalizePhone(?string $phone): ?string
     {

@@ -39,7 +39,7 @@ class SendScheduledWhatsApp implements ShouldQueue
 
         try {
             // 3) Config WPPConnect
-            $cfg = config('whatsapp.wppconnect');
+            $cfg = config('services.wpp');
             if (empty($cfg['base_url']) || empty($cfg['session']) || empty($cfg['token'])) {
                 throw new \RuntimeException('WPPConnect config ausente: verifique WPP_BASE_URL, WPP_SESSION e WPP_TOKEN.');
             }

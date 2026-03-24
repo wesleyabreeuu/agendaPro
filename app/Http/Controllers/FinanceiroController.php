@@ -471,7 +471,7 @@ class FinanceiroController extends Controller
         $totalPendente = $financeiroAvancado ? $transacoes->where('status', 'pendente')->sum('valor') : 0;
         $resultado = $totalReceita - $totalDespesa;
 
-        $dadosPorMes = collect(range(1, 12))->map(function (int $m) use ($user, $ano) {
+        $dadosPorMes = collect(range(1, 12))->map(function (int $m) use ($user, $ano, $financeiroAvancado) {
             $txMes = TransacaoFinanceira::where('user_id', $user->id)
                 ->whereYear('data', $ano)
                 ->whereMonth('data', $m)

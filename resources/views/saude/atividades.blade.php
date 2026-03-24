@@ -33,11 +33,11 @@
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover table-sm">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Atividade</th>
-                        <th>Descrição</th>
+	                <thead>
+	                    <tr>
+	                        <th>Data</th>
+	                        <th>Atividade</th>
+	                        <th>Descrição</th>
                         <th>Origem</th>
                         <th>Duração</th>
                         <th>Intensidade</th>
@@ -45,26 +45,44 @@
                         <th>Ações</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($atividades as $ativ)
-                        <tr>
-                            <td>{{ $ativ->data->format('d/m/Y') }}</td>
-                            <td>
-                                <span class="badge" style="background-color: {{ $ativ->categoria->cor }}; color: white;">
+	                <tbody>
+	                    @forelse($atividades as $ativ)
+                            @php($mapaPath = $ativ->mapaResumoSvgPath())
+	                        <tr>
+	                            <td>{{ $ativ->data->format('d/m/Y') }}</td>
+	                            <td>
+	                                <span class="badge" style="background-color: {{ $ativ->categoria->cor }}; color: white;">
                                     <i class="{{ $ativ->categoria->icone }}"></i> {{ $ativ->categoria->nome }}
                                 </span>
                             </td>
-                            <td>{{ $ativ->descricao ?? '-' }}</td>
-                            <td>
-                                @if($ativ->fonte === 'strava')
-                                    <span class="badge badge-warning">
-                                        <i class="fab fa-strava"></i> Strava
+	                            <td>
+                                    <div>{{ $ativ->descricao ?? '-' }}</div>
+                                    @if($ativ->fonte === 'strava' && ($ativ->distancia_formatada || $ativ->ritmo_medio_formatado || $ativ->velocidade_media_kmh))
+                                        <div class="mt-2 d-flex flex-wrap gap-1">
+                                            @if($ativ->distancia_formatada)
+                                                <span class="badge badge-light border">📏 {{ $ativ->distancia_formatada }}</span>
+                                            @endif
+                                            @if($ativ->ritmo_medio_formatado)
+                                                <span class="badge badge-light border">🏃 {{ $ativ->ritmo_medio_formatado }}</span>
+                                            @elseif($ativ->velocidade_media_kmh)
+                                                <span class="badge badge-light border">⚡ {{ number_format($ativ->velocidade_media_kmh, 1, ',', '.') }} km/h</span>
+                                            @endif
+                                            @if($ativ->elevacao_formatada)
+                                                <span class="badge badge-light border">⛰ {{ $ativ->elevacao_formatada }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </td>
+	                            <td>
+	                                @if($ativ->fonte === 'strava')
+	                                    <span class="badge badge-warning">
+	                                        <i class="fab fa-strava"></i> Strava
                                     </span>
                                 @else
                                     <span class="badge badge-secondary">Manual</span>
                                 @endif
                             </td>
-                            <td><strong>{{ $ativ->duracao_minutos }}min</strong></td>
+	                            <td><strong>{{ $ativ->duracao_minutos }}min</strong></td>
                             <td>
                                 @switch($ativ->intensidade)
                                     @case('leve')
@@ -79,22 +97,52 @@
                                 @endswitch
                             </td>
                             <td><strong class="text-danger">{{ $ativ->calorias_queimadas }}kcal</strong></td>
-                            <td>
-                                <a href="{{ route('saude.edit-atividade', $ativ->id) }}" class="btn btn-xs btn-info" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form method="POST" action="{{ route('saude.destroy-atividade', $ativ->id) }}" onsubmit="return confirm('Tem certeza?')" style="display: inline;">
-                                    @csrf
-                                    @method('DELETE')
+	                            <td>
+	                                <a href="{{ route('saude.edit-atividade', $ativ->id) }}" class="btn btn-xs btn-info" title="Editar">
+	                                    <i class="fas fa-edit"></i>
+	                                </a>
+                                    @if($ativ->stravaUrl())
+                                        <a href="{{ $ativ->stravaUrl() }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-warning" title="Abrir no Strava">
+                                            <i class="fab fa-strava"></i>
+                                        </a>
+                                    @endif
+	                                <form method="POST" action="{{ route('saude.destroy-atividade', $ativ->id) }}" onsubmit="return confirm('Tem certeza?')" style="display: inline;">
+	                                    @csrf
+	                                    @method('DELETE')
                                     <button type="submit" class="btn btn-xs btn-danger" title="Deletar">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="text-center text-muted">Nenhuma atividade registrada</td>
+	                            </td>
+	                        </tr>
+                            @if($ativ->fonte === 'strava' && ($mapaPath || $ativ->notas))
+                                <tr class="table-light">
+                                    <td></td>
+                                    <td colspan="7">
+                                        <div class="row">
+                                            @if($mapaPath)
+                                                <div class="col-lg-4 mb-3 mb-lg-0">
+                                                    <div class="strava-map-card">
+                                                        <div class="small text-muted mb-2">Mapa resumido</div>
+                                                        <svg viewBox="0 0 260 96" class="strava-map-svg" aria-label="Mapa resumido da atividade">
+                                                            <path d="{{ $mapaPath }}" class="strava-map-track"></path>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            @if($ativ->notas)
+                                                <div class="{{ $mapaPath ? 'col-lg-8' : 'col-12' }}">
+                                                    <div class="small text-muted mb-1">Detalhes importados</div>
+                                                    <div class="text-muted">{{ $ativ->notas }}</div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
+	                    @empty
+	                        <tr>
+	                            <td colspan="8" class="text-center text-muted">Nenhuma atividade registrada</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -235,5 +283,38 @@
             </div>
         </form>
     </div>
-</div>
-@stop
+	</div>
+	@stop
+
+@push('css')
+<style>
+    .gap-1 {
+        gap: .25rem;
+    }
+
+    .strava-map-card {
+        background: linear-gradient(135deg, #fff7ed, #ffedd5);
+        border: 1px solid #fed7aa;
+        border-radius: 12px;
+        padding: .75rem;
+    }
+
+    .strava-map-svg {
+        width: 100%;
+        height: 96px;
+        display: block;
+        background:
+            radial-gradient(circle at 20% 20%, rgba(251, 146, 60, .08), transparent 45%),
+            linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,247,237,.95));
+        border-radius: 10px;
+    }
+
+    .strava-map-track {
+        fill: none;
+        stroke: #ea580c;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+</style>
+@endpush

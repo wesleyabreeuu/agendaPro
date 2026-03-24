@@ -191,6 +191,12 @@ class StravaService
             'duracao_minutos' => max(1, (int) ceil(($activity['moving_time'] ?? $activity['elapsed_time'] ?? 0) / 60)),
             'intensidade' => $this->guessIntensity($activity),
             'calorias_queimadas' => $this->extractCalories($activity),
+            'distancia_metros' => $this->extractFloat($activity, 'distance'),
+            'elevacao_ganho_metros' => $this->extractFloat($activity, 'total_elevation_gain'),
+            'velocidade_media_mps' => $this->extractFloat($activity, 'average_speed'),
+            'velocidade_maxima_mps' => $this->extractFloat($activity, 'max_speed'),
+            'ritmo_medio_segundos' => $this->extractAveragePace($activity),
+            'mapa_resumo_polyline' => data_get($activity, 'map.summary_polyline'),
             'notas' => $this->buildNotes($activity),
             'fonte' => 'strava',
             'fonte_id' => (string) $activity['id'],
@@ -291,6 +297,30 @@ class StravaService
         return null;
     }
 
+    private function extractFloat(array $activity, string $key): ?float
+    {
+        $value = data_get($activity, $key);
+
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function extractAveragePace(array $activity): ?int
+    {
+        $distance = $this->extractFloat($activity, 'distance');
+        $movingTime = $activity['moving_time'] ?? null;
+        $sportType = (string) ($activity['sport_type'] ?? $activity['type'] ?? '');
+
+        if (!is_numeric($distance) || !is_numeric($movingTime) || $distance <= 0) {
+            return null;
+        }
+
+        if (!in_array($sportType, ['Run', 'TrailRun', 'VirtualRun', 'Walk', 'Hike'], true)) {
+            return null;
+        }
+
+        return (int) round(((float) $movingTime) / ($distance / 1000));
+    }
+
     private function buildNotes(array $activity): ?string
     {
         $parts = ['Importado automaticamente do Strava'];
@@ -301,6 +331,12 @@ class StravaService
 
         if (!empty($activity['total_elevation_gain'])) {
             $parts[] = 'Elevacao: ' . number_format((float) $activity['total_elevation_gain'], 0, ',', '.') . ' m';
+        }
+
+        if ($pace = $this->extractAveragePace($activity)) {
+            $parts[] = 'Ritmo medio: ' . sprintf('%d:%02d min/km', intdiv($pace, 60), $pace % 60);
+        } elseif (!empty($activity['average_speed'])) {
+            $parts[] = 'Velocidade media: ' . number_format(((float) $activity['average_speed']) * 3.6, 1, ',', '.') . ' km/h';
         }
 
         return implode(' | ', $parts);

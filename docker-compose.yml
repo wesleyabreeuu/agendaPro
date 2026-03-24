@@ -49,14 +49,17 @@ services:
   wppconnect:
     image: wppconnect/server-cli:latest
     container_name: wppconnect-api
-    command: ['--secretKey', 'agendapro123', '--port', '21465']
+    command: ['--config', '/usr/src/wpp-server/wppconnect.config.json']
     ports:
-      - '21465:21465'
+      - '${WPP_PORT:-21465}:21465'
     networks:
       - sail
     restart: always
     volumes:
-      - ./wpp-data:/usr/src/app
+      - ./wppconnect.config.json:/usr/src/wpp-server/wppconnect.config.json:ro
+      - ./wppconnect-server/dist/controller/messageController.js:/usr/src/wpp-server/node_modules/@wppconnect/server/dist/controller/messageController.js:ro
+      - wppconnect-tokens:/usr/src/wpp-server/tokens
+      - wppconnect-user-data:/usr/src/wpp-server/userDataDir
 
 networks:
   sail:
@@ -64,4 +67,8 @@ networks:
 
 volumes:
   sail-mysql:
+    driver: local
+  wppconnect-tokens:
+    driver: local
+  wppconnect-user-data:
     driver: local

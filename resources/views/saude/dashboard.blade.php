@@ -201,10 +201,10 @@
             </div>
             <div class="card-body">
                 <div class="list-group">
-                    @forelse($ultimasAtividades as $ativ)
-                        <div class="list-group-item">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
+	                    @forelse($ultimasAtividades as $ativ)
+	                        <div class="list-group-item">
+	                            <div class="d-flex justify-content-between align-items-start">
+	                                <div>
                                     <h6 class="mb-1">
                                         <i class="{{ $ativ->categoria->icone }}"></i>
                                         {{ $ativ->categoria->nome }}
@@ -217,21 +217,42 @@
                                     @if($ativ->descricao)
                                         <p class="mb-1 text-muted">{{ $ativ->descricao }}</p>
                                     @endif
-                                    <small class="text-muted">
-                                        📅 {{ $ativ->data->format('d/m/Y') }}
-                                        @if($ativ->hora_inicio)
-                                            • ⏰ {{ $ativ->hora_inicio }}
+	                                    <small class="text-muted">
+	                                        📅 {{ $ativ->data->format('d/m/Y') }}
+	                                        @if($ativ->hora_inicio)
+	                                            • ⏰ {{ $ativ->hora_inicio }}
+	                                        @endif
+	                                    </small>
+                                        @if($ativ->fonte === 'strava' && ($ativ->distancia_formatada || $ativ->ritmo_medio_formatado || $ativ->velocidade_media_kmh || $ativ->elevacao_formatada))
+                                            <div class="mt-2 d-flex flex-wrap gap-1">
+                                                @if($ativ->distancia_formatada)
+                                                    <span class="badge badge-light border">📏 {{ $ativ->distancia_formatada }}</span>
+                                                @endif
+                                                @if($ativ->ritmo_medio_formatado)
+                                                    <span class="badge badge-light border">🏃 {{ $ativ->ritmo_medio_formatado }}</span>
+                                                @elseif($ativ->velocidade_media_kmh)
+                                                    <span class="badge badge-light border">⚡ {{ number_format($ativ->velocidade_media_kmh, 1, ',', '.') }} km/h</span>
+                                                @endif
+                                                @if($ativ->elevacao_formatada)
+                                                    <span class="badge badge-light border">⛰ {{ $ativ->elevacao_formatada }}</span>
+                                                @endif
+                                            </div>
                                         @endif
-                                    </small>
-                                </div>
-                                <div class="text-right">
-                                    <div class="font-weight-bold">{{ $ativ->duracao_minutos }}min</div>
-                                    <small class="text-success">{{ $ativ->calorias_queimadas }}kcal</small>
-                                    <br>
-                                    <small class="badge badge-secondary">{{ ucfirst($ativ->intensidade) }}</small>
-                                </div>
-                            </div>
-                        </div>
+	                                </div>
+	                                <div class="text-right">
+	                                    <div class="font-weight-bold">{{ $ativ->duracao_minutos }}min</div>
+	                                    <small class="text-success">{{ $ativ->calorias_queimadas }}kcal</small>
+	                                    <br>
+	                                    <small class="badge badge-secondary">{{ ucfirst($ativ->intensidade) }}</small>
+                                        @if($ativ->stravaUrl())
+                                            <br>
+                                            <a href="{{ $ativ->stravaUrl() }}" target="_blank" rel="noopener noreferrer" class="btn btn-xs btn-outline-warning mt-2">
+                                                <i class="fab fa-strava"></i> Abrir
+                                            </a>
+                                        @endif
+	                                </div>
+	                            </div>
+	                        </div>
                     @empty
                         <div class="text-center text-muted py-4">Nenhuma atividade registrada</div>
                     @endforelse
@@ -243,6 +264,7 @@
 
 @push('css')
 <style>
+    .gap-1 { gap: .25rem; }
     .card {
         border: none;
         border-radius: 12px;

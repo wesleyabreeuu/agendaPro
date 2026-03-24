@@ -93,9 +93,9 @@
     <hr class="my-4">
 
     {{-- Envio programado por WhatsApp --}}
-    <!-- <div class="form-row">
+    <div class="form-row">
         <div class="form-group col-md-6">
-            <label for="lead_time">Enviar WhatsApp:</label>
+            <label for="lead_time">Enviar lembrete por WhatsApp</label>
             <select id="lead_time" name="lead_time" class="form-control">
                 <option value="">Não enviar</option>
                 <option value="0"    {{ old('lead_time')=='0'    ? 'selected' : '' }}>Na hora</option>
@@ -105,8 +105,10 @@
                 <option value="120"  {{ old('lead_time')=='120'  ? 'selected' : '' }}>2 horas antes</option>
                 <option value="1440" {{ old('lead_time')=='1440' ? 'selected' : '' }}>1 dia antes</option>
             </select>
-            <small class="form-text text-muted">Horário calculado no fuso America/Sao_Paulo.</small>
-        </div> -->
+            <small class="form-text text-muted">
+                O popup interno do sistema continua ativo. Este campo adiciona também o envio pelo WhatsApp.
+            </small>
+        </div>
 
         @if ($modo === 'edit')
         <div class="form-group col-md-6">
