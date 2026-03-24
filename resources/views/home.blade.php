@@ -5,6 +5,16 @@
 
 @php
     $money = fn ($value) => 'R$ ' . number_format((float) $value, 2, ',', '.');
+    $todoStatusMeta = [
+        'aguardando' => ['label' => 'Aguardando', 'class' => 'status-chip status-chip-slate'],
+        'execucao' => ['label' => 'Em execucao', 'class' => 'status-chip status-chip-amber'],
+        'finalizado' => ['label' => 'Finalizado', 'class' => 'status-chip status-chip-emerald'],
+    ];
+    $todoUrgenciaMeta = [
+        'baixa' => ['label' => 'Baixa', 'class' => 'urgency-chip urgency-chip-low'],
+        'media' => ['label' => 'Media', 'class' => 'urgency-chip urgency-chip-medium'],
+        'alta' => ['label' => 'Alta', 'class' => 'urgency-chip urgency-chip-high'],
+    ];
 @endphp
 
 @section('content_header')
@@ -56,6 +66,45 @@
             <div class="metric-label">Horas de treino</div>
             <div class="metric-value">{{ number_format($cards['horasSemana'], 1, ',', '.') }}h</div>
             <div class="metric-foot">Acumuladas nesta semana</div>
+        </div>
+    </div>
+</div>
+
+<div class="card dashboard-card dashboard-spotlight">
+    <div class="card-body">
+        <div class="spotlight-grid">
+            <div class="spotlight-box">
+                <span class="spotlight-label">Foco de tarefas</span>
+                @if($radar['tarefaFoco'])
+                    <strong>{{ $radar['tarefaFoco']->descricao }}</strong>
+                    <small>{{ $radar['tarefaFoco']->hora ?: 'Sem horario definido' }}</small>
+                @else
+                    <strong>Dia livre</strong>
+                    <small>Nenhuma tarefa em aberto para hoje</small>
+                @endif
+            </div>
+            <div class="spotlight-box">
+                <span class="spotlight-label">Proximo compromisso</span>
+                @if($radar['proximoCompromisso'])
+                    <strong>{{ $radar['proximoCompromisso']->titulo }}</strong>
+                    <small>{{ $radar['proximoCompromisso']->data_inicio->format('d/m H:i') }}</small>
+                @else
+                    <strong>Agenda tranquila</strong>
+                    <small>Sem compromissos restantes hoje</small>
+                @endif
+            </div>
+            <div class="spotlight-box">
+                <span class="spotlight-label">Kanban</span>
+                <strong>{{ $kanban['atrasadas'] }} em atraso</strong>
+                <small>{{ $kanban['total'] }} cards em {{ $kanban['boardsAtivos'] }} quadro(s)</small>
+            </div>
+            <div class="spotlight-box spotlight-box-action">
+                <span class="spotlight-label">Acesso rapido</span>
+                <div class="spotlight-actions">
+                    <a href="{{ route('todo.index') }}" class="btn btn-sm btn-outline-primary">Tarefas</a>
+                    <a href="{{ route('kanban.index') }}" class="btn btn-sm btn-outline-dark">Kanban</a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -194,14 +243,22 @@
             </div>
             <div class="card-body">
                 @forelse($tarefasHoje as $tarefa)
-                    <div class="task-item">
-                        <div>
-                            <strong>{{ $tarefa->descricao }}</strong>
-                            <span>{{ $tarefa->hora ?: 'Sem horario definido' }}</span>
+                    @php($statusInfo = $todoStatusMeta[$tarefa->status] ?? $todoStatusMeta['aguardando'])
+                    @php($urgenciaInfo = $todoUrgenciaMeta[$tarefa->urgencia] ?? $todoUrgenciaMeta['media'])
+                    <div class="task-item task-item-modern">
+                        <div class="task-main">
+                            <div class="task-copy">
+                                <strong>{{ $tarefa->descricao }}</strong>
+                                <span>{{ $tarefa->hora ?: 'Sem horario definido' }}</span>
+                            </div>
+                            <div class="task-tags">
+                                <span class="{{ $urgenciaInfo['class'] }}">
+                                    <i class="fas fa-flag mr-1"></i>{{ $urgenciaInfo['label'] }}
+                                </span>
+                                <span class="{{ $statusInfo['class'] }}">{{ $statusInfo['label'] }}</span>
+                            </div>
                         </div>
-                        <span class="badge badge-pill {{ $tarefa->status === 'finalizado' ? 'badge-success' : ($tarefa->status === 'em_andamento' ? 'badge-warning' : 'badge-secondary') }}">
-                            {{ str_replace('_', ' ', ucfirst($tarefa->status)) }}
-                        </span>
+                        <a href="{{ route('todo.edit', $tarefa->id) }}" class="btn btn-sm btn-outline-primary task-cta">Abrir</a>
                     </div>
                 @empty
                     <div class="empty-state">Nenhuma tarefa para hoje.</div>
@@ -275,6 +332,27 @@
                         <strong>{{ $kanban['atrasadas'] }}</strong>
                     </div>
                 </div>
+                <div class="kanban-footer">
+                    @if($kanban['proximoPrazo'])
+                        <div class="kanban-next-deadline">
+                            <span>Proximo prazo</span>
+                            <strong>{{ $kanban['proximoPrazo']->titulo }}</strong>
+                            <small>
+                                {{ $kanban['proximoPrazo']->data_limite?->format('d/m/Y') }}
+                                @if($kanban['proximoPrazo']->quadro)
+                                    • {{ $kanban['proximoPrazo']->quadro->nome }}
+                                @endif
+                            </small>
+                        </div>
+                    @else
+                        <div class="kanban-next-deadline">
+                            <span>Proximo prazo</span>
+                            <strong>Nada no radar</strong>
+                            <small>Sem cards abertos com prazo futuro</small>
+                        </div>
+                    @endif
+                    <a href="{{ route('kanban.index') }}" class="btn btn-sm btn-outline-dark">Abrir kanban</a>
+                </div>
             </div>
         </div>
     </div>
@@ -299,6 +377,11 @@
 
     .dashboard-row {
         margin-bottom: 1.5rem;
+    }
+
+    .dashboard-spotlight {
+        margin: 0 0 1.5rem;
+        background: linear-gradient(180deg, #ffffff, #f8fbff);
     }
 
     .dashboard-row:last-child {
@@ -353,6 +436,53 @@
 
     .dashboard-card .card-body {
         padding: 1.2rem 1.3rem 1.35rem;
+    }
+
+    .spotlight-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .spotlight-box {
+        padding: 1rem 1.05rem;
+        border-radius: 16px;
+        background: #f8fafc;
+        border: 1px solid #e8eef5;
+    }
+
+    .spotlight-box strong,
+    .spotlight-box small,
+    .spotlight-label {
+        display: block;
+    }
+
+    .spotlight-box strong {
+        margin: .35rem 0;
+        color: #182635;
+    }
+
+    .spotlight-box small,
+    .spotlight-label {
+        color: #6b7a89;
+    }
+
+    .spotlight-label {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+    }
+
+    .spotlight-box-action {
+        background: linear-gradient(135deg, #eff6ff, #f8fafc);
+    }
+
+    .spotlight-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .65rem;
+        margin-top: .8rem;
     }
 
     .dashboard-card-title {
@@ -527,6 +657,78 @@
         text-align: center;
     }
 
+    .task-item-modern {
+        align-items: center;
+    }
+
+    .task-main {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .task-copy strong,
+    .task-copy span {
+        display: block;
+    }
+
+    .task-copy strong {
+        margin-bottom: .2rem;
+        font-size: 1rem;
+        color: #162433;
+    }
+
+    .task-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        margin-top: .75rem;
+    }
+
+    .status-chip,
+    .urgency-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: .35rem .7rem;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-chip-slate {
+        color: #334155;
+        background: #e2e8f0;
+    }
+
+    .status-chip-amber {
+        color: #92400e;
+        background: #fef3c7;
+    }
+
+    .status-chip-emerald {
+        color: #166534;
+        background: #dcfce7;
+    }
+
+    .urgency-chip-low {
+        color: #0f766e;
+        background: #ccfbf1;
+    }
+
+    .urgency-chip-medium {
+        color: #9a3412;
+        background: #ffedd5;
+    }
+
+    .urgency-chip-high {
+        color: #991b1b;
+        background: #fee2e2;
+    }
+
+    .task-cta {
+        flex-shrink: 0;
+    }
+
     .kanban-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -535,6 +737,32 @@
 
     .kanban-box.danger {
         background: #fff1f2;
+    }
+
+    .kanban-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eef2f6;
+    }
+
+    .kanban-next-deadline span,
+    .kanban-next-deadline strong,
+    .kanban-next-deadline small {
+        display: block;
+    }
+
+    .kanban-next-deadline span,
+    .kanban-next-deadline small {
+        color: #6b7a89;
+    }
+
+    .kanban-next-deadline strong {
+        color: #182635;
+        margin: .2rem 0;
     }
 
     .main-sidebar,
@@ -563,6 +791,15 @@
         .finance-summary {
             grid-template-columns: 1fr;
         }
+
+        .spotlight-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .kanban-footer {
+            flex-direction: column;
+            align-items: flex-start;
+        }
     }
 
     @media (max-width: 575.98px) {
@@ -570,9 +807,15 @@
             font-size: 1.8rem;
         }
 
+        .spotlight-grid,
         .kanban-grid,
         .health-summary {
             grid-template-columns: 1fr;
+        }
+
+        .task-item-modern {
+            align-items: flex-start;
+            flex-direction: column;
         }
     }
 </style>

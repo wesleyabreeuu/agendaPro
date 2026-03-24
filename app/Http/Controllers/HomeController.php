@@ -70,7 +70,7 @@ class HomeController extends Controller
 
         $tarefasHoje = Todo::ownedBy($userId)
             ->whereDate('data', $today)
-            ->orderByRaw("FIELD(status, 'pendente', 'em_andamento', 'finalizado')")
+            ->orderByRaw("FIELD(status, 'execucao', 'aguardando', 'finalizado')")
             ->orderBy('hora')
             ->take(6)
             ->get();
@@ -121,6 +121,7 @@ class HomeController extends Controller
             'proximosCompromissos' => $proximosCompromissos,
             'agendaHoje' => $agendaHoje,
             'tarefasHoje' => $tarefasHoje,
+            'radar' => $this->buildRadarData($today, $agendaHoje, $tarefasHoje, $kanban),
             'financeiro' => $financeiro,
             'saude' => $saude,
             'kanban' => $kanban,
@@ -130,10 +131,10 @@ class HomeController extends Controller
                     'values' => $compromissosPorDia->pluck('total')->values(),
                 ],
                 'tarefasStatus' => [
-                    'labels' => ['Pendentes', 'Em andamento', 'Finalizadas'],
+                    'labels' => ['Aguardando', 'Em execucao', 'Finalizadas'],
                     'values' => [
-                        (int) ($tarefasPorStatus['pendente'] ?? 0),
-                        (int) ($tarefasPorStatus['em_andamento'] ?? 0),
+                        (int) ($tarefasPorStatus['aguardando'] ?? 0),
+                        (int) ($tarefasPorStatus['execucao'] ?? 0),
                         (int) ($tarefasPorStatus['finalizado'] ?? 0),
                     ],
                 ],
@@ -261,6 +262,9 @@ class HomeController extends Controller
                 'andamento' => 0,
                 'finalizadas' => 0,
                 'atrasadas' => 0,
+                'total' => 0,
+                'boardsAtivos' => 0,
+                'proximoPrazo' => null,
             ];
         }
 
@@ -268,11 +272,44 @@ class HomeController extends Controller
             ->whereHas('quadro', fn ($query) => $query->where('user_id', $userId))
             ->get();
 
+        $proximoPrazo = KanbanTask::query()
+            ->whereHas('quadro', fn ($query) => $query->where('user_id', $userId))
+            ->whereIn('status', ['aguardando', 'execucao'])
+            ->whereDate('data_limite', '>=', now()->toDateString())
+            ->orderBy('data_limite')
+            ->with('quadro')
+            ->first();
+
         return [
-            'pendentes' => $tasks->where('status', 'pendente')->count(),
-            'andamento' => $tasks->where('status', 'em_andamento')->count(),
+            'pendentes' => $tasks->where('status', 'aguardando')->count(),
+            'andamento' => $tasks->where('status', 'execucao')->count(),
             'finalizadas' => $tasks->where('status', 'finalizado')->count(),
             'atrasadas' => $tasks->where('status', 'atrasado')->count(),
+            'total' => $tasks->count(),
+            'boardsAtivos' => $tasks->pluck('kanban_board_id')->unique()->count(),
+            'proximoPrazo' => $proximoPrazo,
+        ];
+    }
+
+    private function buildRadarData(Carbon $today, $agendaHoje, $tarefasHoje, array $kanban): array
+    {
+        $agora = now();
+
+        $proximoCompromisso = $agendaHoje->first(function ($compromisso) use ($agora) {
+            return $compromisso->data_inicio->greaterThanOrEqualTo($agora);
+        }) ?? $agendaHoje->first();
+
+        $tarefaFoco = $tarefasHoje->firstWhere('status', 'execucao')
+            ?? $tarefasHoje->firstWhere('status', 'aguardando')
+            ?? $tarefasHoje->first();
+
+        return [
+            'proximoCompromisso' => $proximoCompromisso,
+            'tarefaFoco' => $tarefaFoco,
+            'kanbanPrazo' => $kanban['proximoPrazo'] ?? null,
+            'totalAtrasosKanban' => $kanban['atrasadas'] ?? 0,
+            'isHojeVazio' => $agendaHoje->isEmpty() && $tarefasHoje->isEmpty(),
+            'data' => $today,
         ];
     }
 }
