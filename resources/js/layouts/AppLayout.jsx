@@ -11,8 +11,10 @@ import {
   HeartPulse,
   LayoutGrid,
   LogOut,
+  Menu,
   UserCircle2,
   Wallet,
+  X,
 } from 'lucide-react'
 
 function getInitials(name = '') {
@@ -24,10 +26,11 @@ function getInitials(name = '') {
     .join('') || 'AP'
 }
 
-function DashboardNavLink({ href, active, icon: Icon, children, collapsed = false }) {
+function DashboardNavLink({ href, active, icon: Icon, children, collapsed = false, onClick }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       title={collapsed ? children : undefined}
       className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition ${collapsed ? 'justify-center' : 'gap-3'} ${active ? 'border border-zinc-200 bg-white font-medium text-zinc-950 shadow-sm' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'}`}
     >
@@ -37,10 +40,11 @@ function DashboardNavLink({ href, active, icon: Icon, children, collapsed = fals
   )
 }
 
-function DashboardSubLink({ href, active, children, collapsed = false }) {
+function DashboardSubLink({ href, active, children, collapsed = false, onClick }) {
   return (
     <Link
       href={href}
+      onClick={onClick}
       title={collapsed ? children : undefined}
       className={`block rounded-xl px-4 py-2.5 text-sm transition ${active ? 'bg-zinc-100 font-medium text-zinc-950' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'}`}
     >
@@ -76,12 +80,22 @@ function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = fals
   )
 }
 
-function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle }) {
+function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle, mobileOpen = false, onClose, mobile = false }) {
   const userName = auth?.user?.name || 'Usuário'
   const isAdmin = Boolean(auth?.user?.is_admin)
 
+  const asideClassName = mobile
+    ? `fixed inset-y-0 left-0 z-50 w-[304px] border-r border-zinc-200/80 bg-zinc-50/95 backdrop-blur transition-transform duration-200 lg:hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`
+    : `hidden border-r border-zinc-200/80 bg-zinc-50/70 lg:flex lg:flex-col ${collapsed ? 'lg:w-[96px]' : 'lg:w-[304px]'}`
+
+  const handleNavigate = () => {
+    if (mobile && onClose) {
+      onClose()
+    }
+  }
+
   return (
-    <aside className={`hidden border-r border-zinc-200/80 bg-zinc-50/70 lg:flex lg:flex-col ${collapsed ? 'lg:w-24' : 'lg:w-[304px]'}`}>
+    <aside className={asideClassName}>
       <div className="flex h-full flex-col p-5">
         <div className={`relative flex items-center px-2 ${collapsed ? 'justify-center' : 'justify-between gap-3'}`}>
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
@@ -97,20 +111,20 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle 
           </div>
           <button
             type="button"
-            onClick={onToggle}
+            onClick={mobile ? onClose : onToggle}
             className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 ${collapsed ? 'absolute top-5 -right-4 shadow-sm' : ''}`}
-            title={collapsed ? 'Expandir menu' : 'Recolher menu'}
+            title={mobile ? 'Fechar menu' : collapsed ? 'Expandir menu' : 'Recolher menu'}
           >
-            <ChevronLeft className={`h-4 w-4 transition ${collapsed ? 'rotate-180' : ''}`} />
+            {mobile ? <X className="h-4 w-4" /> : <ChevronLeft className={`h-4 w-4 transition ${collapsed ? 'rotate-180' : ''}`} />}
           </button>
         </div>
 
         <nav className="mt-6 flex-1 space-y-1.5 overflow-y-auto">
-          <DashboardNavLink href="/home" active={currentPath === '/home'} icon={LayoutGrid} collapsed={collapsed}>
+          <DashboardNavLink href="/home" active={currentPath === '/home'} icon={LayoutGrid} collapsed={collapsed} onClick={handleNavigate}>
             Dashboard
           </DashboardNavLink>
 
-          <DashboardNavLink href="/usuarios" active={currentPath.startsWith('/usuarios')} icon={UserCircle2} collapsed={collapsed}>
+          <DashboardNavLink href="/usuarios" active={currentPath.startsWith('/usuarios')} icon={UserCircle2} collapsed={collapsed} onClick={handleNavigate}>
             Meu Perfil
           </DashboardNavLink>
 
@@ -121,13 +135,13 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle 
               open={currentPath.startsWith('/compromissos') || currentPath.startsWith('/categorias') || currentPath.startsWith('/lembretes')}
               collapsed={collapsed}
             >
-              <DashboardSubLink href="/compromissos" active={currentPath.startsWith('/compromissos') && !currentPath.includes('/calendario')} collapsed={collapsed}>
+              <DashboardSubLink href="/compromissos" active={currentPath.startsWith('/compromissos') && !currentPath.includes('/calendario')} collapsed={collapsed} onClick={handleNavigate}>
                 Compromissos
               </DashboardSubLink>
-              <DashboardSubLink href="/categorias" active={currentPath.startsWith('/categorias')} collapsed={collapsed}>
+              <DashboardSubLink href="/categorias" active={currentPath.startsWith('/categorias')} collapsed={collapsed} onClick={handleNavigate}>
                 Categorias
               </DashboardSubLink>
-              <DashboardSubLink href="/lembretes" active={currentPath.startsWith('/lembretes')} collapsed={collapsed}>
+              <DashboardSubLink href="/lembretes" active={currentPath.startsWith('/lembretes')} collapsed={collapsed} onClick={handleNavigate}>
                 Lembretes
               </DashboardSubLink>
             </DashboardNavGroup>
@@ -140,13 +154,13 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle 
               open={currentPath.startsWith('/todo') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
               collapsed={collapsed}
             >
-              <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed}>
+              <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed} onClick={handleNavigate}>
                 Todo list
               </DashboardSubLink>
-              <DashboardSubLink href="/check-ins" active={currentPath.startsWith('/check-ins')} collapsed={collapsed}>
+              <DashboardSubLink href="/check-ins" active={currentPath.startsWith('/check-ins')} collapsed={collapsed} onClick={handleNavigate}>
                 Check-in Diário
               </DashboardSubLink>
-              <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed}>
+              <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate}>
                 Calendário
               </DashboardSubLink>
             </DashboardNavGroup>
@@ -154,20 +168,20 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle 
 
           {permissions.projetos ? (
             <DashboardNavGroup label="Projetos" icon={FolderKanban} open={currentPath.startsWith('/kanban')} collapsed={collapsed}>
-              <DashboardSubLink href="/kanban" active={currentPath.startsWith('/kanban')} collapsed={collapsed}>
+              <DashboardSubLink href="/kanban" active={currentPath.startsWith('/kanban')} collapsed={collapsed} onClick={handleNavigate}>
                 Kanban
               </DashboardSubLink>
             </DashboardNavGroup>
           ) : null}
 
           {permissions.financeiro ? (
-            <DashboardNavLink href="/financeiro" active={currentPath.startsWith('/financeiro')} icon={Wallet} collapsed={collapsed}>
+            <DashboardNavLink href="/financeiro" active={currentPath.startsWith('/financeiro')} icon={Wallet} collapsed={collapsed} onClick={handleNavigate}>
               Controle Financeiro
             </DashboardNavLink>
           ) : null}
 
           {permissions.saude ? (
-            <DashboardNavLink href="/saude" active={currentPath.startsWith('/saude') || currentPath.startsWith('/integracoes/strava')} icon={HeartPulse} collapsed={collapsed}>
+            <DashboardNavLink href="/saude" active={currentPath.startsWith('/saude') || currentPath.startsWith('/integracoes/strava')} icon={HeartPulse} collapsed={collapsed} onClick={handleNavigate}>
               Saúde e Fitness
             </DashboardNavLink>
           ) : null}
@@ -179,13 +193,13 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle 
               open={currentPath.startsWith('/regras') || currentPath.startsWith('/permissoes') || currentPath.startsWith('/admin/usuarios')}
               collapsed={collapsed}
             >
-              <DashboardSubLink href="/admin/usuarios" active={currentPath.startsWith('/admin/usuarios')} collapsed={collapsed}>
+              <DashboardSubLink href="/admin/usuarios" active={currentPath.startsWith('/admin/usuarios')} collapsed={collapsed} onClick={handleNavigate}>
                 Usuários
               </DashboardSubLink>
-              <DashboardSubLink href="/regras" active={currentPath.startsWith('/regras')} collapsed={collapsed}>
+              <DashboardSubLink href="/regras" active={currentPath.startsWith('/regras')} collapsed={collapsed} onClick={handleNavigate}>
                 Regras
               </DashboardSubLink>
-              <DashboardSubLink href="/permissoes" active={currentPath.startsWith('/permissoes')} collapsed={collapsed}>
+              <DashboardSubLink href="/permissoes" active={currentPath.startsWith('/permissoes')} collapsed={collapsed} onClick={handleNavigate}>
                 Permissões
               </DashboardSubLink>
             </DashboardNavGroup>
@@ -215,7 +229,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle 
   )
 }
 
-function DashboardHeader({ title, auth }) {
+function DashboardHeader({ title, auth, onOpenMenu }) {
   const userName = auth?.user?.name || 'Usuário'
 
   return (
@@ -223,6 +237,13 @@ function DashboardHeader({ title, auth }) {
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-7">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-sm text-zinc-500">
+            <button
+              type="button"
+              onClick={onOpenMenu}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm lg:hidden"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
             <LayoutGrid className="h-4 w-4" />
             <span>Workspace</span>
             <ChevronRight className="h-4 w-4" />
@@ -264,6 +285,7 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
   const permissions = auth?.user?.permissions || {}
   const isDashboardChrome = chrome === 'dashboard'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -280,15 +302,41 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
       <Head title={title} />
       <div className={`min-h-screen lg:grid ${sidebarCollapsed ? 'lg:grid-cols-[96px_minmax(0,1fr)]' : 'lg:grid-cols-[304px_minmax(0,1fr)]'} ${isDashboardChrome ? 'bg-zinc-100/70' : 'bg-white'}`}>
         <DashboardSidebar currentPath={currentPath} permissions={permissions} auth={auth} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} />
+        {mobileSidebarOpen ? (
+          <button
+            type="button"
+            aria-label="Fechar menu"
+            onClick={() => setMobileSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-zinc-950/35 lg:hidden"
+          />
+        ) : null}
+        <DashboardSidebar
+          currentPath={currentPath}
+          permissions={permissions}
+          auth={auth}
+          collapsed={false}
+          mobile
+          mobileOpen={mobileSidebarOpen}
+          onClose={() => setMobileSidebarOpen(false)}
+        />
 
         <main className="min-w-0">
           {isDashboardChrome ? (
-            <DashboardHeader title={title} auth={auth} />
+            <DashboardHeader title={title} auth={auth} onOpenMenu={() => setMobileSidebarOpen(true)} />
           ) : (
             <header className="border-b border-zinc-200 bg-white">
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-8">
                 <div>
-                  <p className="brand-agendapro text-xs uppercase tracking-[0.25em] text-zinc-400">AgendaPro</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setMobileSidebarOpen(true)}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm lg:hidden"
+                    >
+                      <Menu className="h-4 w-4" />
+                    </button>
+                    <p className="brand-agendapro text-xs uppercase tracking-[0.25em] text-zinc-400">AgendaPro</p>
+                  </div>
                   <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-950">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
