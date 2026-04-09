@@ -62,7 +62,7 @@ class Lembrete extends Model
 
     public function getDescricaoExibicaoAttribute(): ?string
     {
-        return $this->descricao ?: $this->compromisso->descricao;
+        return $this->descricao ?: $this->compromisso?->descricao;
     }
 
     public function getMomentoDisparoAttribute(): ?Carbon

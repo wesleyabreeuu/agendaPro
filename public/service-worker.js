@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'agenda-pro-static-v3';
+const STATIC_CACHE = 'agenda-pro-static-v4';
 const APP_SHELL = [
   '/manifest.json',
   '/brand/agendapro-mark.svg',
