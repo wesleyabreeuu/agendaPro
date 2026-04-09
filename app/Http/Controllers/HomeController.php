@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AtividadeFisica;
 use App\Models\Compromisso;
 use App\Models\ContaBancaria;
+use App\Models\DailyCheckin;
 use App\Models\KanbanBoard;
 use App\Models\KanbanTask;
 use App\Models\Lembrete;
@@ -14,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Inertia\Inertia;
 
 class HomeController extends Controller
 {
@@ -37,10 +39,13 @@ class HomeController extends Controller
             ->count();
 
         $totalLembretes = Lembrete::query()
-            ->whereHas('compromisso', function ($query) use ($userId) {
-                $query->where('usuarios_id', $userId);
-            })
+            ->ownedBy($userId)
+            ->where('ativo', true)
             ->count();
+
+        $checkinHoje = DailyCheckin::ownedBy($userId)
+            ->whereDate('data', $today)
+            ->first();
 
         $totalTarefasHoje = Todo::ownedBy($userId)
             ->whereDate('data', $today)
@@ -107,7 +112,7 @@ class HomeController extends Controller
         $saude = $this->buildSaudeData($userId, $startOfWeek, $endOfWeek, $today);
         $kanban = $this->buildKanbanData($userId);
 
-        return view('home', [
+        return Inertia::render('Dashboard', [
             'cards' => [
                 'compromissosMes' => $compromissosMes,
                 'compromissosHoje' => $compromissosHoje,
@@ -117,6 +122,7 @@ class HomeController extends Controller
                 'totalQuadrosKanban' => $totalQuadrosKanban,
                 'saldoTotal' => $financeiro['saldoTotal'],
                 'horasSemana' => $saude['horasSemana'],
+                'checkinHoje' => (bool) $checkinHoje,
             ],
             'proximosCompromissos' => $proximosCompromissos,
             'agendaHoje' => $agendaHoje,
@@ -125,10 +131,11 @@ class HomeController extends Controller
             'financeiro' => $financeiro,
             'saude' => $saude,
             'kanban' => $kanban,
+            'checkinHoje' => $checkinHoje,
             'chartData' => [
                 'compromissosSemana' => [
-                    'labels' => $compromissosPorDia->pluck('label')->values(),
-                    'values' => $compromissosPorDia->pluck('total')->values(),
+                    'labels' => $compromissosPorDia->pluck('label')->values()->all(),
+                    'values' => $compromissosPorDia->pluck('total')->values()->all(),
                 ],
                 'tarefasStatus' => [
                     'labels' => ['Aguardando', 'Em execucao', 'Finalizadas'],
@@ -139,8 +146,8 @@ class HomeController extends Controller
                     ],
                 ],
                 'tarefasConcluidas' => [
-                    'labels' => $tarefasFinalizadasSemana->pluck('label')->values(),
-                    'values' => $tarefasFinalizadasSemana->pluck('total')->values(),
+                    'labels' => $tarefasFinalizadasSemana->pluck('label')->values()->all(),
+                    'values' => $tarefasFinalizadasSemana->pluck('total')->values()->all(),
                 ],
                 'financeiro' => $financeiro['chart'],
                 'saude' => $saude['chart'],
@@ -180,7 +187,7 @@ class HomeController extends Controller
             return now()->startOfMonth()->subMonths($offset);
         })->values();
 
-        $labels = $months->map(fn (Carbon $month) => $month->translatedFormat('M'));
+        $labels = $months->map(fn (Carbon $month) => $month->translatedFormat('M'))->values()->all();
         $receitas = [];
         $despesas = [];
 
@@ -202,8 +209,8 @@ class HomeController extends Controller
             'resultadoMes' => $receitasMes - $despesasMes,
             'chart' => [
                 'labels' => $labels,
-                'receitas' => $receitas,
-                'despesas' => $despesas,
+                'receitas' => array_values($receitas),
+                'despesas' => array_values($despesas),
             ],
         ];
     }
@@ -247,9 +254,9 @@ class HomeController extends Controller
             'caloriasSemana' => (int) $atividadesSemana->sum('calorias_queimadas'),
             'atividadesSemana' => $atividadesSemana->count(),
             'chart' => [
-                'labels' => $series->pluck('label')->values(),
-                'duracao' => $series->pluck('duracao')->values(),
-                'calorias' => $series->pluck('calorias')->values(),
+                'labels' => $series->pluck('label')->values()->all(),
+                'duracao' => $series->pluck('duracao')->values()->all(),
+                'calorias' => $series->pluck('calorias')->values()->all(),
             ],
         ];
     }

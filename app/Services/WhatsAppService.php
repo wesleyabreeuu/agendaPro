@@ -32,14 +32,27 @@ class WhatsAppService
             'message' => $mensagem,
         ]);
 
+        $payload = $resp->json() ?? [];
+
         if (! $resp->ok()) {
             Log::error('WPP send-message failed', [
                 'http' => $resp->status(),
                 'url'  => $url,
                 'body' => $resp->body(),
             ]);
+
+            return [
+                'ok' => false,
+                'http' => $resp->status(),
+                'payload' => $payload,
+                'body' => $resp->body(),
+            ];
         }
 
-        return $resp->json() ?? ['status' => 'error', 'http' => $resp->status()];
+        return [
+            'ok' => true,
+            'http' => $resp->status(),
+            'payload' => $payload,
+        ];
     }
 }

@@ -179,7 +179,7 @@ class StravaService
 
     public function upsertActivityFromStrava(User $user, array $activity): AtividadeFisica
     {
-        $categoria = $this->resolveCategoryForSport((string) ($activity['sport_type'] ?? $activity['type'] ?? 'Workout'));
+        $categoria = $this->resolveCategoryForSport($user, (string) ($activity['sport_type'] ?? $activity['type'] ?? 'Workout'));
         $start = Carbon::parse($activity['start_date_local'] ?? $activity['start_date'] ?? now());
 
         $payload = [
@@ -233,7 +233,7 @@ class StravaService
         return array_values(array_filter($scopes));
     }
 
-    private function resolveCategoryForSport(string $sportType): CategoriaAtividadeFisica
+    private function resolveCategoryForSport(User $user, string $sportType): CategoriaAtividadeFisica
     {
         $name = match ($sportType) {
             'Run', 'TrailRun', 'VirtualRun' => 'Corrida',
@@ -249,8 +249,13 @@ class StravaService
         $defaults = $this->categoryDefaults($name);
 
         return CategoriaAtividadeFisica::query()->firstOrCreate(
-            ['nome' => $name],
-            $defaults
+            [
+                'user_id' => $user->id,
+                'nome' => $name,
+            ],
+            array_merge($defaults, [
+                'user_id' => $user->id,
+            ])
         );
     }
 

@@ -14,14 +14,17 @@ class KanbanTask extends Model
         'kanban_board_id',
         'titulo',
         'descricao',
+        'observacoes',
         'urgencia',
         'status',
+        'list_key',
         'data_limite',
         'ordem',
         'finalizado_em',
         'etiquetas',
         'checklist',
         'campos_personalizados',
+        'anexos',
     ];
 
     protected $casts = [
@@ -30,6 +33,7 @@ class KanbanTask extends Model
         'etiquetas' => 'array',
         'checklist' => 'array',
         'campos_personalizados' => 'array',
+        'anexos' => 'array',
     ];
 
     protected static function booted(): void

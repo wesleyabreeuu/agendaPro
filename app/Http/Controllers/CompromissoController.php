@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CompromissoController extends Controller
 {
@@ -18,31 +20,59 @@ class CompromissoController extends Controller
         $this->middleware('auth');
     }
 
-    public function index()
+    public function index(): Response
     {
         $compromissos = Compromisso::with('categoria')
             ->where('usuarios_id', Auth::id())
+            ->orderBy('data_inicio')
             ->get();
 
-        $categorias = Categoria::all();
+        $categorias = Categoria::ownedBy(Auth::id())
+            ->orderBy('nome')
+            ->get();
 
-        return view('compromissos.index', compact('compromissos', 'categorias'));
+        return Inertia::render('Compromissos/Index', [
+            'compromissos' => $compromissos->map(fn (Compromisso $compromisso) => $this->serializeCompromisso($compromisso))->values()->all(),
+            'categorias' => $categorias->map(fn (Categoria $categoria) => [
+                'id' => $categoria->id,
+                'nome' => $categoria->nome,
+            ])->values()->all(),
+        ]);
     }
 
-    public function create()
+    public function create(): Response
     {
-        $categorias = Categoria::all();
-        $modo = 'create';
-        $compromisso = new Compromisso();
-        return view('compromissos.crud', compact('modo', 'compromisso', 'categorias'));
+        $categorias = Categoria::ownedBy(Auth::id())
+            ->orderBy('nome')
+            ->get();
+
+        return Inertia::render('Compromissos/Form', [
+            'modo' => 'create',
+            'compromisso' => null,
+            'categorias' => $categorias->map(fn (Categoria $categoria) => [
+                'id' => $categoria->id,
+                'nome' => $categoria->nome,
+            ])->values()->all(),
+            'leadTimeOptions' => $this->leadTimeOptions(),
+        ]);
     }
 
-    public function edit($id)
+    public function edit($id): Response
     {
         $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($id);
-        $categorias = Categoria::all();
-        $modo = 'edit';
-        return view('compromissos.crud', compact('modo', 'compromisso', 'categorias'));
+        $categorias = Categoria::ownedBy(Auth::id())
+            ->orderBy('nome')
+            ->get();
+
+        return Inertia::render('Compromissos/Form', [
+            'modo' => 'edit',
+            'compromisso' => $this->serializeCompromissoForm($compromisso),
+            'categorias' => $categorias->map(fn (Categoria $categoria) => [
+                'id' => $categoria->id,
+                'nome' => $categoria->nome,
+            ])->values()->all(),
+            'leadTimeOptions' => $this->leadTimeOptions(),
+        ]);
     }
 
     public function store(Request $request)
@@ -57,6 +87,9 @@ class CompromissoController extends Controller
         );
 
         $dados = $request->all();
+        if (!empty($dados['categoria_id'])) {
+            Categoria::ownedBy(Auth::id())->findOrFail($dados['categoria_id']);
+        }
         $dados['usuarios_id'] = Auth::id();
         $dados['dia_inteiro'] = $request->has('dia_inteiro');
 
@@ -87,6 +120,10 @@ class CompromissoController extends Controller
             $rules,
             $this->messages()
         );
+
+        if ($request->filled('categoria_id')) {
+            Categoria::ownedBy(Auth::id())->findOrFail($request->categoria_id);
+        }
 
         $compromisso->update([
             'categoria_id'          => $request->categoria_id,
@@ -297,9 +334,9 @@ class CompromissoController extends Controller
         ]);
     }
 
-    public function calendario()
+    public function calendario(): Response
     {
-        return view('compromissos.calendario');
+        return Inertia::render('Compromissos/Calendario');
     }
 
     public function calendarioEventos(Request $request): JsonResponse
@@ -357,5 +394,58 @@ class CompromissoController extends Controller
             });
 
         return response()->json($compromissos->concat($tarefas)->values());
+    }
+
+    private function serializeCompromisso(Compromisso $compromisso): array
+    {
+        $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
+
+        return [
+            'id' => $compromisso->id,
+            'titulo' => $compromisso->titulo,
+            'descricao' => $compromisso->descricao,
+            'categoria' => $compromisso->categoria?->nome,
+            'categoria_id' => $compromisso->categoria_id,
+            'data_inicio' => $compromisso->data_inicio?->format('d/m/Y H:i'),
+            'data_fim' => $compromisso->data_fim?->format('d/m/Y H:i'),
+            'dia_inteiro' => (bool) $compromisso->dia_inteiro,
+            'telefone' => $compromisso->telefone,
+            'recorrencia' => $compromisso->recorrencia,
+            'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
+            'data_fim_recorrencia' => $fimRecorrencia?->format('d/m/Y'),
+        ];
+    }
+
+    private function serializeCompromissoForm(Compromisso $compromisso): array
+    {
+        $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
+
+        return [
+            'id' => $compromisso->id,
+            'titulo' => $compromisso->titulo,
+            'descricao' => $compromisso->descricao,
+            'categoria_id' => $compromisso->categoria_id,
+            'data_inicio' => $compromisso->data_inicio?->format('Y-m-d\TH:i'),
+            'data_fim' => $compromisso->data_fim?->format('Y-m-d\TH:i'),
+            'dia_inteiro' => (bool) $compromisso->dia_inteiro,
+            'telefone' => $compromisso->telefone,
+            'recorrencia' => $compromisso->recorrencia,
+            'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
+            'data_fim_recorrencia' => $fimRecorrencia?->format('Y-m-d'),
+            'lead_time' => '',
+        ];
+    }
+
+    private function leadTimeOptions(): array
+    {
+        return [
+            ['value' => '', 'label' => 'Não enviar'],
+            ['value' => '0', 'label' => 'Na hora'],
+            ['value' => '15', 'label' => '15 minutos antes'],
+            ['value' => '30', 'label' => '30 minutos antes'],
+            ['value' => '60', 'label' => '1 hora antes'],
+            ['value' => '120', 'label' => '2 horas antes'],
+            ['value' => '1440', 'label' => '1 dia antes'],
+        ];
     }
 }

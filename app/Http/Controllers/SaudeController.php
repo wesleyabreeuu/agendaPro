@@ -8,7 +8,8 @@ use App\Models\MetaSaude;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SaudeController extends Controller
 {
@@ -84,10 +85,10 @@ class SaudeController extends Controller
         $this->middleware('auth');
     }
 
-    public function dashboard(): View
+    public function dashboard(): Response
     {
         $user = Auth::user();
-        $this->garantirCategoriasPadrao();
+        $this->garantirCategoriasPadrao($user->id);
 
         // Período: última semana
         $dataInicio = Carbon::now()->startOfWeek();
@@ -143,24 +144,32 @@ class SaudeController extends Controller
             ->take(5)
             ->get();
 
-        return view('saude.dashboard', compact(
-            'totalHoras',
-            'totalCalorias',
-            'sessoes',
-            'atividades',
-            'atividadesPorCategoria',
-            'metas',
-            'metasProgresso',
-            'ultimasAtividades'
-        ));
+        return Inertia::render('Saude/Dashboard', [
+            'resumo' => [
+                'total_horas' => (float) $totalHoras,
+                'total_calorias' => (int) $totalCalorias,
+                'sessoes' => (int) $sessoes,
+                'tipos_atividade' => (int) $atividadesPorCategoria->count(),
+            ],
+            'strava' => [
+                'connected' => $user->hasStravaConnected(),
+            ],
+            'atividadesPorCategoria' => $atividadesPorCategoria->values()->all(),
+            'metasProgresso' => $metasProgresso->map(fn (array $item) => [
+                'meta' => $this->serializeMeta($item['meta']),
+                'progresso' => (float) $item['progresso'],
+                'percentual' => (float) $item['percentual'],
+            ])->values()->all(),
+            'ultimasAtividades' => $ultimasAtividades->map(fn (AtividadeFisica $atividade) => $this->serializeAtividade($atividade))->values()->all(),
+        ]);
     }
 
-    public function atividades(): View
+    public function atividades(): Response
     {
         $user = Auth::user();
-        $this->garantirCategoriasPadrao();
+        $this->garantirCategoriasPadrao($user->id);
 
-        $categorias = CategoriaAtividadeFisica::query()
+        $categorias = CategoriaAtividadeFisica::ownedBy($user->id)
             ->orderBy('nome')
             ->get();
         $atividades = AtividadeFisica::where('user_id', $user->id)
@@ -168,13 +177,22 @@ class SaudeController extends Controller
             ->orderBy('data', 'desc')
             ->paginate(15);
 
-        return view('saude.atividades', compact('atividades', 'categorias'));
+        return Inertia::render('Saude/Atividades', [
+            'atividades' => [
+                'data' => $atividades->getCollection()->map(fn (AtividadeFisica $atividade) => $this->serializeAtividade($atividade))->values()->all(),
+                'current_page' => $atividades->currentPage(),
+                'last_page' => $atividades->lastPage(),
+                'per_page' => $atividades->perPage(),
+                'total' => $atividades->total(),
+            ],
+            'categorias' => $categorias->map(fn (CategoriaAtividadeFisica $categoria) => $this->serializeCategoria($categoria))->values()->all(),
+        ]);
     }
 
     public function storeAtividade(Request $request)
     {
         $user = Auth::user();
-        $this->garantirCategoriasPadrao();
+        $this->garantirCategoriasPadrao($user->id);
 
         $request->validate([
             'categoria_atividade_fisica_id' => 'required|exists:categoria_atividade_fisica,id',
@@ -186,9 +204,12 @@ class SaudeController extends Controller
             'notas' => 'nullable|string',
         ]);
 
+        $categoria = CategoriaAtividadeFisica::ownedBy($user->id)
+            ->findOrFail($request->categoria_atividade_fisica_id);
+
         AtividadeFisica::create([
             'user_id' => $user->id,
-            'categoria_atividade_fisica_id' => $request->categoria_atividade_fisica_id,
+            'categoria_atividade_fisica_id' => $categoria->id,
             'descricao' => $request->descricao,
             'data' => $request->data,
             'hora_inicio' => $request->hora_inicio,
@@ -203,7 +224,8 @@ class SaudeController extends Controller
 
     public function storeCategoria(Request $request)
     {
-        $this->garantirCategoriasPadrao();
+        $user = Auth::user();
+        $this->garantirCategoriasPadrao($user->id);
 
         $request->validate([
             'nome' => 'required|string|max:255',
@@ -215,7 +237,10 @@ class SaudeController extends Controller
         ]);
 
         CategoriaAtividadeFisica::updateOrCreate(
-            ['nome' => $request->nome],
+            [
+                'user_id' => $user->id,
+                'nome' => $request->nome,
+            ],
             [
                 'icone' => $request->filled('icone') ? $request->icone : 'fas fa-dumbbell',
                 'cor' => $request->filled('cor') ? $request->cor : '#e74c3c',
@@ -229,17 +254,20 @@ class SaudeController extends Controller
             ->with('success', 'Tipo de atividade criado com sucesso!');
     }
 
-    public function editAtividade(AtividadeFisica $atividade): View
+    public function editAtividade(AtividadeFisica $atividade): Response
     {
         $user = Auth::user();
         abort_unless($atividade->user_id === $user->id, 403);
-        $this->garantirCategoriasPadrao();
+        $this->garantirCategoriasPadrao($user->id);
 
-        $categorias = CategoriaAtividadeFisica::query()
+        $categorias = CategoriaAtividadeFisica::ownedBy($user->id)
             ->orderBy('nome')
             ->get();
 
-        return view('saude.edit-atividade', compact('atividade', 'categorias'));
+        return Inertia::render('Saude/EditAtividade', [
+            'atividade' => $this->serializeAtividadeForm($atividade),
+            'categorias' => $categorias->map(fn (CategoriaAtividadeFisica $categoria) => $this->serializeCategoria($categoria))->values()->all(),
+        ]);
     }
 
     public function updateAtividade(Request $request, AtividadeFisica $atividade)
@@ -257,7 +285,10 @@ class SaudeController extends Controller
             'notas' => 'nullable|string',
         ]);
 
-        $atividade->update($request->only(
+        $categoria = CategoriaAtividadeFisica::ownedBy($user->id)
+            ->findOrFail($request->categoria_atividade_fisica_id);
+
+        $atividade->update(array_merge($request->only(
             'categoria_atividade_fisica_id',
             'descricao',
             'data',
@@ -265,7 +296,9 @@ class SaudeController extends Controller
             'duracao_minutos',
             'intensidade',
             'notas'
-        ));
+        ), [
+            'categoria_atividade_fisica_id' => $categoria->id,
+        ]));
 
         return redirect()->route('saude.atividades')
             ->with('success', 'Atividade atualizada com sucesso!');
@@ -282,10 +315,10 @@ class SaudeController extends Controller
             ->with('success', 'Atividade removida com sucesso!');
     }
 
-    public function calendario(): View
+    public function calendario(): Response
     {
         $user = Auth::user();
-        $this->garantirCategoriasPadrao();
+        $this->garantirCategoriasPadrao($user->id);
         $mes = request('mes', Carbon::now()->month);
         $ano = request('ano', Carbon::now()->year);
 
@@ -302,10 +335,14 @@ class SaudeController extends Controller
             'calorias' => $atividade->calorias_queimadas . 'kcal',
         ])->toArray();
 
-        return view('saude.calendario', compact('eventos', 'mes', 'ano'));
+        return Inertia::render('Saude/Calendario', [
+            'eventos' => $eventos,
+            'mes' => (int) $mes,
+            'ano' => (int) $ano,
+        ]);
     }
 
-    public function metas(): View
+    public function metas(): Response
     {
         $user = Auth::user();
         $metas = MetaSaude::where('user_id', $user->id)
@@ -313,7 +350,9 @@ class SaudeController extends Controller
             ->orderBy('data_inicio', 'desc')
             ->get();
 
-        return view('saude.metas', compact('metas'));
+        return Inertia::render('Saude/Metas', [
+            'metas' => $metas->map(fn (MetaSaude $meta) => $this->serializeMeta($meta))->values()->all(),
+        ]);
     }
 
     public function storeMeta(Request $request)
@@ -351,10 +390,10 @@ class SaudeController extends Controller
             ->with('success', 'Meta removida com sucesso!');
     }
 
-    public function relatorios(): View
+    public function relatorios(): Response
     {
         $user = Auth::user();
-        $this->garantirCategoriasPadrao();
+        $this->garantirCategoriasPadrao($user->id);
 
         $periodo = request('periodo', 'mes'); // mes, trimestre, ano
         $ano = request('ano', Carbon::now()->year);
@@ -392,25 +431,93 @@ class SaudeController extends Controller
             ->sortByDesc('horas')
             ->take(5);
 
-        return view('saude.relatorios', compact(
-            'totalHoras',
-            'totalCalorias',
-            'totalSessoes',
-            'diasComAtividade',
-            'topAtividades',
-            'periodo',
-            'ano'
-        ));
+        return Inertia::render('Saude/Relatorios', [
+            'resumo' => [
+                'total_horas' => (float) $totalHoras,
+                'total_calorias' => (int) $totalCalorias,
+                'total_sessoes' => (int) $totalSessoes,
+                'dias_com_atividade' => (int) $diasComAtividade,
+            ],
+            'topAtividades' => $topAtividades->values()->all(),
+            'periodo' => $periodo,
+            'ano' => (int) $ano,
+        ]);
     }
 
-    private function garantirCategoriasPadrao(): void
+    private function garantirCategoriasPadrao(int $userId): void
     {
-        if (CategoriaAtividadeFisica::query()->exists()) {
+        if (CategoriaAtividadeFisica::ownedBy($userId)->exists()) {
             return;
         }
 
         foreach (self::CATEGORIAS_PADRAO as $categoria) {
-            CategoriaAtividadeFisica::create($categoria);
+            CategoriaAtividadeFisica::create(array_merge($categoria, [
+                'user_id' => $userId,
+            ]));
         }
+    }
+
+    private function serializeCategoria(CategoriaAtividadeFisica $categoria): array
+    {
+        return [
+            'id' => $categoria->id,
+            'nome' => $categoria->nome,
+            'icone' => $categoria->icone,
+            'cor' => $categoria->cor,
+            'caloria_leve' => (float) $categoria->caloria_leve,
+            'caloria_moderada' => (float) $categoria->caloria_moderada,
+            'caloria_intensa' => (float) $categoria->caloria_intensa,
+        ];
+    }
+
+    private function serializeAtividade(AtividadeFisica $atividade): array
+    {
+        return [
+            'id' => $atividade->id,
+            'categoria' => $atividade->categoria ? $this->serializeCategoria($atividade->categoria) : null,
+            'descricao' => $atividade->descricao,
+            'data' => $atividade->data?->format('d/m/Y'),
+            'data_iso' => $atividade->data?->toDateString(),
+            'hora_inicio' => $atividade->hora_inicio,
+            'duracao_minutos' => (int) $atividade->duracao_minutos,
+            'intensidade' => $atividade->intensidade,
+            'calorias_queimadas' => (int) $atividade->calorias_queimadas,
+            'distancia_formatada' => $atividade->distancia_formatada,
+            'elevacao_formatada' => $atividade->elevacao_formatada,
+            'velocidade_media_kmh' => $atividade->velocidade_media_kmh,
+            'ritmo_medio_formatado' => $atividade->ritmo_medio_formatado,
+            'notas' => $atividade->notas,
+            'fonte' => $atividade->fonte,
+            'strava_url' => $atividade->stravaUrl(),
+            'mapa_resumo_svg_path' => $atividade->mapaResumoSvgPath(),
+        ];
+    }
+
+    private function serializeAtividadeForm(AtividadeFisica $atividade): array
+    {
+        return [
+            'id' => $atividade->id,
+            'categoria_atividade_fisica_id' => $atividade->categoria_atividade_fisica_id,
+            'descricao' => $atividade->descricao,
+            'data' => $atividade->data?->toDateString(),
+            'hora_inicio' => $atividade->hora_inicio,
+            'duracao_minutos' => (int) $atividade->duracao_minutos,
+            'intensidade' => $atividade->intensidade,
+            'notas' => $atividade->notas,
+        ];
+    }
+
+    private function serializeMeta(MetaSaude $meta): array
+    {
+        return [
+            'id' => $meta->id,
+            'titulo' => $meta->titulo,
+            'tipo' => $meta->tipo,
+            'valor_alvo' => (int) $meta->valor_alvo,
+            'periodo' => $meta->periodo,
+            'ativa' => (bool) $meta->ativa,
+            'data_inicio' => $meta->data_inicio?->format('d/m/Y'),
+            'data_fim' => $meta->data_fim?->format('d/m/Y'),
+        ];
     }
 }

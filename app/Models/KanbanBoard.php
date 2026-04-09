@@ -13,7 +13,13 @@ class KanbanBoard extends Model
         'user_id',
         'nome',
         'descricao',
+        'background_style',
+        'listas',
         'ativo',
+    ];
+
+    protected $casts = [
+        'listas' => 'array',
     ];
 
     public function tarefas()

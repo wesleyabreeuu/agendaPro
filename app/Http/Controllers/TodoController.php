@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Todo;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class TodoController extends Controller
 {
@@ -19,7 +20,20 @@ class TodoController extends Controller
             ->orderBy('hora')
             ->get();
 
-        return view('todo.index', compact('tarefas', 'dataSelecionada', 'visualizacao'));
+        return Inertia::render('Todo/Index', [
+            'tarefas' => $tarefas->map(fn (Todo $tarefa) => [
+                'id' => $tarefa->id,
+                'data' => $tarefa->data?->format('Y-m-d'),
+                'hora' => $tarefa->hora,
+                'descricao' => $tarefa->descricao,
+                'observacao' => $tarefa->observacao,
+                'urgencia' => $tarefa->urgencia,
+                'status' => $tarefa->status,
+                'concluida' => $tarefa->status === 'finalizado',
+            ])->values()->all(),
+            'dataSelecionada' => $dataSelecionada,
+            'visualizacao' => $visualizacao,
+        ]);
     }
 
     public function store(Request $request)
@@ -28,17 +42,21 @@ class TodoController extends Controller
             'data' => 'required|date',
             'hora' => 'required',
             'descricao' => 'required|string|max:255',
-            'urgencia' => 'required|in:baixa,media,alta',
+            'observacao' => 'nullable|string',
+            'urgencia' => 'required|in:baixa,media,alta,urgente',
         ]);
 
-        // garante status default (se seu banco/model tiver esse campo)
+        $status = $request->boolean('concluida') ? 'finalizado' : 'aguardando';
+
         Todo::create([
             'user_id' => Auth::id(),
             'data' => $request->data,
             'hora' => $request->hora,
             'descricao' => $request->descricao,
+            'observacao' => $request->observacao,
             'urgencia' => $request->urgencia,
-            'status' => 'aguardando', // <-- importante
+            'status' => $status,
+            'finalizado_em' => $status === 'finalizado' ? now() : null,
         ]);
 
         return redirect()
@@ -49,7 +67,17 @@ class TodoController extends Controller
     public function edit($id)
     {
         $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
-        return view('todo.edit', compact('tarefa'));
+        return Inertia::render('Todo/Edit', [
+            'tarefa' => [
+                'id' => $tarefa->id,
+            'data' => $tarefa->data?->format('Y-m-d'),
+            'hora' => $tarefa->hora,
+            'descricao' => $tarefa->descricao,
+            'observacao' => $tarefa->observacao,
+            'urgencia' => $tarefa->urgencia,
+            'status' => $tarefa->status,
+        ],
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -58,17 +86,21 @@ class TodoController extends Controller
             'data' => 'required|date',
             'hora' => 'required',
             'descricao' => 'required|string|max:255',
-            'urgencia' => 'required|in:baixa,media,alta',
+            'observacao' => 'nullable|string',
+            'urgencia' => 'required|in:baixa,media,alta,urgente',
             'status' => 'nullable|in:aguardando,execucao,finalizado', // opcional
         ]);
 
         $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
-        $status = $request->status ?? $tarefa->status;
+        $status = $request->boolean('concluida')
+            ? 'finalizado'
+            : ($request->status ?? $tarefa->status);
 
         $tarefa->update([
             'data' => $request->data,
             'hora' => $request->hora,
             'descricao' => $request->descricao,
+            'observacao' => $request->observacao,
             'urgencia' => $request->urgencia,
             'status' => $status,
             'finalizado_em' => $status === 'finalizado' ? now() : null,

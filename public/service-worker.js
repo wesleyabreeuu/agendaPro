@@ -1,6 +1,7 @@
-const STATIC_CACHE = 'agenda-pro-static-v2';
+const STATIC_CACHE = 'agenda-pro-static-v3';
 const APP_SHELL = [
   '/manifest.json',
+  '/brand/agendapro-mark.svg',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
 ];
@@ -58,6 +59,7 @@ self.addEventListener('fetch', (event) => {
 
   if (
     url.pathname.startsWith('/build/') ||
+    url.pathname.startsWith('/brand/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname === '/manifest.json'
   ) {

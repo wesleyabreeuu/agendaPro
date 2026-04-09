@@ -11,7 +11,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class FinanceiroController extends Controller
 {
@@ -42,7 +43,7 @@ class FinanceiroController extends Controller
         $this->middleware('auth');
     }
 
-    public function dashboard(): View
+    public function dashboard(): Response
     {
         $user = Auth::user();
         $this->garantirCategoriasPadrao($user->id);
@@ -108,25 +109,50 @@ class FinanceiroController extends Controller
         $metasEconomia = $this->carregarMetasEconomia($user->id);
         $metasBens = $this->carregarMetasBens($user->id);
 
-        return view('financeiro.dashboard', compact(
-            'inicio',
-            'fim',
-            'contas',
-            'saldoTotal',
-            'recebimentos',
-            'gastosPagos',
-            'pendencias',
-            'resultado',
-            'despesasPorCategoria',
-            'pendentes',
-            'ultimasTransacoes',
-            'metasEconomia',
-            'metasBens',
-            'financeiroAvancado'
-        ));
+        return Inertia::render('Financeiro/Dashboard', [
+            'filtros' => [
+                'data_inicio' => $inicio->toDateString(),
+                'data_fim' => $fim->toDateString(),
+            ],
+            'resumo' => [
+                'saldo_total' => (float) $saldoTotal,
+                'recebimentos' => (float) $recebimentos,
+                'gastos_pagos' => (float) $gastosPagos,
+                'pendencias' => (float) $pendencias,
+                'resultado' => (float) $resultado,
+            ],
+            'contas' => $contas->map(fn (ContaBancaria $conta) => $this->serializeConta($conta))->values()->all(),
+            'despesasPorCategoria' => $despesasPorCategoria->values()->all(),
+            'pendentes' => $pendentes->map(fn (TransacaoFinanceira $transacao) => $this->serializeTransacao($transacao))->values()->all(),
+            'ultimasTransacoes' => $ultimasTransacoes->map(fn (TransacaoFinanceira $transacao) => $this->serializeTransacao($transacao))->values()->all(),
+            'metasEconomia' => $metasEconomia->map(fn (array $item) => [
+                'meta' => [
+                    'id' => $item['meta']->id,
+                    'titulo' => $item['meta']->titulo,
+                    'descricao' => $item['meta']->descricao,
+                    'valor_alvo' => (float) $item['meta']->valor_alvo,
+                    'valor_atual' => (float) $item['meta']->valor_atual,
+                    'periodicidade' => $item['meta']->periodicidade,
+                    'prazo_final' => $item['meta']->prazo_final?->format('d/m/Y'),
+                ],
+                'analise' => $item['analise'],
+            ])->values()->all(),
+            'metasBens' => $metasBens->map(fn (array $item) => [
+                'meta' => [
+                    'id' => $item['meta']->id,
+                    'nome_bem' => $item['meta']->nome_bem,
+                    'descricao' => $item['meta']->descricao,
+                    'valor_bem' => (float) $item['meta']->valor_bem,
+                    'valor_ja_guardado' => (float) $item['meta']->valor_ja_guardado,
+                    'valor_guardar_mes' => (float) $item['meta']->valor_guardar_mes,
+                ],
+                'analise' => $item['analise'],
+            ])->values()->all(),
+            'financeiroAvancado' => $financeiroAvancado,
+        ]);
     }
 
-    public function transacoes(Request $request): View
+    public function transacoes(Request $request): Response
     {
         $user = Auth::user();
         $this->garantirCategoriasPadrao($user->id);
@@ -185,7 +211,26 @@ class FinanceiroController extends Controller
         ];
         $resumo['resultado'] = $resumo['recebido'] - $resumo['gasto'];
 
-        return view('financeiro.transacoes', compact('transacoes', 'categorias', 'contas', 'resumo', 'financeiroAvancado'));
+        return Inertia::render('Financeiro/Transacoes', [
+            'transacoes' => [
+                'data' => $transacoes->getCollection()->map(fn (TransacaoFinanceira $transacao) => $this->serializeTransacao($transacao))->values()->all(),
+                'current_page' => $transacoes->currentPage(),
+                'last_page' => $transacoes->lastPage(),
+                'per_page' => $transacoes->perPage(),
+                'total' => $transacoes->total(),
+            ],
+            'categorias' => $categorias->map(fn (CategoriaFinanceira $categoria) => $this->serializeCategoria($categoria))->values()->all(),
+            'contas' => $contas->map(fn (ContaBancaria $conta) => $this->serializeConta($conta))->values()->all(),
+            'resumo' => array_map(fn ($value) => (float) $value, $resumo),
+            'filters' => [
+                'tipo' => $request->tipo,
+                'status' => $request->status,
+                'categoria' => $request->categoria,
+                'conta' => $request->conta,
+                'mes' => $request->mes,
+            ],
+            'financeiroAvancado' => $financeiroAvancado,
+        ]);
     }
 
     public function storeTransacao(Request $request)
@@ -201,10 +246,8 @@ class FinanceiroController extends Controller
 
         $data = $this->validateTransacao($request);
 
-        $conta = ContaBancaria::findOrFail($data['conta_bancaria_id']);
-        $categoria = CategoriaFinanceira::findOrFail($data['categoria_financeira_id']);
-        $this->authorizeConta($conta, $user->id);
-        $this->authorizeCategoria($categoria, $user->id);
+        $conta = ContaBancaria::where('user_id', $user->id)->findOrFail($data['conta_bancaria_id']);
+        $categoria = CategoriaFinanceira::where('user_id', $user->id)->findOrFail($data['categoria_financeira_id']);
 
         $status = $this->normalizeStatus($data['tipo'], $data['status'] ?? null);
 
@@ -232,7 +275,7 @@ class FinanceiroController extends Controller
             ->with('success', 'Lançamento salvo com sucesso!');
     }
 
-    public function editTransacao(TransacaoFinanceira $transacao): View
+    public function editTransacao(TransacaoFinanceira $transacao): Response
     {
         $user = Auth::user();
         abort_unless($transacao->user_id === $user->id, 403);
@@ -249,7 +292,12 @@ class FinanceiroController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view('financeiro.edit-transacao', compact('transacao', 'categorias', 'contas'));
+        return Inertia::render('Financeiro/EditTransacao', [
+            'transacao' => $this->serializeTransacaoForm($transacao),
+            'categorias' => $categorias->map(fn (CategoriaFinanceira $categoria) => $this->serializeCategoria($categoria))->values()->all(),
+            'contas' => $contas->map(fn (ContaBancaria $conta) => $this->serializeConta($conta))->values()->all(),
+            'financeiroAvancado' => $this->hasFinanceiroFlowColumns(),
+        ]);
     }
 
     public function updateTransacao(Request $request, TransacaoFinanceira $transacao)
@@ -263,10 +311,8 @@ class FinanceiroController extends Controller
         abort_unless($transacao->user_id === $user->id, 403);
 
         $data = $this->validateTransacao($request);
-        $conta = ContaBancaria::findOrFail($data['conta_bancaria_id']);
-        $categoria = CategoriaFinanceira::findOrFail($data['categoria_financeira_id']);
-        $this->authorizeConta($conta, $user->id);
-        $this->authorizeCategoria($categoria, $user->id);
+        $conta = ContaBancaria::where('user_id', $user->id)->findOrFail($data['conta_bancaria_id']);
+        $categoria = CategoriaFinanceira::where('user_id', $user->id)->findOrFail($data['categoria_financeira_id']);
 
         $contaAnterior = $transacao->conta;
         $impactavaAntes = $this->shouldImpactBalance($transacao->tipo, $transacao->status);
@@ -331,8 +377,7 @@ class FinanceiroController extends Controller
             'data' => 'required|date',
         ]);
 
-        $conta = ContaBancaria::findOrFail($request->conta_bancaria_id);
-        $this->authorizeConta($conta, $user->id);
+        $conta = ContaBancaria::where('user_id', $user->id)->findOrFail($request->conta_bancaria_id);
 
         if ($this->shouldImpactBalance($transacao->tipo, $transacao->status) && $transacao->conta) {
             $this->applyBalanceImpact($transacao->conta, $transacao->tipo, (float) $transacao->valor, true);
@@ -351,7 +396,7 @@ class FinanceiroController extends Controller
             ->with('success', $transacao->tipo === 'receita' ? 'Recebimento confirmado com sucesso!' : 'Pagamento confirmado com sucesso!');
     }
 
-    public function contas(): View
+    public function contas(): Response
     {
         $user = Auth::user();
         $this->garantirContaPadrao($user->id);
@@ -361,7 +406,9 @@ class FinanceiroController extends Controller
             ->orderBy('nome')
             ->get();
 
-        return view('financeiro.contas', compact('contas'));
+        return Inertia::render('Financeiro/Contas', [
+            'contas' => $contas->map(fn (ContaBancaria $conta) => $this->serializeConta($conta))->values()->all(),
+        ]);
     }
 
     public function storeConta(Request $request)
@@ -430,7 +477,7 @@ class FinanceiroController extends Controller
             ->with('success', 'Categoria criada com sucesso!');
     }
 
-    public function relatorios(Request $request): View
+    public function relatorios(Request $request): Response
     {
         $user = Auth::user();
         $this->garantirCategoriasPadrao($user->id);
@@ -509,21 +556,34 @@ class FinanceiroController extends Controller
         $categorias = CategoriaFinanceira::where('user_id', $user->id)->orderBy('tipo')->orderBy('nome')->get();
         $contas = ContaBancaria::where('user_id', $user->id)->where('ativa', true)->orderBy('nome')->get();
 
-        return view('financeiro.relatorios', compact(
-            'transacoes',
-            'totalReceita',
-            'totalDespesa',
-            'totalPendente',
-            'resultado',
-            'ano',
-            'mes',
-            'dadosPorMes',
-            'despesasPorCategoria',
-            'receitasPorCategoria',
-            'categorias',
-            'contas',
-            'financeiroAvancado'
-        ));
+        return Inertia::render('Financeiro/Relatorios', [
+            'transacoes' => $transacoes->map(fn (TransacaoFinanceira $transacao) => $this->serializeTransacao($transacao))->values()->all(),
+            'totais' => [
+                'receita' => (float) $totalReceita,
+                'despesa' => (float) $totalDespesa,
+                'pendente' => (float) $totalPendente,
+                'resultado' => (float) $resultado,
+            ],
+            'filtros' => [
+                'ano' => $ano,
+                'mes' => $mes,
+                'tipo' => $request->tipo,
+                'status' => $request->status,
+                'categoria' => $request->categoria,
+            ],
+            'dadosPorMes' => $dadosPorMes->values()->all(),
+            'despesasPorCategoria' => $despesasPorCategoria->map(fn ($valor, $categoria) => [
+                'categoria' => $categoria,
+                'valor' => (float) $valor,
+            ])->values()->all(),
+            'receitasPorCategoria' => $receitasPorCategoria->map(fn ($valor, $categoria) => [
+                'categoria' => $categoria,
+                'valor' => (float) $valor,
+            ])->values()->all(),
+            'categorias' => $categorias->map(fn (CategoriaFinanceira $categoria) => $this->serializeCategoria($categoria))->values()->all(),
+            'contas' => $contas->map(fn (ContaBancaria $conta) => $this->serializeConta($conta))->values()->all(),
+            'financeiroAvancado' => $financeiroAvancado,
+        ]);
     }
 
     public function storeMetaEconomia(Request $request)
@@ -618,7 +678,7 @@ class FinanceiroController extends Controller
 
     private function validateTransacao(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'tipo' => 'required|in:receita,despesa',
             'status' => 'nullable|in:pendente,pago,recebido',
             'descricao' => 'required|string|max:255',
@@ -632,6 +692,11 @@ class FinanceiroController extends Controller
             'frequencia' => 'nullable|in:diaria,semanal,mensal',
             'observacoes' => 'nullable|string',
         ]);
+
+        ContaBancaria::where('user_id', Auth::id())->findOrFail($data['conta_bancaria_id']);
+        CategoriaFinanceira::where('user_id', Auth::id())->findOrFail($data['categoria_financeira_id']);
+
+        return $data;
     }
 
     private function carregarMetasEconomia(int $userId)
@@ -791,6 +856,69 @@ class FinanceiroController extends Controller
                 '12 meses' => (float) $meta->valor_bem / 12,
                 '6 meses' => (float) $meta->valor_bem / 6,
             ],
+        ];
+    }
+
+    private function serializeConta(ContaBancaria $conta): array
+    {
+        return [
+            'id' => $conta->id,
+            'nome' => $conta->nome,
+            'instituicao' => $conta->instituicao,
+            'tipo' => $conta->tipo,
+            'saldo_inicial' => (float) $conta->saldo_inicial,
+            'saldo_atual' => (float) $conta->saldo_atual,
+            'ativa' => (bool) $conta->ativa,
+        ];
+    }
+
+    private function serializeCategoria(CategoriaFinanceira $categoria): array
+    {
+        return [
+            'id' => $categoria->id,
+            'tipo' => $categoria->tipo,
+            'nome' => $categoria->nome,
+            'icone' => $categoria->icone,
+            'cor' => $categoria->cor,
+        ];
+    }
+
+    private function serializeTransacao(TransacaoFinanceira $transacao): array
+    {
+        return [
+            'id' => $transacao->id,
+            'tipo' => $transacao->tipo,
+            'status' => $transacao->status,
+            'forma_pagamento' => $transacao->forma_pagamento,
+            'descricao' => $transacao->descricao,
+            'complemento' => $transacao->complemento,
+            'valor' => (float) $transacao->valor,
+            'data' => $transacao->data?->format('d/m/Y'),
+            'data_iso' => $transacao->data?->toDateString(),
+            'recorrente' => (bool) $transacao->recorrente,
+            'frequencia' => $transacao->frequencia,
+            'observacoes' => $transacao->observacoes,
+            'categoria' => $transacao->categoria ? $this->serializeCategoria($transacao->categoria) : null,
+            'conta' => $transacao->conta ? $this->serializeConta($transacao->conta) : null,
+        ];
+    }
+
+    private function serializeTransacaoForm(TransacaoFinanceira $transacao): array
+    {
+        return [
+            'id' => $transacao->id,
+            'tipo' => $transacao->tipo,
+            'status' => $transacao->status,
+            'forma_pagamento' => $transacao->forma_pagamento,
+            'descricao' => $transacao->descricao,
+            'complemento' => $transacao->complemento,
+            'valor' => (float) $transacao->valor,
+            'categoria_financeira_id' => $transacao->categoria_financeira_id,
+            'conta_bancaria_id' => $transacao->conta_bancaria_id,
+            'data' => $transacao->data?->toDateString(),
+            'recorrente' => (bool) $transacao->recorrente,
+            'frequencia' => $transacao->frequencia,
+            'observacoes' => $transacao->observacoes,
         ];
     }
 }

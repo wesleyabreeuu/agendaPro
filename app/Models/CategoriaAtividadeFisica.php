@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class CategoriaAtividadeFisica extends Model
@@ -12,6 +13,7 @@ class CategoriaAtividadeFisica extends Model
     protected $table = 'categoria_atividade_fisica';
 
     protected $fillable = [
+        'user_id',
         'nome',
         'icone',
         'cor',
@@ -26,6 +28,11 @@ class CategoriaAtividadeFisica extends Model
         'caloria_intensa' => 'decimal:2',
     ];
 
+    public function scopeOwnedBy(Builder $query, ?int $userId): Builder
+    {
+        return $query->where('user_id', $userId);
+    }
+
     public function atividades()
     {
         return $this->hasMany(AtividadeFisica::class, 'categoria_atividade_fisica_id');
@@ -38,5 +45,10 @@ class CategoriaAtividadeFisica extends Model
             'intensa' => $this->caloria_intensa,
             default => $this->caloria_moderada,
         };
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\File;
 
 class User extends Authenticatable
 {
@@ -23,6 +24,11 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'telefone',
+        'endereco',
+        'foto_path',
+        'is_admin',
+        'regra_id',
         'password',
         'strava_athlete_id',
         'strava_access_token',
@@ -52,6 +58,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
             'strava_token_expires_at' => 'datetime',
             'strava_connected_at' => 'datetime',
         ];
@@ -82,5 +89,54 @@ class User extends Authenticatable
         return !empty($this->strava_athlete_id)
             && !empty($this->strava_access_token)
             && !empty($this->strava_refresh_token);
+    }
+
+    public function regra()
+    {
+        return $this->belongsTo(Regra::class, 'regra_id');
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
+    }
+
+    public function hasModuleAccess(string $module): bool
+    {
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        $regra = $this->regra;
+        if (!$regra) {
+            return false;
+        }
+
+        return match ($module) {
+            'compromissos' => (bool) $regra->acesso_compromissos,
+            'dia_a_dia' => (bool) $regra->acesso_dia_a_dia,
+            'projetos' => (bool) $regra->acesso_projetos,
+            'financeiro' => (bool) $regra->acesso_financeiro,
+            'saude' => (bool) $regra->acesso_saude,
+            default => false,
+        };
+    }
+
+    public function profileImageUrl(): string
+    {
+        if (!empty($this->foto_path) && File::exists(public_path($this->foto_path))) {
+            return asset($this->foto_path);
+        }
+
+        return asset('favicon.ico');
+    }
+
+    public function profileRoleLabel(): string
+    {
+        if ($this->isAdmin()) {
+            return 'Administrador';
+        }
+
+        return $this->regra?->nome ? 'Plano ' . $this->regra->nome : 'Usuário';
     }
 }

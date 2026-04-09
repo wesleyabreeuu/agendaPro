@@ -4,27 +4,44 @@ namespace App\Http\Controllers;
 
 use App\Models\Categoria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class CategoriaController extends Controller
 {
     public function index()
     {
-        $categorias = Categoria::all();
-        return view('categorias.index', compact('categorias'));
+        $categorias = Categoria::ownedBy(Auth::id())
+            ->orderBy('nome')
+            ->get();
+        return Inertia::render('Categorias/Index', [
+            'categorias' => $categorias,
+        ]);
     }
 
     public function create()
     {
-        return view('categorias.crud');
+        return Inertia::render('Categorias/Form');
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required|string|max:100|unique:categorias,nome',
+            'nome' => 'required|string|max:100',
         ]);
 
+        $exists = Categoria::ownedBy(Auth::id())
+            ->where('nome', $request->nome)
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withErrors(['nome' => 'Você já possui uma categoria com esse nome.'])
+                ->withInput();
+        }
+
         Categoria::create([
+            'user_id' => Auth::id(),
             'nome' => $request->nome,
         ]);
 
@@ -38,17 +55,30 @@ class CategoriaController extends Controller
 
     public function edit($id)
     {
-        $categoria = Categoria::findOrFail($id);
-        return view('categorias.edit', compact('categoria'));
+        $categoria = Categoria::ownedBy(Auth::id())->findOrFail($id);
+        return Inertia::render('Categorias/Form', [
+            'categoria' => $categoria,
+        ]);
     }
 
     public function update(Request $request, $id)
     {
-        $categoria = Categoria::findOrFail($id);
+        $categoria = Categoria::ownedBy(Auth::id())->findOrFail($id);
 
         $request->validate([
-            'nome' => 'required|string|max:100|unique:categorias,nome,' . $categoria->id,
+            'nome' => 'required|string|max:100',
         ]);
+
+        $exists = Categoria::ownedBy(Auth::id())
+            ->where('nome', $request->nome)
+            ->where('id', '!=', $categoria->id)
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withErrors(['nome' => 'Você já possui uma categoria com esse nome.'])
+                ->withInput();
+        }
 
         $categoria->update([
             'nome' => $request->nome,
@@ -59,7 +89,7 @@ class CategoriaController extends Controller
 
     public function destroy($id)
     {
-        $categoria = Categoria::findOrFail($id);
+        $categoria = Categoria::ownedBy(Auth::id())->findOrFail($id);
         $categoria->delete();
 
         return redirect()->route('categorias.index')->with('success', 'Categoria removida com sucesso!');

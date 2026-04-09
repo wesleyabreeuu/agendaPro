@@ -2,140 +2,151 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Lembrete;
 use App\Models\Compromisso;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use App\Models\Lembrete;
 use App\Services\WhatsAppService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class LembreteController extends Controller
 {
     public function index()
     {
         $lembretes = Lembrete::with('compromisso')
-            ->whereHas('compromisso', function ($query) {
-                $query->where('usuarios_id', Auth::id());
-            })
+            ->ownedBy(Auth::id())
             ->orderByDesc('created_at')
             ->get();
 
-        $proximos = Lembrete::with('compromisso')
-            ->whereNull('notificado_em')
-            ->whereHas('compromisso', function ($query) {
-                $query->where('usuarios_id', Auth::id())
-                    ->where('data_inicio', '>=', now()->subDay());
-            })
-            ->get()
-            ->sortBy(function (Lembrete $lembrete) {
-                return Carbon::parse($lembrete->compromisso->data_inicio)->subMinutes($lembrete->minutos_antes);
-            })
-            ->take(5);
+        $proximos = $lembretes
+            ->filter(fn (Lembrete $lembrete) => $lembrete->ativo && $lembrete->momento_disparo)
+            ->sortBy(fn (Lembrete $lembrete) => $lembrete->momento_disparo)
+            ->take(5)
+            ->values();
 
-        return view('lembretes.index', compact('lembretes', 'proximos'));
+        return Inertia::render('Lembretes/Index', [
+            'lembretes' => $lembretes->map(fn (Lembrete $lembrete) => [
+                'id' => $lembrete->id,
+                'titulo_exibicao' => $lembrete->titulo_exibicao,
+                'descricao_exibicao' => $lembrete->descricao_exibicao,
+                'categoria' => $lembrete->categoria,
+                'origem' => $lembrete->compromisso_id ? 'Compromisso' : 'Personalizado',
+                'recorrencia' => $lembrete->recorrencia ? ucfirst(str_replace('_', ' ', $lembrete->recorrencia)) : null,
+                'momento_disparo' => optional($lembrete->momento_disparo)?->format('d/m/Y H:i'),
+                'ativo' => $lembrete->ativo,
+            ])->values()->all(),
+            'proximos' => $proximos->map(fn (Lembrete $lembrete) => [
+                'id' => $lembrete->id,
+                'titulo_exibicao' => $lembrete->titulo_exibicao,
+                'descricao_exibicao' => $lembrete->descricao_exibicao,
+                'momento_disparo' => optional($lembrete->momento_disparo)?->format('d/m/Y H:i'),
+            ])->values()->all(),
+        ]);
     }
 
     public function create()
     {
-        $compromissos = Compromisso::where('usuarios_id', Auth::id())
-            ->orderBy('data_inicio')
-            ->get();
-        return view('lembretes.crud', compact('compromissos'));
+        $compromissos = $this->compromissosDoUsuario();
+        $diasSemana = $this->diasSemana();
+
+        return Inertia::render('Lembretes/Form', [
+            'compromissos' => $compromissos->map(fn (Compromisso $compromisso) => [
+                'id' => $compromisso->id,
+                'label' => $compromisso->titulo . ' - ' . optional($compromisso->data_inicio)->format('d/m/Y H:i'),
+            ])->values()->all(),
+            'diasSemana' => $diasSemana,
+        ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'compromisso_id' => 'required|exists:compromissos,id',
-            'minutos_antes' => 'required|integer|min:1',
-        ]);
+        $payload = $this->validatedPayload($request);
 
-        $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($request->compromisso_id);
+        Lembrete::create($payload);
 
-        Lembrete::create([
-            'compromisso_id' => $compromisso->id,
-            'minutos_antes' => $request->minutos_antes,
-            'notificado_em' => null,
-        ]);
-
-        return redirect()->route('lembretes.index')->with('success', 'Lembrete criado com sucesso!');
+        return redirect()
+            ->route('lembretes.index')
+            ->with('success', 'Lembrete criado com sucesso.');
     }
 
     public function edit($id)
     {
-        $lembrete = Lembrete::whereHas('compromisso', function ($query) {
-            $query->where('usuarios_id', Auth::id());
-        })->findOrFail($id);
+        $lembrete = Lembrete::ownedBy(Auth::id())->findOrFail($id);
+        $compromissos = $this->compromissosDoUsuario();
+        $diasSemana = $this->diasSemana();
 
-        $compromissos = Compromisso::where('usuarios_id', Auth::id())
-            ->orderBy('data_inicio')
-            ->get();
-
-        return view('lembretes.crud', compact('lembrete', 'compromissos'));
+        return Inertia::render('Lembretes/Form', [
+            'lembrete' => [
+                'id' => $lembrete->id,
+                'tipo' => $lembrete->tipo,
+                'compromisso_id' => $lembrete->compromisso_id,
+                'titulo' => $lembrete->titulo,
+                'descricao' => $lembrete->descricao,
+                'categoria' => $lembrete->categoria,
+                'inicio_em' => $lembrete->inicio_em?->format('Y-m-d\TH:i'),
+                'minutos_antes' => $lembrete->minutos_antes,
+                'recorrencia' => $lembrete->recorrencia,
+                'intervalo_recorrencia' => $lembrete->intervalo_recorrencia,
+                'dias_semana' => $lembrete->dias_semana ?? [],
+                'fim_recorrencia_em' => $lembrete->fim_recorrencia_em?->format('Y-m-d'),
+                'ativo' => $lembrete->ativo,
+            ],
+            'compromissos' => $compromissos->map(fn (Compromisso $compromisso) => [
+                'id' => $compromisso->id,
+                'label' => $compromisso->titulo . ' - ' . optional($compromisso->data_inicio)->format('d/m/Y H:i'),
+            ])->values()->all(),
+            'diasSemana' => $diasSemana,
+        ]);
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'compromisso_id' => 'required|exists:compromissos,id',
-            'minutos_antes' => 'required|integer|min:1',
-        ]);
+        $lembrete = Lembrete::ownedBy(Auth::id())->findOrFail($id);
+        $payload = $this->validatedPayload($request, $lembrete);
 
-        $lembrete = Lembrete::whereHas('compromisso', function ($query) {
-            $query->where('usuarios_id', Auth::id());
-        })->findOrFail($id);
+        $lembrete->update($payload);
 
-        $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($request->compromisso_id);
-
-        $lembrete->update([
-            'compromisso_id' => $compromisso->id,
-            'minutos_antes' => $request->minutos_antes,
-            'notificado_em' => null,
-        ]);
-
-        return redirect()->route('lembretes.index')->with('success', 'Lembrete atualizado com sucesso!');
+        return redirect()
+            ->route('lembretes.index')
+            ->with('success', 'Lembrete atualizado com sucesso.');
     }
 
     public function destroy($id)
     {
-        $lembrete = Lembrete::whereHas('compromisso', function ($query) {
-            $query->where('usuarios_id', Auth::id());
-        })->findOrFail($id);
-
+        $lembrete = Lembrete::ownedBy(Auth::id())->findOrFail($id);
         $lembrete->delete();
-        return redirect()->route('lembretes.index')->with('success', 'Lembrete removido com sucesso!');
+
+        return redirect()
+            ->route('lembretes.index')
+            ->with('success', 'Lembrete removido com sucesso.');
     }
 
     public function enviarWhatsApp($id)
     {
         $lembrete = Lembrete::with('compromisso')
-            ->whereHas('compromisso', function ($query) {
-                $query->where('usuarios_id', Auth::id());
-            })
+            ->ownedBy(Auth::id())
             ->findOrFail($id);
-        $compromisso = $lembrete->compromisso;
 
+        $compromisso = $lembrete->compromisso;
         if (!$compromisso || !$compromisso->telefone) {
-            return back()->with('error', 'Compromisso sem telefone cadastrado.');
+            return back()->with('error', 'Este lembrete nao possui telefone vinculado.');
         }
 
         $telefone = $compromisso->telefone;
-
-        $data = \Carbon\Carbon::parse($compromisso->data_inicio)->format('d/m/Y H:i');
-        $mensagem = "Olá! Lembrete: seu compromisso '{$compromisso->titulo}' está agendado para {$data}.";
-
-        \Log::info("Enviando mensagem para {$telefone}: {$mensagem}");
+        $quando = optional($lembrete->momento_disparo)?->format('d/m/Y H:i') ?? now()->format('d/m/Y H:i');
+        $mensagem = "Lembrete: {$lembrete->titulo_exibicao}. Programado para {$quando}.";
 
         $whatsapp = new WhatsAppService();
         $resultado = $whatsapp->enviarMensagem($telefone, $mensagem);
+        $sucesso = (bool) ($resultado['ok'] ?? false);
 
-        if ($resultado) {
-            return back()->with('success', 'Mensagem enviada via WhatsApp!');
-        } else {
-            return back()->with('error', 'Falha ao enviar mensagem WhatsApp.');
-        }
+        return back()->with(
+            $sucesso ? 'success' : 'error',
+            $sucesso ? 'Mensagem enviada via WhatsApp.' : 'Falha ao enviar mensagem via WhatsApp. Verifique se o número está correto e possui conta ativa.'
+        );
     }
 
     public function due(): JsonResponse
@@ -143,19 +154,22 @@ class LembreteController extends Controller
         $now = now();
 
         $lembretes = Lembrete::with('compromisso')
-            ->whereNull('notificado_em')
-            ->whereHas('compromisso', function ($query) {
-                $query->where('usuarios_id', Auth::id());
-            })
+            ->ownedBy(Auth::id())
+            ->where('ativo', true)
             ->get()
             ->filter(function (Lembrete $lembrete) use ($now) {
-                if (!$lembrete->compromisso || !$lembrete->compromisso->data_inicio) {
+                $momento = $lembrete->momento_disparo;
+
+                if (!$momento) {
                     return false;
                 }
 
-                return Carbon::parse($lembrete->compromisso->data_inicio)
-                    ->subMinutes($lembrete->minutos_antes)
-                    ->lessThanOrEqualTo($now);
+                if ($lembrete->isStandalone()) {
+                    return $momento->lessThanOrEqualTo($now);
+                }
+
+                return is_null($lembrete->notificado_em)
+                    && $momento->lessThanOrEqualTo($now);
             })
             ->values();
 
@@ -163,22 +177,206 @@ class LembreteController extends Controller
             return response()->json([]);
         }
 
-        Lembrete::whereIn('id', $lembretes->pluck('id'))
-            ->update(['notificado_em' => $now]);
+        foreach ($lembretes as $lembrete) {
+            if ($lembrete->isStandalone()) {
+                $this->advanceStandaloneReminder($lembrete, $now);
+                continue;
+            }
+
+            $lembrete->update([
+                'notificado_em' => $now,
+                'ultima_execucao_em' => $now,
+            ]);
+        }
 
         return response()->json($lembretes->map(function (Lembrete $lembrete) {
-            $compromisso = $lembrete->compromisso;
-            $inicio = Carbon::parse($compromisso->data_inicio)->format('d/m/Y H:i');
+            $momento = $lembrete->momento_disparo;
+            $mensagemBase = $lembrete->descricao_exibicao
+                ?: 'Seu lembrete esta programado para agora.';
 
             return [
                 'id' => $lembrete->id,
-                'titulo' => $compromisso->titulo,
-                'mensagem' => "Seu compromisso \"{$compromisso->titulo}\" começa em breve.",
-                'quando' => $inicio,
-                'url' => route('compromissos.edit', $compromisso->id),
+                'titulo' => $lembrete->titulo_exibicao,
+                'mensagem' => $mensagemBase,
+                'quando' => $momento ? $momento->format('d/m/Y H:i') : now()->format('d/m/Y H:i'),
+                'url' => $lembrete->compromisso_id
+                    ? route('compromissos.edit', $lembrete->compromisso_id)
+                    : route('lembretes.edit', $lembrete->id),
             ];
         })->values());
     }
 
+    private function validatedPayload(Request $request, ?Lembrete $lembrete = null): array
+    {
+        $validated = $request->validate([
+            'tipo' => 'required|in:compromisso,personalizado',
+            'compromisso_id' => 'nullable|integer',
+            'titulo' => 'nullable|string|max:255',
+            'descricao' => 'nullable|string|max:1000',
+            'categoria' => 'nullable|string|max:100',
+            'inicio_em' => 'nullable|date',
+            'minutos_antes' => 'nullable|integer|min:0|max:10080',
+            'recorrencia' => 'nullable|in:diaria,semanal,mensal,dias_semana',
+            'intervalo_recorrencia' => 'nullable|integer|min:1|max:365',
+            'dias_semana' => 'nullable|array',
+            'dias_semana.*' => 'integer|between:0,6',
+            'fim_recorrencia_em' => 'nullable|date',
+            'ativo' => 'nullable|boolean',
+        ]);
 
+        $tipo = $validated['tipo'];
+        if ($tipo === 'compromisso') {
+            if (empty($validated['compromisso_id'])) {
+                throw ValidationException::withMessages([
+                    'compromisso_id' => 'Selecione um compromisso para esse tipo de lembrete.',
+                ]);
+            }
+
+            $compromisso = Compromisso::where('usuarios_id', Auth::id())
+                ->findOrFail($validated['compromisso_id'] ?? 0);
+
+            return [
+                'user_id' => Auth::id(),
+                'tipo' => 'compromisso',
+                'compromisso_id' => $compromisso->id,
+                'titulo' => $compromisso->titulo,
+                'descricao' => $compromisso->descricao,
+                'categoria' => 'agenda',
+                'inicio_em' => $compromisso->data_inicio,
+                'proxima_execucao_em' => null,
+                'recorrencia' => null,
+                'intervalo_recorrencia' => null,
+                'dias_semana' => null,
+                'fim_recorrencia_em' => null,
+                'ativo' => $request->boolean('ativo', true),
+                'minutos_antes' => (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 15)),
+                'notificado_em' => null,
+                'ultima_execucao_em' => null,
+            ];
+        }
+
+        if (empty($validated['titulo'])) {
+            throw ValidationException::withMessages([
+                'titulo' => 'Informe um titulo para o lembrete personalizado.',
+            ]);
+        }
+
+        if (empty($validated['inicio_em'])) {
+            throw ValidationException::withMessages([
+                'inicio_em' => 'Informe data e horario para o lembrete personalizado.',
+            ]);
+        }
+
+        $inicio = Carbon::parse($validated['inicio_em'] ?? now());
+        $recorrencia = $validated['recorrencia'] ?? null;
+
+        return [
+            'user_id' => Auth::id(),
+            'tipo' => 'personalizado',
+            'compromisso_id' => null,
+            'titulo' => $validated['titulo'] ?: 'Lembrete personalizado',
+            'descricao' => $validated['descricao'] ?? null,
+            'categoria' => $validated['categoria'] ?? 'pessoal',
+            'inicio_em' => $inicio,
+            'proxima_execucao_em' => $lembrete?->isStandalone() && $lembrete->proxima_execucao_em
+                ? $inicio->copy()
+                : $inicio->copy(),
+            'recorrencia' => $recorrencia,
+            'intervalo_recorrencia' => $recorrencia ? (int) ($validated['intervalo_recorrencia'] ?? 1) : null,
+            'dias_semana' => $recorrencia === 'dias_semana'
+                ? collect($validated['dias_semana'] ?? [])->map(fn ($dia) => (int) $dia)->sort()->values()->all()
+                : null,
+            'fim_recorrencia_em' => $validated['fim_recorrencia_em'] ?? null,
+            'ativo' => $request->boolean('ativo', true),
+            'minutos_antes' => 0,
+            'notificado_em' => null,
+            'ultima_execucao_em' => null,
+        ];
+    }
+
+    private function advanceStandaloneReminder(Lembrete $lembrete, Carbon $now): void
+    {
+        $proximaExecucao = $this->calculateNextExecution($lembrete);
+
+        $lembrete->update([
+            'notificado_em' => $now,
+            'ultima_execucao_em' => $now,
+            'proxima_execucao_em' => $proximaExecucao,
+            'ativo' => !is_null($proximaExecucao),
+        ]);
+    }
+
+    private function calculateNextExecution(Lembrete $lembrete): ?Carbon
+    {
+        $base = $lembrete->proxima_execucao_em
+            ? Carbon::parse($lembrete->proxima_execucao_em)
+            : Carbon::parse($lembrete->inicio_em);
+
+        if (!$lembrete->recorrencia) {
+            return null;
+        }
+
+        $intervalo = max((int) ($lembrete->intervalo_recorrencia ?? 1), 1);
+        $proxima = match ($lembrete->recorrencia) {
+            'diaria' => $base->copy()->addDays($intervalo),
+            'semanal' => $base->copy()->addWeeks($intervalo),
+            'mensal' => $base->copy()->addMonthsNoOverflow($intervalo),
+            'dias_semana' => $this->nextWeekdayOccurrence($base, $lembrete->dias_semana ?? []),
+            default => null,
+        };
+
+        if (!$proxima) {
+            return null;
+        }
+
+        if ($lembrete->fim_recorrencia_em && $proxima->greaterThan($lembrete->fim_recorrencia_em->copy()->endOfDay())) {
+            return null;
+        }
+
+        return $proxima;
+    }
+
+    private function nextWeekdayOccurrence(Carbon $base, array $weekdays): ?Carbon
+    {
+        $dias = collect($weekdays)
+            ->map(fn ($dia) => (int) $dia)
+            ->unique()
+            ->sort()
+            ->values();
+
+        if ($dias->isEmpty()) {
+            return null;
+        }
+
+        $cursor = $base->copy()->addDay();
+        for ($i = 0; $i < 14; $i++) {
+            if ($dias->contains($cursor->dayOfWeek)) {
+                return $cursor;
+            }
+
+            $cursor->addDay();
+        }
+
+        return null;
+    }
+
+    private function compromissosDoUsuario()
+    {
+        return Compromisso::where('usuarios_id', Auth::id())
+            ->orderBy('data_inicio')
+            ->get();
+    }
+
+    private function diasSemana(): array
+    {
+        return [
+            0 => 'Domingo',
+            1 => 'Segunda',
+            2 => 'Terca',
+            3 => 'Quarta',
+            4 => 'Quinta',
+            5 => 'Sexta',
+            6 => 'Sabado',
+        ];
+    }
 }

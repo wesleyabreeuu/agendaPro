@@ -7,6 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "inertiajs/inertia-laravel": "^3.0",
         "jeroennoten/laravel-adminlte": "^3.15",
         "ladumor/laravel-pwa": "^0.0.5",
         "laravel/framework": "^12.0",

@@ -137,9 +137,9 @@ return [
     'usermenu_enabled' => true,
     'usermenu_header' => false,
     'usermenu_header_class' => 'bg-primary',
-    'usermenu_image' => false,
-    'usermenu_desc' => false,
-    'usermenu_profile_url' => false,
+    'usermenu_image' => true,
+    'usermenu_desc' => true,
+    'usermenu_profile_url' => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -317,65 +317,100 @@ return [
             'text' => 'search',
         ],
         [
-            'text' => 'blog',
-            'url' => 'admin/blog',
-            'can' => 'manage-blog',
-        ],
-
-        [
-            'text' => ' Usuarios',
+            'text' => ' Meu Perfil',
             'url' => '/usuarios',
             'icon' => 'fas fa-fw fa-user',
             'active' => ['usuario*']
         ],
         [
-            'text' => ' Categorias',
-            'url' => '/categorias',
-            'icon' => 'far fa-keyboard',
-            'active' => ['categoria*']
-        ],
-        [
             'text' => ' Compromissos',
-            'url' => '/compromissos',
             'icon' => 'fas fa-fw fa-calendar-alt',
-            'active' => ['compromisso*']
+            'can' => 'access-compromissos',
+            'submenu' => [
+                [
+                    'text' => 'Compromissos',
+                    'route' => 'compromissos.index',
+                    'icon' => 'fas fa-calendar-check',
+                ],
+                [
+                    'text' => 'Categorias',
+                    'route' => 'categorias.index',
+                    'icon' => 'fas fa-tags',
+                ],
+                [
+                    'text' => 'Lembretes',
+                    'route' => 'lembretes.index',
+                    'icon' => 'fas fa-bell',
+                ],
+            ],
         ],
         [
-            'text' => ' Lembretes',
-            'url' => '/lembretes',
-            'icon' => 'fas fa-fw fa-bell',
-            'active' => ['lembrete*']
+            'text' => ' Dia a dia',
+            'icon' => 'fas fa-fw fa-spa',
+            'can' => 'access-dia-a-dia',
+            'submenu' => [
+                [
+                    'text' => 'Todo list',
+                    'route' => 'todo.index',
+                    'icon' => 'fas fa-list-check',
+                ],
+                [
+                    'text' => 'Check-in Diário',
+                    'route' => 'checkins.index',
+                    'icon' => 'fas fa-spa',
+                ],
+                [
+                    'text' => 'Calendário',
+                    'route' => 'compromissos.calendario',
+                    'icon' => 'fas fa-calendar-week',
+                    'can' => 'access-compromissos',
+                ],
+            ],
         ],
         [
-            'text' => 'ToDo',
-            'route' => 'todo.index',
-            'icon' => 'fas fa-tasks',
-        ],
-        [
-            'text' => ' Kanban',
-            'route' => 'kanban.index',
+            'text' => ' Projetos',
             'icon' => 'fas fa-fw fa-columns',
-            'active' => ['kanban*']
-        ],
-
-        [
-            'text' => 'Calendário',
-            'route' => 'compromissos.calendario',
-            'icon' => 'fas fa-calendar-alt',
+            'can' => 'access-projetos',
+            'submenu' => [
+                [
+                    'text' => 'Kanban',
+                    'route' => 'kanban.index',
+                    'icon' => 'fas fa-columns',
+                ],
+            ],
         ],
 
         [
             'text' => ' Controle Financeiro',
             'route' => 'financeiro.dashboard',
             'icon' => 'fas fa-fw fa-chart-bar',
+            'can' => 'access-financeiro',
             'active' => ['financeiro*']
         ],
 
         [
-            'text' => ' Saúde & Fitness',
+            'text' => ' Saúde e Fitness',
             'route' => 'saude.dashboard',
             'icon' => 'fas fa-fw fa-heartbeat',
+            'can' => 'access-saude',
             'active' => ['saude*']
+        ],
+        [
+            'text' => ' Administração',
+            'icon' => 'fas fa-fw fa-user-shield',
+            'can' => 'admin-only',
+            'submenu' => [
+                [
+                    'text' => 'Regras',
+                    'route' => 'regras.index',
+                    'icon' => 'fas fa-sliders-h',
+                ],
+                [
+                    'text' => 'Permissões',
+                    'route' => 'permissoes.index',
+                    'icon' => 'fas fa-user-lock',
+                ],
+            ],
         ],
 
     ],

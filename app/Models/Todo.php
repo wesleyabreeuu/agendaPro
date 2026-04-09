@@ -17,6 +17,7 @@ class Todo extends Model
         'data',
         'hora',
         'descricao',
+        'observacao',
         'urgencia',
         'status',
         'finalizado_em',
@@ -29,9 +30,6 @@ class Todo extends Model
 
     public function scopeOwnedBy(Builder $query, ?int $userId): Builder
     {
-        return $query->where(function (Builder $builder) use ($userId) {
-            $builder->where('user_id', $userId)
-                ->orWhereNull('user_id');
-        });
+        return $query->where('user_id', $userId);
     }
 }
