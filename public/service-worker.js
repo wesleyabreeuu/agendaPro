@@ -85,5 +85,43 @@ self.addEventListener('notificationclick', (event) => {
     ? event.notification.data.url
     : '/home';
 
-  event.waitUntil(clients.openWindow(targetUrl));
+  event.waitUntil((async () => {
+    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const existingClient = allClients.find((client) => client.url.includes(self.location.origin));
+
+    if (existingClient) {
+      existingClient.focus();
+      existingClient.navigate(targetUrl);
+      return;
+    }
+
+    await clients.openWindow(targetUrl);
+  })());
+});
+
+self.addEventListener('push', (event) => {
+  if (!event.data) {
+    return;
+  }
+
+  let payload = {};
+
+  try {
+    payload = event.data.json();
+  } catch (error) {
+    payload = {
+      titulo: 'AgendaPro',
+      mensagem: event.data.text(),
+    };
+  }
+
+  event.waitUntil(self.registration.showNotification(payload.titulo || 'AgendaPro', {
+    body: payload.mensagem || 'Voce tem um novo lembrete.',
+    icon: payload.icon || '/icons/icon-192x192.png',
+    badge: payload.badge || '/icons/icon-192x192.png',
+    tag: payload.tag || 'agendapro-lembrete',
+    data: {
+      url: payload.url || '/home',
+    },
+  }));
 });

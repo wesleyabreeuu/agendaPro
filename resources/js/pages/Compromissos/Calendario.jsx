@@ -67,6 +67,12 @@ function eventTone(tipo) {
   return 'border-blue-200 bg-blue-50 text-blue-700'
 }
 
+function permissionTone(permissao) {
+  if (permissao === 'owner') return 'border-blue-200 bg-blue-50 text-blue-700'
+  if (permissao === 'editar') return 'border-violet-200 bg-violet-50 text-violet-700'
+  return 'border-amber-200 bg-amber-50 text-amber-700'
+}
+
 export default function CompromissosCalendario() {
   const [currentDate, setCurrentDate] = useState(startOfMonth(new Date()))
   const [viewMode, setViewMode] = useState('month')
@@ -213,10 +219,16 @@ export default function CompromissosCalendario() {
                         <a
                           key={evento.id}
                           href={evento.extendedProps?.editUrl || '#'}
-                          className={`block rounded-xl border px-3 py-2 text-xs ${eventTone(evento.extendedProps?.tipo)}`}
+                          onClick={(e) => {
+                            if (!evento.extendedProps?.editUrl) {
+                              e.preventDefault()
+                            }
+                          }}
+                          className={`block rounded-xl border px-3 py-2 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao) : eventTone(evento.extendedProps?.tipo)}`}
                         >
                           <div className="font-medium">{evento.title}</div>
                           <div className="mt-1 opacity-80">{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</div>
+                          {evento.extendedProps?.owner ? <div className="mt-1 opacity-70">Owner: {evento.extendedProps.owner}</div> : null}
                         </a>
                       ))}
 
@@ -252,19 +264,25 @@ export default function CompromissosCalendario() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className={`rounded-full border px-2.5 py-1 text-xs ${eventTone(evento.extendedProps?.tipo)}`}>
+                            <span className={`rounded-full border px-2.5 py-1 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao) : eventTone(evento.extendedProps?.tipo)}`}>
                               {evento.extendedProps?.tipo === 'todo' ? 'Tarefa' : 'Compromisso'}
                             </span>
+                            {evento.extendedProps?.permissao ? <span className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-600">{evento.extendedProps.permissao}</span> : null}
                             <span className="text-xs text-zinc-500">{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</span>
                           </div>
                           <h4 className="mt-2 text-base font-semibold text-zinc-950">{evento.title}</h4>
+                          {evento.extendedProps?.owner ? <p className="mt-1 text-sm text-zinc-500">Owner: {evento.extendedProps.owner}</p> : null}
                           {evento.extendedProps?.descricao ? <p className="mt-1 text-sm text-zinc-600">{evento.extendedProps.descricao}</p> : null}
                         </div>
                         {evento.extendedProps?.editUrl ? (
                           <a href={evento.extendedProps.editUrl} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 shadow-sm">
                             Editar
                           </a>
-                        ) : null}
+                        ) : (
+                          <span className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-400 shadow-sm">
+                            Somente leitura
+                          </span>
+                        )}
                       </div>
                     </div>
                   )) : (

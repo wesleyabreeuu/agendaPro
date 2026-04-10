@@ -1,9 +1,150 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import { Input, Select, Textarea } from '../../components/ui'
 
-export default function CompromissosForm({ modo = 'create', compromisso = null, categorias = [], leadTimeOptions = [], errors = {} }) {
+function ShareEditor({ compromisso, usuarios, processing }) {
+  const [selectedUserId, setSelectedUserId] = useState('')
+  const [permission, setPermission] = useState('visualizar')
+  const [saving, setSaving] = useState(false)
+  const [localItems, setLocalItems] = useState(compromisso?.compartilhado_com || [])
+
+  const availableUsers = useMemo(
+    () => usuarios.filter((usuario) => !localItems.some((item) => item.usuario_id === usuario.id)),
+    [usuarios, localItems]
+  )
+
+  const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+
+  const addShare = async () => {
+    if (!selectedUserId) return
+    setSaving(true)
+
+    try {
+      const response = await fetch(`/api/compromissos/${compromisso.id}/compartilhar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrf(),
+          Accept: 'application/json',
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({ usuario_id: Number(selectedUserId), permissao: permission }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Falha ao compartilhar compromisso.')
+      }
+
+      const selectedUser = usuarios.find((usuario) => usuario.id === Number(selectedUserId))
+      setLocalItems((current) => [
+        ...current.filter((item) => item.usuario_id !== Number(selectedUserId)),
+        {
+          usuario_id: Number(selectedUserId),
+          nome: selectedUser?.name || 'Usuário',
+          email: selectedUser?.email || '',
+          permissao: permission,
+        },
+      ])
+      setSelectedUserId('')
+      setPermission('visualizar')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const removeShare = async (usuarioId) => {
+    setSaving(true)
+
+    try {
+      const response = await fetch(`/api/compromissos/${compromisso.id}/compartilhar/${usuarioId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': csrf(),
+          Accept: 'application/json',
+        },
+        credentials: 'same-origin',
+      })
+
+      if (!response.ok) {
+        throw new Error('Falha ao remover compartilhamento.')
+      }
+
+      setLocalItems((current) => current.filter((item) => item.usuario_id !== usuarioId))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!compromisso?.pode_compartilhar) {
+    return null
+  }
+
+  return (
+    <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
+      <div className="mb-4">
+        <h3 className="text-base font-semibold text-zinc-950">Compartilhamento</h3>
+        <p className="mt-1 text-sm text-zinc-600">Gerencie quem pode visualizar ou editar este compromisso.</p>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_auto]">
+        <select
+          value={selectedUserId}
+          onChange={(e) => setSelectedUserId(e.target.value)}
+          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm"
+        >
+          <option value="">Selecione um usuário</option>
+          {availableUsers.map((usuario) => (
+            <option key={usuario.id} value={usuario.id}>
+              {usuario.name} {usuario.email ? `• ${usuario.email}` : ''}
+            </option>
+          ))}
+        </select>
+        <select
+          value={permission}
+          onChange={(e) => setPermission(e.target.value)}
+          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm"
+        >
+          <option value="visualizar">visualizar</option>
+          <option value="editar">editar</option>
+        </select>
+        <button
+          type="button"
+          onClick={addShare}
+          disabled={saving || processing || !selectedUserId}
+          className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white disabled:opacity-60"
+        >
+          Compartilhar
+        </button>
+      </div>
+
+      <div className="mt-4 space-y-3">
+        {localItems.length ? localItems.map((item) => (
+          <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
+            <div>
+              <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
+              <p className="text-sm text-zinc-500">{item.email || 'Sem e-mail'} • {item.permissao}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => removeShare(item.usuario_id)}
+              disabled={saving || processing}
+              className="inline-flex h-10 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600 disabled:opacity-60"
+            >
+              Remover
+            </button>
+          </div>
+        )) : (
+          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-5 text-sm text-zinc-500">
+            Este compromisso ainda não foi compartilhado com ninguém.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function CompromissosForm({ modo = 'create', compromisso = null, categorias = [], leadTimeOptions = [], usuarios = [], errors = {} }) {
   const editing = modo === 'edit' && compromisso?.id
   const { data, setData, post, put, processing } = useForm({
     titulo: compromisso?.titulo || '',
@@ -34,6 +175,13 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
     <AppLayout title={editing ? 'Editar Compromisso' : 'Novo Compromisso'}>
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={submit} className="space-y-6">
+          {editing && compromisso?.owner?.nome ? (
+            <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
+              Owner: <span className="font-medium text-zinc-900">{compromisso.owner.nome}</span>
+              {compromisso.permissao ? <span className="ml-2 rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs">{compromisso.permissao}</span> : null}
+            </div>
+          ) : null}
+
           <div className="grid gap-2 lg:col-span-2">
             <label className="text-sm font-medium text-zinc-900">Título</label>
             <div className={shellClassName}>
@@ -46,12 +194,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Data de início</label>
               <div className={shellClassName}>
-                <Input
-                  type="datetime-local"
-                  value={data.data_inicio}
-                  onChange={(e) => setData('data_inicio', e.target.value)}
-                  className={shellInputClassName}
-                />
+                <Input type="datetime-local" value={data.data_inicio} onChange={(e) => setData('data_inicio', e.target.value)} className={shellInputClassName} />
               </div>
               {errors.data_inicio ? <p className="text-sm text-red-600">{errors.data_inicio}</p> : null}
             </div>
@@ -59,12 +202,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Data final</label>
               <div className={shellClassName}>
-                <Input
-                  type="datetime-local"
-                  value={data.data_fim}
-                  onChange={(e) => setData('data_fim', e.target.value)}
-                  className={shellInputClassName}
-                />
+                <Input type="datetime-local" value={data.data_fim} onChange={(e) => setData('data_fim', e.target.value)} className={shellInputClassName} />
               </div>
               {errors.data_fim ? <p className="text-sm text-red-600">{errors.data_fim}</p> : null}
             </div>
@@ -84,12 +222,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Telefone para WhatsApp</label>
               <div className={shellClassName}>
-                <Input
-                  value={data.telefone}
-                  onChange={(e) => setData('telefone', e.target.value)}
-                  placeholder="5511999999999"
-                  className={shellInputClassName}
-                />
+                <Input value={data.telefone} onChange={(e) => setData('telefone', e.target.value)} placeholder="5511999999999" className={shellInputClassName} />
               </div>
               {errors.telefone ? <p className="text-sm text-red-600">{errors.telefone}</p> : null}
             </div>
@@ -122,25 +255,14 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Intervalo</label>
               <div className={shellClassName}>
-                <Input
-                  type="number"
-                  min="1"
-                  value={data.recorrencia_intervalo}
-                  onChange={(e) => setData('recorrencia_intervalo', e.target.value)}
-                  className={shellInputClassName}
-                />
+                <Input type="number" min="1" value={data.recorrencia_intervalo} onChange={(e) => setData('recorrencia_intervalo', e.target.value)} className={shellInputClassName} />
               </div>
             </div>
 
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Repetir até</label>
               <div className={shellClassName}>
-                <Input
-                  type="date"
-                  value={data.data_fim_recorrencia}
-                  onChange={(e) => setData('data_fim_recorrencia', e.target.value)}
-                  className={shellInputClassName}
-                />
+                <Input type="date" value={data.data_fim_recorrencia} onChange={(e) => setData('data_fim_recorrencia', e.target.value)} className={shellInputClassName} />
               </div>
               {errors.data_fim_recorrencia ? <p className="text-sm text-red-600">{errors.data_fim_recorrencia}</p> : null}
             </div>
@@ -186,6 +308,8 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </Link>
           </div>
         </form>
+
+        {editing ? <div className="mt-6"><ShareEditor compromisso={compromisso} usuarios={usuarios} processing={processing} /></div> : null}
       </div>
     </AppLayout>
   )

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import {
   CalendarDays,
@@ -16,6 +16,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react'
+import { useTheme } from '../contexts/ThemeContext'
 
 function getInitials(name = '') {
   return name
@@ -158,7 +159,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
                 Todo list
               </DashboardSubLink>
               <DashboardSubLink href="/check-ins" active={currentPath.startsWith('/check-ins')} collapsed={collapsed} onClick={handleNavigate}>
-                Check-in Diário
+                Habitos
               </DashboardSubLink>
               <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate}>
                 Calendário
@@ -229,30 +230,30 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
   )
 }
 
-function DashboardHeader({ title, auth, onOpenMenu }) {
+function DashboardHeader({ title, auth, onOpenMenu, isDark = false }) {
   const userName = auth?.user?.name || 'Usuário'
 
   return (
-    <header className="border-b border-zinc-200 bg-white/90 backdrop-blur">
+    <header className={`border-b backdrop-blur ${isDark ? 'border-zinc-800 bg-zinc-950/90' : 'border-zinc-200 bg-white/90'}`}>
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-7">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-sm text-zinc-500">
+          <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
             <button
               type="button"
               onClick={onOpenMenu}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm lg:hidden"
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border shadow-sm lg:hidden ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-200' : 'border-zinc-200 bg-white text-zinc-700'}`}
             >
               <Menu className="h-4 w-4" />
             </button>
             <LayoutGrid className="h-4 w-4" />
             <span>Workspace</span>
             <ChevronRight className="h-4 w-4" />
-            <span className="truncate font-medium text-zinc-950">{title}</span>
+            <span className={`truncate font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2 sm:flex">
+          <div className={`hidden items-center gap-3 rounded-xl border px-3 py-2 sm:flex ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
             {auth?.user?.profile_image_url ? (
               <img src={auth.user.profile_image_url} alt={userName} className="h-10 w-10 rounded-xl object-cover ring-1 ring-zinc-200" />
             ) : (
@@ -262,13 +263,13 @@ function DashboardHeader({ title, auth, onOpenMenu }) {
             )}
             <div className="text-right">
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Sessão</p>
-              <p className="text-sm font-medium text-zinc-950">{userName}</p>
+              <p className={`text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{userName}</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => router.post('/logout')}
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 shadow-sm"
+            className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}
           >
             <LogOut className="h-4 w-4" />
             Sair
@@ -279,13 +280,158 @@ function DashboardHeader({ title, auth, onOpenMenu }) {
   )
 }
 
+function ReminderToasts({ items, onDismiss }) {
+  if (!items.length) {
+    return null
+  }
+
+  return (
+    <div className="fixed right-4 bottom-4 z-50 flex w-[320px] max-w-[calc(100vw-2rem)] flex-col gap-3">
+      {items.map((item) => (
+        <button
+          key={item.key}
+          type="button"
+          onClick={() => {
+            onDismiss(item.key)
+            if (item.url) {
+              window.location.assign(item.url)
+            }
+          }}
+          className="rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-zinc-950">{item.titulo}</p>
+              <p className="mt-1 text-sm text-zinc-600">{item.mensagem}</p>
+              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-zinc-400">{item.quando}</p>
+            </div>
+            <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700">
+              Lembrete
+            </span>
+          </div>
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function AppLayout({ title, children, chrome = 'default' }) {
-  const { auth, flash } = usePage().props
+  const { theme } = useTheme()
+  const { auth, flash, webPush } = usePage().props
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
   const permissions = auth?.user?.permissions || {}
   const isDashboardChrome = chrome === 'dashboard'
+  const isDark = theme === 'dark'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+  const [reminderToasts, setReminderToasts] = useState([])
+  const [notificationBannerClosed, setNotificationBannerClosed] = useState(false)
+  const [notificationPermission, setNotificationPermission] = useState(() => (
+    typeof window !== 'undefined' && 'Notification' in window
+      ? window.Notification.permission
+      : 'unsupported'
+  ))
+  const canWatchReminders = useMemo(() => Boolean(auth?.user && permissions.compromissos), [auth?.user, permissions.compromissos])
+  const pushPublicKey = webPush?.publicKey || ''
+  const pushEnabled = Boolean(webPush?.enabled && pushPublicKey)
+  const notificationBannerStorageKey = useMemo(
+    () => `agendapro.notifications.banner-dismissed.${auth?.user?.id || 'guest'}`,
+    [auth?.user?.id],
+  )
+
+  const getCsrfToken = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+    const base64 = `${base64String}${padding}`.replace(/-/g, '+').replace(/_/g, '/')
+    const rawData = window.atob(base64)
+    return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)))
+  }
+
+  const syncPushSubscription = async (registration) => {
+    if (!pushEnabled || !('PushManager' in window) || window.Notification.permission !== 'granted') {
+      return
+    }
+
+    const existingSubscription = await registration.pushManager.getSubscription()
+    const subscription = existingSubscription || await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(pushPublicKey),
+    })
+
+    await fetch('/push-subscriptions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': getCsrfToken(),
+        'X-Requested-With': 'XMLHttpRequest',
+        Accept: 'application/json',
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(subscription.toJSON()),
+    })
+  }
+
+  const registerServiceWorker = async () => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+      return null
+    }
+
+    try {
+      return await navigator.serviceWorker.register('/service-worker.js')
+    } catch (error) {
+      console.error('Falha ao registrar service worker para lembretes.', error)
+      return null
+    }
+  }
+
+  const requestNotificationPermission = async ({ force = false } = {}) => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      setNotificationPermission('unsupported')
+      return 'unsupported'
+    }
+
+    setNotificationPermission(window.Notification.permission)
+
+    if (window.Notification.permission === 'granted' || window.Notification.permission === 'denied') {
+      return window.Notification.permission
+    }
+
+    const requestedBefore = window.localStorage.getItem('agendapro.notifications.permission-requested')
+    if (!force && requestedBefore === 'true') {
+      return window.Notification.permission
+    }
+
+    try {
+      const permission = await window.Notification.requestPermission()
+      window.localStorage.setItem('agendapro.notifications.permission-requested', 'true')
+      setNotificationPermission(permission)
+      return permission
+    } catch (error) {
+      console.error('Falha ao solicitar permissao de notificacao.', error)
+      return 'default'
+    }
+  }
+
+  const handleEnableNotifications = async () => {
+    const registration = await registerServiceWorker()
+    const permission = await requestNotificationPermission({ force: true })
+
+    if (permission === 'granted') {
+      setNotificationBannerClosed(false)
+      if (typeof window !== 'undefined') {
+        window.sessionStorage.removeItem(notificationBannerStorageKey)
+      }
+
+      if (registration) {
+        try {
+          await syncPushSubscription(registration)
+        } catch (error) {
+          console.error('Falha ao sincronizar inscricao Web Push.', error)
+        }
+      }
+    }
+  }
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -294,13 +440,151 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+    setNotificationBannerClosed(window.sessionStorage.getItem(notificationBannerStorageKey) === 'true')
+  }, [notificationBannerStorageKey])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
     window.localStorage.setItem('agendapro.sidebar.collapsed', String(sidebarCollapsed))
   }, [sidebarCollapsed])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !canWatchReminders) return undefined
+
+    let cancelled = false
+
+    ;(async () => {
+      const registration = await registerServiceWorker()
+      const permission = await requestNotificationPermission()
+
+      if (!cancelled && permission === 'granted') {
+        setNotificationBannerClosed(false)
+        window.sessionStorage.removeItem(notificationBannerStorageKey)
+      }
+
+      if (registration && permission === 'granted') {
+        try {
+          await syncPushSubscription(registration)
+        } catch (error) {
+          console.error('Falha ao sincronizar inscricao Web Push.', error)
+        }
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [canWatchReminders, notificationBannerStorageKey, pushEnabled, pushPublicKey])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !canWatchReminders) return undefined
+
+    let cancelled = false
+
+    const showBrowserNotification = async (item) => {
+      if (!('Notification' in window) || window.Notification.permission !== 'granted') {
+        return
+      }
+
+      try {
+        const registration = await navigator.serviceWorker?.getRegistration()
+
+        if (registration) {
+          await registration.showNotification(item.titulo, {
+            body: item.mensagem,
+            icon: '/icons/icon-192x192.png',
+            badge: '/icons/icon-192x192.png',
+            tag: `lembrete-${item.id}`,
+            data: { url: item.url },
+          })
+          return
+        }
+
+        const notification = new window.Notification(item.titulo, {
+          body: item.mensagem,
+          icon: '/icons/icon-192x192.png',
+          tag: `lembrete-${item.id}`,
+        })
+
+        notification.onclick = () => {
+          window.focus()
+          if (item.url) {
+            window.location.assign(item.url)
+          }
+        }
+      } catch (error) {
+        console.error('Falha ao exibir notificacao do navegador.', error)
+      }
+    }
+
+    const rememberNotification = (item) => {
+      const key = `${item.id}:${item.quando}`
+      window.localStorage.setItem(`agendapro.reminders.${key}`, 'shown')
+      return key
+    }
+
+    const alreadyShown = (item) => {
+      const key = `${item.id}:${item.quando}`
+      return Boolean(window.localStorage.getItem(`agendapro.reminders.${key}`))
+    }
+
+    const pollDueReminders = async () => {
+      try {
+        const response = await fetch('/lembretes/due/feed', {
+          headers: {
+            Accept: 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          credentials: 'same-origin',
+        })
+
+        if (!response.ok) {
+          return
+        }
+
+        const data = await response.json()
+        if (!Array.isArray(data) || cancelled) {
+          return
+        }
+
+        const freshItems = data
+          .filter((item) => !alreadyShown(item))
+          .map((item) => ({ ...item, key: rememberNotification(item) }))
+
+        if (!freshItems.length) {
+          return
+        }
+
+        setReminderToasts((current) => [...freshItems, ...current].slice(0, 4))
+        await Promise.all(freshItems.map((item) => showBrowserNotification(item)))
+      } catch (error) {
+        console.error('Falha ao consultar lembretes pendentes.', error)
+      }
+    }
+
+    pollDueReminders()
+    const intervalId = window.setInterval(pollDueReminders, 15000)
+
+    return () => {
+      cancelled = true
+      window.clearInterval(intervalId)
+    }
+  }, [canWatchReminders])
+
+  useEffect(() => {
+    if (!reminderToasts.length || typeof window === 'undefined') return undefined
+
+    const timer = window.setTimeout(() => {
+      setReminderToasts((current) => current.slice(0, -1))
+    }, 12000)
+
+    return () => window.clearTimeout(timer)
+  }, [reminderToasts])
 
   return (
     <>
       <Head title={title} />
-      <div className={`min-h-screen lg:grid ${sidebarCollapsed ? 'lg:grid-cols-[96px_minmax(0,1fr)]' : 'lg:grid-cols-[304px_minmax(0,1fr)]'} ${isDashboardChrome ? 'bg-zinc-100/70' : 'bg-white'}`}>
+      <div className={`min-h-screen lg:grid ${sidebarCollapsed ? 'lg:grid-cols-[96px_minmax(0,1fr)]' : 'lg:grid-cols-[304px_minmax(0,1fr)]'} ${isDashboardChrome ? (isDark ? 'bg-zinc-950' : 'bg-zinc-100/70') : 'bg-white'}`}>
         <DashboardSidebar currentPath={currentPath} permissions={permissions} auth={auth} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} />
         {mobileSidebarOpen ? (
           <button
@@ -322,7 +606,7 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
 
         <main className="min-w-0">
           {isDashboardChrome ? (
-            <DashboardHeader title={title} auth={auth} onOpenMenu={() => setMobileSidebarOpen(true)} />
+            <DashboardHeader title={title} auth={auth} onOpenMenu={() => setMobileSidebarOpen(true)} isDark={isDark} />
           ) : (
             <header className="border-b border-zinc-200 bg-white">
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-8">
@@ -360,6 +644,35 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
           )}
 
           <div className={`${isDashboardChrome ? 'space-y-6 px-5 py-5 lg:px-7 lg:py-6' : 'mx-auto max-w-7xl space-y-6 px-6 py-6'}`}>
+            {canWatchReminders && notificationPermission !== 'granted' && notificationPermission !== 'unsupported' && !notificationBannerClosed ? (
+              <div className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+                <p className="flex-1">
+                  As notificacoes do navegador ainda nao estao liberadas. Se quiser receber alerta fora da tela do sistema, habilite as notificacoes do site no navegador.
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleEnableNotifications}
+                    className="inline-flex items-center rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 transition hover:bg-amber-100"
+                  >
+                    Habilitar notificacoes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotificationBannerClosed(true)
+                      if (typeof window !== 'undefined') {
+                        window.sessionStorage.setItem(notificationBannerStorageKey, 'true')
+                      }
+                    }}
+                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-amber-200 bg-white text-amber-700 transition hover:bg-amber-100"
+                    aria-label="Fechar aviso de notificacoes"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
             {flash?.success ? (
               <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{flash.success}</div>
             ) : null}
@@ -370,6 +683,10 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
           </div>
         </main>
       </div>
+      <ReminderToasts
+        items={reminderToasts}
+        onDismiss={(key) => setReminderToasts((current) => current.filter((item) => item.key !== key))}
+      />
     </>
   )
 }

@@ -1,36 +1,31 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { router } from '@inertiajs/react'
 import AppLayout from '../layouts/AppLayout'
-import Chart from 'chart.js/auto'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../components/chart'
+import { useTheme } from '../contexts/ThemeContext'
 import {
-  Activity,
+  AlertTriangle,
+  BarChart3,
   CalendarClock,
-  CheckCircle2,
-  CircleDashed,
+  CheckSquare,
   Clock3,
-  DollarSign,
-  HeartPulse,
-  ListTodo,
-  Target,
-  TrendingDown,
-  TrendingUp,
+  Flame,
+  ListChecks,
+  LineChart as LineChartIcon,
+  MousePointerClick,
 } from 'lucide-react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from 'recharts'
 
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-})
-
-const numberFormatter = new Intl.NumberFormat('pt-BR')
-
-function formatCurrency(value) {
-  return currencyFormatter.format(Number(value || 0))
-}
-
-function formatCompactNumber(value) {
-  return numberFormatter.format(Number(value || 0))
-}
-
-function formatDateLabel(value) {
+function formatDateTime(value) {
   if (!value) return '-'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '-'
@@ -38,472 +33,486 @@ function formatDateLabel(value) {
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   }).format(date)
 }
 
-function formatDateTime(value, allDay = false) {
-  if (!value) return allDay ? 'Dia inteiro' : '-'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return allDay ? 'Dia inteiro' : '-'
-
-  return allDay
-    ? new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' }).format(date)
-    : new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).format(date)
-}
-
-function formatHour(value) {
-  if (!value) return '-'
-  return String(value).slice(0, 5)
-}
-
-function getTrend(value) {
-  const numeric = Number(value || 0)
-
-  if (numeric > 0) {
-    return { icon: TrendingUp, label: `+${numeric.toFixed(1)}%`, tone: 'text-emerald-700' }
-  }
-
-  if (numeric < 0) {
-    return { icon: TrendingDown, label: `${numeric.toFixed(1)}%`, tone: 'text-rose-700' }
-  }
-
-  return { icon: Activity, label: '0.0%', tone: 'text-zinc-600' }
-}
-
-function buildPriorityRows(proximosCompromissos = [], tarefasHoje = []) {
-  const agendaRows = proximosCompromissos.map((item) => ({
-    id: `compromisso-${item.id}`,
-    titulo: item.titulo,
-    tipo: 'Compromisso',
-    status: item.dia_inteiro ? 'Dia inteiro' : 'Agendado',
-    quando: formatDateTime(item.data_inicio, item.dia_inteiro),
-    contexto: item.categoria?.nome || 'Agenda',
-  }))
-
-  const taskRows = tarefasHoje.map((item) => ({
-    id: `todo-${item.id}`,
-    titulo: item.descricao,
-    tipo: 'Tarefa',
-    status: item.status === 'finalizado' ? 'Concluída' : item.status === 'execucao' ? 'Em execução' : 'Aguardando',
-    quando: item.data ? `${formatDateLabel(item.data)} ${item.hora ? `• ${formatHour(item.hora)}` : ''}` : formatHour(item.hora),
-    contexto: item.urgencia ? `Urgência ${item.urgencia}` : 'Rotina',
-  }))
-
-  return [...agendaRows, ...taskRows].slice(0, 8)
-}
-
-function OverviewCard({ title, value, eyebrow, description, trendValue, icon: Icon }) {
-  const trend = getTrend(trendValue)
-  const TrendIcon = trend.icon
-
+function MetricCard({ label, value, helper, icon: Icon, isDark = false }) {
   return (
-    <section className="rounded-[26px] border border-zinc-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+    <section className={`rounded-[26px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm text-zinc-500">{eyebrow}</p>
-          <p className="mt-3 text-[2.1rem] font-semibold tracking-tight text-zinc-950">{value}</p>
+          <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</p>
+          <p className={`mt-3 text-4xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
+          <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p>
         </div>
-        <div className="flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700">
-          <TrendIcon className={`h-3.5 w-3.5 ${trend.tone}`} />
-          <span>{trend.label}</span>
-        </div>
-      </div>
-
-      <div className="mt-8 flex items-start gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
           <Icon className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="text-base font-semibold text-zinc-950">{title}</p>
-          <p className="mt-1 text-sm leading-6 text-zinc-500">{description}</p>
         </div>
       </div>
     </section>
   )
 }
 
-function Pill({ children }) {
+function PeriodFilter({ value, onChange, isDark = false }) {
+  const options = [
+    { value: 7, label: '7 dias' },
+    { value: 15, label: '15 dias' },
+    { value: 30, label: '30 dias' },
+  ]
+
   return (
-    <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700">
-      {children}
-    </span>
+    <div className={`inline-flex items-center gap-1 rounded-full border p-1 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          onClick={() => onChange(option.value)}
+          className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+            value === option.value
+              ? isDark
+                ? 'bg-zinc-100 text-black shadow-sm'
+                : 'bg-white text-zinc-950 shadow-sm'
+              : isDark
+                ? 'text-zinc-400 hover:text-zinc-100'
+                : 'text-zinc-500 hover:text-zinc-900'
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   )
 }
 
-export default function Dashboard({
-  cards,
-  chartData,
-  proximosCompromissos = [],
-  tarefasHoje = [],
-  agendaHoje = [],
-  financeiro,
-  saude,
-  kanban,
-  checkinHoje,
-}) {
-  const lineRef = useRef(null)
-  const doughnutRef = useRef(null)
-
-  const financialTrend = useMemo(() => {
-    const receitas = Number(financeiro?.receitasMes || 0)
-    const despesas = Number(financeiro?.despesasMes || 0)
-    if (receitas <= 0) return 0
-
-    return ((receitas - despesas) / receitas) * 100
-  }, [financeiro])
-
-  const healthTrend = useMemo(() => {
-    const calorias = Number(saude?.caloriasSemana || 0)
-    const atividades = Number(saude?.atividadesSemana || 0)
-    if (atividades <= 0) return 0
-
-    return Math.min((calorias / atividades) / 10, 99)
-  }, [saude])
-
-  const statusEntries = useMemo(
-    () => [
-      { label: 'Hoje', value: `${cards?.compromissosHoje || 0} compromissos`, icon: CalendarClock },
-      { label: 'Pendentes', value: `${cards?.tarefasPendentes || 0} tarefas`, icon: ListTodo },
-      { label: 'Check-in', value: checkinHoje ? 'Feito hoje' : 'Pendente', icon: CheckCircle2 },
-    ],
-    [cards, checkinHoje],
+function SectionCard({ title, subtitle, children, action = null, isDark = false }) {
+  return (
+    <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h2>
+          {subtitle ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{subtitle}</p> : null}
+        </div>
+        {action}
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
   )
+}
 
-  const priorityRows = useMemo(
-    () => buildPriorityRows(proximosCompromissos, tarefasHoje),
-    [proximosCompromissos, tarefasHoje],
+function ListBlock({ empty, items, renderItem, isDark = false }) {
+  if (!items?.length) {
+    return <div className={`rounded-2xl border border-dashed px-4 py-8 text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>{empty}</div>
+  }
+
+  return <div className="space-y-3">{items.map(renderItem)}</div>
+}
+
+function ChartCard({ title, subtitle, children, icon: Icon, onOpen, openLabel, isDark = false }) {
+  return (
+    <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h3>
+          {subtitle ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{subtitle}</p> : null}
+        </div>
+        <div className="flex items-center gap-2">
+          {onOpen ? (
+            <button
+              type="button"
+              onClick={onOpen}
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                isDark
+                  ? 'border-zinc-700 bg-zinc-950 text-zinc-300 hover:bg-zinc-800'
+                  : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-zinc-100'
+              }`}
+            >
+              <MousePointerClick className="h-3.5 w-3.5" />
+              {openLabel || 'Abrir'}
+            </button>
+          ) : null}
+          {Icon ? (
+            <div className={`flex h-10 w-10 items-center justify-center rounded-2xl border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
+              <Icon className="h-4 w-4" />
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="mt-5">{children}</div>
+    </section>
   )
+}
+
+export default function Dashboard() {
+  const { theme } = useTheme()
+  const [dashboard, setDashboard] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [period, setPeriod] = useState(7)
 
   useEffect(() => {
-    const charts = []
+    async function loadDashboard() {
+      setLoading(true)
+      setError('')
 
-    if (lineRef.current) {
-      charts.push(new Chart(lineRef.current, {
-        type: 'line',
-        data: {
-          labels: chartData?.compromissosSemana?.labels ?? [],
-          datasets: [{
-            label: 'Compromissos',
-            data: chartData?.compromissosSemana?.values ?? [],
-            borderColor: '#111827',
-            backgroundColor: 'rgba(17, 24, 39, 0.08)',
-            borderWidth: 2,
-            fill: true,
-            tension: 0.35,
-            pointRadius: 0,
-            pointHoverRadius: 4,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#111827',
-              padding: 10,
-              displayColors: false,
-            },
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { color: '#71717a' },
-              border: { display: false },
-            },
-            y: {
-              beginAtZero: true,
-              grid: { color: 'rgba(228, 228, 231, 0.8)' },
-              ticks: {
-                color: '#71717a',
-                precision: 0,
-              },
-              border: { display: false },
-            },
-          },
-        },
-      }))
+      try {
+        const response = await fetch(`/api/dashboard?period=${period}`, {
+          headers: { Accept: 'application/json' },
+          credentials: 'same-origin',
+        })
+
+        if (!response.ok) {
+          throw new Error('Falha ao carregar dashboard.')
+        }
+
+        const payload = await response.json()
+        setDashboard(payload.data)
+      } catch (loadError) {
+        setError(loadError.message || 'Falha ao carregar dashboard.')
+      } finally {
+        setLoading(false)
+      }
     }
 
-    if (doughnutRef.current) {
-      charts.push(new Chart(doughnutRef.current, {
-        type: 'doughnut',
-        data: {
-          labels: chartData?.tarefasStatus?.labels ?? [],
-          datasets: [{
-            data: chartData?.tarefasStatus?.values ?? [],
-            backgroundColor: ['#e4e4e7', '#71717a', '#18181b'],
-            borderWidth: 0,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '72%',
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: '#52525b',
-                usePointStyle: true,
-                boxWidth: 10,
-                boxHeight: 10,
-                padding: 16,
-              },
-            },
-          },
-        },
-      }))
-    }
+    loadDashboard()
+  }, [period])
 
-    return () => charts.forEach((chart) => chart.destroy())
-  }, [chartData])
+  const topMetrics = useMemo(() => {
+    if (!dashboard) return []
+
+    return [
+      {
+        label: 'Compromissos de hoje',
+        value: dashboard.compromissos?.hoje?.total || 0,
+        helper: `${dashboard.compromissos?.proximos?.total || 0} proximos na fila`,
+        icon: CalendarClock,
+      },
+      {
+        label: 'Lembretes ativos',
+        value: dashboard.lembretes?.ativos?.total || 0,
+        helper: `${dashboard.lembretes?.proximos?.total || 0} proximos lembretes`,
+        icon: Clock3,
+      },
+      {
+        label: 'Tarefas pendentes',
+        value: dashboard.tarefas?.pendentes?.total || 0,
+        helper: `${dashboard.tarefas?.atrasadas?.total || 0} atrasadas`,
+        icon: CheckSquare,
+      },
+      {
+        label: 'Melhor streak',
+        value: dashboard.rotina?.streak_atual || 0,
+        helper: `${dashboard.rotina?.habitos_do_dia?.concluidos || 0} habitos concluidos hoje`,
+        icon: Flame,
+      },
+    ]
+  }, [dashboard])
+
+  const chartData = dashboard?.graficos || {}
+  const periodLabel = `${period} dias`
+  const isDark = theme === 'dark'
+
+  const openCompromissos = () => router.visit('/compromissos/calendario')
+  const openKanban = () => router.visit('/kanban')
+  const openCheckins = () => router.visit('/check-ins')
 
   return (
     <AppLayout title="Dashboard" chrome="dashboard">
       <div className="space-y-6">
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          <OverviewCard
-            eyebrow="Compromissos no mês"
-            value={formatCompactNumber(cards?.compromissosMes)}
-            trendValue={cards?.compromissosHoje ? 12.5 : 0}
-            title="Agenda em movimento"
-            description={`${cards?.compromissosHoje || 0} compromissos para hoje e ${agendaHoje.length} itens já visíveis na grade.`}
-            icon={CalendarClock}
-          />
-          <OverviewCard
-            eyebrow="Lembretes ativos"
-            value={formatCompactNumber(cards?.totalLembretes)}
-            trendValue={cards?.totalLembretes ? 8.4 : 0}
-            title="Rotina acompanhada"
-            description={`${cards?.tarefasPendentes || 0} tarefas pendentes e ${cards?.totalTarefasHoje || 0} tarefas previstas para hoje.`}
-            icon={ListTodo}
-          />
-          <OverviewCard
-            eyebrow="Saldo consolidado"
-            value={formatCurrency(cards?.saldoTotal)}
-            trendValue={financialTrend}
-            title="Pulso financeiro"
-            description={`Receitas do mês em ${formatCurrency(financeiro?.receitasMes)} e despesas em ${formatCurrency(financeiro?.despesasMes)}.`}
-            icon={DollarSign}
-          />
-          <OverviewCard
-            eyebrow="Horas de treino"
-            value={`${Number(cards?.horasSemana || 0).toFixed(1)}h`}
-            trendValue={healthTrend}
-            title="Saúde em foco"
-            description={`${saude?.atividadesSemana || 0} atividades na semana e ${formatCompactNumber(saude?.caloriasSemana || 0)} kcal registradas.`}
-            icon={HeartPulse}
-          />
+        <div className={`flex flex-wrap items-center justify-between gap-4 rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+          <div>
+            <h1 className={`text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Dashboard inteligente</h1>
+            <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Agenda, rotina, tarefas e insights em uma leitura única do seu momento.</p>
+          </div>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-          <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 px-6 py-5">
-              <div>
-                <div className="flex items-center gap-2 text-sm text-zinc-500">
-                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50">
-                    <Target className="h-3.5 w-3.5" />
-                  </span>
-                  Dashboard
-                </div>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">Visão geral da operação</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Período de análise</p>
+            <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Os gráficos e os insights acompanham o recorte selecionado.</p>
+          </div>
+          <PeriodFilter value={period} onChange={setPeriod} isDark={isDark} />
+        </div>
+
+        {error ? (
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+        ) : null}
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          {topMetrics.map((metric) => (
+            <MetricCard key={metric.label} {...metric} isDark={isDark} />
+          ))}
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <ChartCard
+            title="Execução diária"
+            subtitle={`Tarefas concluídas nos últimos ${periodLabel}.`}
+            icon={BarChart3}
+            onOpen={openKanban}
+            openLabel="Abrir kanban"
+            isDark={isDark}
+          >
+            <ChartContainer
+              className={isDark ? 'border-zinc-700 bg-zinc-950' : ''}
+              config={{
+                concluidas: { label: 'Concluídas', color: '#111827' },
+              }}
+            >
+              <BarChart data={chartData.tarefas_concluidas_por_dia || []} onClick={openKanban}>
+                <CartesianGrid vertical={false} stroke="#e4e4e7" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="concluidas" name="Concluídas" radius={[10, 10, 0, 0]} fill="var(--color-concluidas)" />
+              </BarChart>
+            </ChartContainer>
+          </ChartCard>
+
+          <ChartCard
+            title="Criadas x concluídas"
+            subtitle={`Comparação do fluxo de entrada e entrega em ${periodLabel}.`}
+            icon={LineChartIcon}
+            onOpen={openKanban}
+            openLabel="Abrir kanban"
+            isDark={isDark}
+          >
+            <ChartContainer
+              className={isDark ? 'border-zinc-700 bg-zinc-950' : ''}
+              config={{
+                criadas: { label: 'Criadas', color: '#94a3b8' },
+                concluidas: { label: 'Concluídas', color: '#18181b' },
+              }}
+            >
+              <LineChart data={chartData.tarefas_criadas_vs_concluidas || []} onClick={openKanban}>
+                <CartesianGrid vertical={false} stroke="#e4e4e7" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
+                <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
+                <Legend />
+                <Line type="monotone" dataKey="criadas" name="Criadas" stroke="var(--color-criadas)" strokeWidth={2.5} dot={false} />
+                <Line type="monotone" dataKey="concluidas" name="Concluídas" stroke="var(--color-concluidas)" strokeWidth={2.5} dot={false} />
+              </LineChart>
+            </ChartContainer>
+          </ChartCard>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <SectionCard
+            title="Compromissos"
+            subtitle="O que exige atenção agora na sua agenda."
+            action={<span className={`rounded-full border px-3 py-1 text-xs ${isDark ? 'border-zinc-700 text-zinc-300' : 'border-zinc-200 text-zinc-600'}`}>{dashboard?.compromissos?.atrasados?.total || 0} atrasados</span>}
+            isDark={isDark}
+          >
+            <div className="grid gap-4 lg:grid-cols-3">
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Hoje</p>
+                <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.compromissos?.hoje?.total || 0}</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Pill>7 dias</Pill>
-                <Pill>{cards?.checkinHoje ? 'Check-in ok' : 'Check-in pendente'}</Pill>
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Próximos</p>
+                <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.compromissos?.proximos?.total || 0}</p>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Atrasados</p>
+                <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.compromissos?.atrasados?.total || 0}</p>
               </div>
             </div>
 
-            <div className="grid gap-6 p-6">
-              <div className="rounded-[24px] border border-zinc-200 p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-xl font-semibold tracking-tight text-zinc-950">Fluxo de compromissos</h3>
-                    <p className="mt-1 text-sm text-zinc-500">Leitura diária da agenda prevista para a semana atual.</p>
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div>
+                <p className={`mb-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Próximos compromissos</p>
+                <ListBlock
+                  empty="Nenhum compromisso próximo."
+                  items={dashboard?.compromissos?.proximos?.items || []}
+                  isDark={isDark}
+                  renderItem={(item) => (
+                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
+                      <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
+                      <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatDateTime(item.data_inicio)} • {item.owner || 'Sem owner'}</p>
+                    </div>
+                  )}
+                />
+              </div>
+              <div>
+                <p className={`mb-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Atrasados</p>
+                <ListBlock
+                  empty="Nenhum compromisso atrasado."
+                  items={dashboard?.compromissos?.atrasados?.items || []}
+                  isDark={isDark}
+                  renderItem={(item) => (
+                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
+                      <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
+                      <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatDateTime(item.data_inicio)} • {item.permissao}</p>
+                    </div>
+                  )}
+                />
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Insights" subtitle="Leitura da sua semana." isDark={isDark}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Conclusão no período</p>
+                <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.insights?.percentual_tarefas_concluidas_semana || 0}%</p>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Comparação</p>
+                <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.insights?.comparacao_com_semana_anterior?.variacao || 0}%</p>
+                <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{dashboard?.insights?.comparacao_com_semana_anterior?.tendencia || 'estavel'} vs período anterior</p>
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-700'}`}>
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                {dashboard?.insights?.tarefas_atrasadas || 0} tarefas atrasadas
+              </div>
+              <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-700'}`}>
+                <Flame className="h-4 w-4 text-emerald-600" />
+                streak de {dashboard?.rotina?.streak_atual || 0} dias
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-2">
+          <ChartCard
+            title="Agenda no período"
+            subtitle={`Distribuição dos compromissos ao longo de ${periodLabel}.`}
+            icon={CalendarClock}
+            onOpen={openCompromissos}
+            openLabel="Abrir calendário"
+            isDark={isDark}
+          >
+            <ChartContainer
+              className={isDark ? 'border-zinc-700 bg-zinc-950' : ''}
+              config={{
+                total: { label: 'Compromissos', color: '#27272a' },
+              }}
+            >
+              <BarChart data={chartData.compromissos_por_dia || []} onClick={openCompromissos}>
+                <CartesianGrid vertical={false} stroke="#e4e4e7" />
+                <XAxis dataKey="dia" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="total" name="Compromissos" radius={[10, 10, 0, 0]} fill="var(--color-total)" />
+              </BarChart>
+            </ChartContainer>
+          </ChartCard>
+
+          <ChartCard
+            title="Rotina no período"
+            subtitle={`Quantidade de habitos concluidos em ${periodLabel}.`}
+            icon={Flame}
+            onOpen={openCheckins}
+            openLabel="Abrir habitos"
+            isDark={isDark}
+          >
+            <ChartContainer
+              className={isDark ? 'border-zinc-700 bg-zinc-950' : ''}
+              config={{
+                concluidos: { label: 'Concluidos', color: '#18181b' },
+              }}
+            >
+              <BarChart data={chartData.habitos_concluidos_por_dia || []} onClick={openCheckins}>
+                <CartesianGrid vertical={false} stroke="#e4e4e7" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
+                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="concluidos" name="Concluidos" radius={[10, 10, 0, 0]} fill="var(--color-concluidos)" />
+              </BarChart>
+            </ChartContainer>
+          </ChartCard>
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-[1fr_1fr_0.9fr]">
+          <SectionCard title="Lembretes" subtitle="Próximos lembretes ativos." isDark={isDark}>
+            <ListBlock
+              empty="Nenhum lembrete próximo."
+              items={dashboard?.lembretes?.proximos?.items || []}
+              isDark={isDark}
+              renderItem={(item) => (
+                <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
+                  <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
+                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatDateTime(item.momento_disparo)}</p>
+                  {item.descricao ? <p className={`mt-2 text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{item.descricao}</p> : null}
+                </div>
+              )}
+            />
+          </SectionCard>
+
+          <SectionCard title="Tarefas Kanban" subtitle="Visão de execução do quadro." isDark={isDark}>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Pendentes</p>
+                <p className={`mt-2 text-3xl font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.tarefas?.pendentes?.total || 0}</p>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Concluídas</p>
+                <p className={`mt-2 text-3xl font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.tarefas?.concluidas?.total || 0}</p>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Atrasadas</p>
+                <p className={`mt-2 text-3xl font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.tarefas?.atrasadas?.total || 0}</p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <ListBlock
+                empty="Nenhuma tarefa pendente."
+                items={dashboard?.tarefas?.pendentes?.items || []}
+                isDark={isDark}
+                renderItem={(item) => (
+                  <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
+                      <span className={`rounded-full border px-2.5 py-1 text-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 text-zinc-600'}`}>{item.status}</span>
+                    </div>
+                    <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.quadro || 'Sem quadro'} • prazo {item.data_limite || 'livre'}</p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {statusEntries.map(({ label, value, icon: Icon }) => (
-                      <div key={label} className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700">
-                        <Icon className="h-3.5 w-3.5" />
-                        <span className="font-medium text-zinc-950">{label}</span>
-                        <span>{value}</span>
+                )}
+              />
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Rotina" subtitle="Presença diária e consistência." isDark={isDark}>
+            <div className="space-y-4">
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Hábitos do dia</p>
+                <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>
+                  {(dashboard?.rotina?.habitos_do_dia?.concluidos || 0)} de {(dashboard?.rotina?.habitos_do_dia?.total || 0)} concluidos
+                </p>
+              </div>
+              <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Streak atual</p>
+                <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.rotina?.streak_atual || 0} dias</p>
+              </div>
+              {dashboard?.rotina?.habitos_do_dia?.items?.length ? (
+                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
+                  <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                    <ListChecks className="h-4 w-4" />
+                    Hábitos em foco hoje
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {dashboard.rotina.habitos_do_dia.items.map((item) => (
+                      <div key={item.id} className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50/60'}`}>
+                        <div>
+                          <p className={`text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
+                          <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>streak {item.estatisticas?.streak_atual || 0} dias</p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${item.concluido_hoje ? 'bg-emerald-100 text-emerald-700' : isDark ? 'bg-zinc-100 text-black' : 'bg-zinc-200 text-zinc-600'}`}>
+                          {item.concluido_hoje ? 'feito' : 'pendente'}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
-
-                <div className="mt-6 h-[320px]">
-                  <canvas ref={lineRef} />
-                </div>
-              </div>
-
-              <div className="grid gap-5 md:grid-cols-3">
-                <div className="rounded-[24px] border border-zinc-200 bg-zinc-50/70 p-5">
-                  <p className="text-sm text-zinc-500">Receitas x despesas</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{formatCurrency(financeiro?.resultadoMes)}</p>
-                  <p className="mt-2 text-sm text-zinc-600">Resultado líquido do mês com base nas transações registradas.</p>
-                </div>
-                <div className="rounded-[24px] border border-zinc-200 bg-zinc-50/70 p-5">
-                  <p className="text-sm text-zinc-500">Projetos ativos</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{formatCompactNumber(cards?.totalQuadrosKanban)}</p>
-                  <p className="mt-2 text-sm text-zinc-600">{(kanban?.pendentes || 0) + (kanban?.andamento || 0)} tarefas abertas acompanhando sua execução.</p>
-                </div>
-                <div className="rounded-[24px] border border-zinc-200 bg-zinc-50/70 p-5">
-                  <p className="text-sm text-zinc-500">Check-in diário</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{cards?.checkinHoje ? 'Concluído' : 'Aberto'}</p>
-                  <p className="mt-2 text-sm text-zinc-600">Status do check-in do dia para manter rotina e consistência.</p>
-                </div>
-              </div>
+              ) : null}
             </div>
-          </section>
-
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-xl font-semibold tracking-tight text-zinc-950">Status das tarefas</h3>
-                <p className="mt-1 text-sm text-zinc-500">Distribuição atual da fila de execução.</p>
-              </div>
-              <Pill>{cards?.tarefasPendentes || 0} abertas</Pill>
-            </div>
-
-            <div className="mt-6 h-72">
-              <canvas ref={doughnutRef} />
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
-                <p className="text-sm text-zinc-500">Próximo compromisso</p>
-                <p className="mt-1 text-base font-semibold text-zinc-950">{proximosCompromissos[0]?.titulo || 'Nenhum compromisso futuro'}</p>
-                <p className="mt-1 text-sm text-zinc-600">
-                  {proximosCompromissos[0]
-                    ? formatDateTime(proximosCompromissos[0].data_inicio, proximosCompromissos[0].dia_inteiro)
-                    : 'Sua agenda está livre no momento.'}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
-                <p className="text-sm text-zinc-500">Meta de saúde da semana</p>
-                <p className="mt-1 text-base font-semibold text-zinc-950">{`${Number(cards?.horasSemana || 0).toFixed(1)}h registradas`}</p>
-                <p className="mt-1 text-sm text-zinc-600">{saude?.atividadesSemana || 0} atividades acumuladas até agora.</p>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 px-6 py-5">
-            <div>
-              <h3 className="text-xl font-semibold tracking-tight text-zinc-950">Prioridades do sistema</h3>
-              <p className="mt-1 text-sm text-zinc-500">Agenda, tarefas e itens que merecem atenção imediata.</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Pill>{priorityRows.length} itens visíveis</Pill>
-              <Pill>{cards?.compromissosHoje || 0} hoje</Pill>
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-zinc-50/80 text-left text-zinc-500">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Item</th>
-                  <th className="px-6 py-4 font-medium">Tipo</th>
-                  <th className="px-6 py-4 font-medium">Status</th>
-                  <th className="px-6 py-4 font-medium">Quando</th>
-                  <th className="px-6 py-4 font-medium">Contexto</th>
-                </tr>
-              </thead>
-              <tbody>
-                {priorityRows.length ? priorityRows.map((row) => (
-                  <tr key={row.id} className="border-t border-zinc-200">
-                    <td className="px-6 py-4 font-medium text-zinc-950">{row.titulo}</td>
-                    <td className="px-6 py-4 text-zinc-600">{row.tipo}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-700">
-                        {row.status === 'Concluída' ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> : <CircleDashed className="h-3.5 w-3.5 text-zinc-500" />}
-                        {row.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-zinc-600">{row.quando}</td>
-                    <td className="px-6 py-4 text-zinc-600">{row.contexto}</td>
-                  </tr>
-                )) : (
-                  <tr>
-                    <td colSpan="5" className="px-6 py-10 text-center text-zinc-500">
-                      Nenhum item prioritário encontrado para este momento.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <div className="grid gap-5 lg:grid-cols-3">
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <Clock3 className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm text-zinc-500">Agenda de hoje</p>
-                <p className="text-base font-semibold text-zinc-950">{agendaHoje.length} itens na grade</p>
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {agendaHoje.slice(0, 3).map((item) => (
-                <div key={item.id} className="rounded-2xl border border-zinc-200 px-4 py-3">
-                  <p className="font-medium text-zinc-950">{item.titulo}</p>
-                  <p className="mt-1 text-sm text-zinc-500">{formatDateTime(item.data_inicio, item.dia_inteiro)}</p>
-                </div>
-              ))}
-              {!agendaHoje.length ? <p className="text-sm text-zinc-500">Nenhum compromisso para hoje.</p> : null}
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <ListTodo className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm text-zinc-500">Execução do dia</p>
-                <p className="text-base font-semibold text-zinc-950">{tarefasHoje.length} tarefas listadas</p>
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              {tarefasHoje.slice(0, 3).map((item) => (
-                <div key={item.id} className="rounded-2xl border border-zinc-200 px-4 py-3">
-                  <p className="font-medium text-zinc-950">{item.descricao}</p>
-                  <p className="mt-1 text-sm text-zinc-500">{`${item.status} • ${item.hora ? formatHour(item.hora) : 'Sem hora'}`}</p>
-                </div>
-              ))}
-              {!tarefasHoje.length ? <p className="text-sm text-zinc-500">Nenhuma tarefa para hoje.</p> : null}
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-700">
-                <HeartPulse className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm text-zinc-500">Resumo de saúde</p>
-                <p className="text-base font-semibold text-zinc-950">{formatCompactNumber(saude?.caloriasSemana || 0)} kcal</p>
-              </div>
-            </div>
-            <div className="mt-5 space-y-3">
-              <div className="rounded-2xl border border-zinc-200 px-4 py-3">
-                <p className="font-medium text-zinc-950">Atividades</p>
-                <p className="mt-1 text-sm text-zinc-500">{saude?.atividadesSemana || 0} registradas nesta semana</p>
-              </div>
-              <div className="rounded-2xl border border-zinc-200 px-4 py-3">
-                <p className="font-medium text-zinc-950">Treino acumulado</p>
-                <p className="mt-1 text-sm text-zinc-500">{`${Number(cards?.horasSemana || 0).toFixed(1)} horas`}</p>
-              </div>
-            </div>
-          </section>
+          </SectionCard>
         </div>
       </div>
     </AppLayout>

@@ -38,6 +38,10 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'webPush' => [
+                'enabled' => fn () => filled(config('services.webpush.public_key')),
+                'publicKey' => fn () => config('services.webpush.public_key'),
+            ],
         ]);
     }
 }

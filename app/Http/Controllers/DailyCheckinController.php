@@ -2,80 +2,64 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyCheckin;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
+use App\Models\Habito;
+use App\Models\HabitoLog;
+use App\Services\HabitStreakService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DailyCheckinController extends Controller
 {
-    public function index()
+    public function __construct(private readonly HabitStreakService $streakService)
     {
-        $userId = Auth::id();
-        $today = Carbon::today();
-
-        $checkinHoje = DailyCheckin::ownedBy($userId)
-            ->whereDate('data', $today)
-            ->first();
-
-        $historico = DailyCheckin::ownedBy($userId)
-            ->orderByDesc('data')
-            ->take(14)
-            ->get();
-
-        return Inertia::render('Checkins/Index', [
-            'today' => $today->format('Y-m-d'),
-            'checkinHoje' => $checkinHoje ? [
-                'id' => $checkinHoje->id,
-                'data' => $checkinHoje->data->format('Y-m-d'),
-                'humor' => $checkinHoje->humor,
-                'energia' => $checkinHoje->energia,
-                'produtividade' => $checkinHoje->produtividade,
-                'destaque' => $checkinHoje->destaque,
-                'gratidao' => $checkinHoje->gratidao,
-                'observacoes' => $checkinHoje->observacoes,
-            ] : null,
-            'historico' => $historico->map(fn (DailyCheckin $item) => [
-                'id' => $item->id,
-                'data' => $item->data->format('d/m/Y'),
-                'humor' => $item->humor,
-                'energia' => $item->energia,
-                'produtividade' => $item->produtividade,
-                'destaque' => $item->destaque,
-            ])->values()->all(),
-        ]);
     }
 
-    public function store(Request $request)
+    public function index(): Response
     {
-        $validated = $request->validate([
-            'data' => 'required|date',
-            'humor' => 'required|integer|min:1|max:5',
-            'energia' => 'required|integer|min:1|max:5',
-            'produtividade' => 'required|integer|min:1|max:5',
-            'destaque' => 'nullable|string|max:500',
-            'gratidao' => 'nullable|string|max:500',
-            'observacoes' => 'nullable|string|max:1000',
-        ]);
+        $user = Auth::user();
+        $today = now()->toDateString();
 
-        DailyCheckin::updateOrCreate(
-            [
-                'user_id' => Auth::id(),
-                'data' => $validated['data'],
+        $habitos = Habito::ownedBy($user->id)
+            ->with(['logs' => fn ($query) => $query->orderByDesc('data')])
+            ->orderBy('nome')
+            ->get();
+
+        $recentLogs = HabitoLog::query()
+            ->whereHas('habito', fn ($query) => $query->where('user_id', $user->id))
+            ->with('habito')
+            ->orderByDesc('data')
+            ->limit(14)
+            ->get();
+
+        $serializedHabits = $habitos->map(function (Habito $habito) use ($today) {
+            $stats = $this->streakService->forHabit($habito);
+
+            return [
+                'id' => $habito->id,
+                'nome' => $habito->nome,
+                'descricao' => $habito->descricao,
+                'ativo' => (bool) $habito->ativo,
+                'concluido_hoje' => $habito->logs->contains(fn ($log) => $log->data?->toDateString() === $today),
+                'ultimo_registro_em' => optional($habito->logs->first()?->data)->toDateString(),
+                'estatisticas' => $stats,
+            ];
+        })->values();
+
+        return Inertia::render('Checkins/Index', [
+            'today' => $today,
+            'habitos' => $serializedHabits->all(),
+            'resumo' => [
+                'total_habitos' => $serializedHabits->count(),
+                'concluidos_hoje' => $serializedHabits->where('concluido_hoje', true)->count(),
+                'melhor_streak_atual' => (int) $serializedHabits->max('estatisticas.streak_atual'),
             ],
-            [
-                'humor' => $validated['humor'],
-                'energia' => $validated['energia'],
-                'produtividade' => $validated['produtividade'],
-                'destaque' => $validated['destaque'] ?? null,
-                'gratidao' => $validated['gratidao'] ?? null,
-                'observacoes' => $validated['observacoes'] ?? null,
-            ]
-        );
-
-        return redirect()
-            ->route('checkins.index')
-            ->with('success', 'Check-in diário salvo com sucesso.');
+            'historico' => $recentLogs->map(fn (HabitoLog $log) => [
+                'id' => $log->id,
+                'habito' => $log->habito?->nome,
+                'data' => $log->data?->format('d/m/Y'),
+                'concluido_em' => $log->concluido_em?->format('H:i'),
+            ])->values()->all(),
+        ]);
     }
 }

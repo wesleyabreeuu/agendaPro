@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Compromisso;
 use App\Models\Lembrete;
+use App\Services\ReminderDispatchService;
 use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -149,61 +150,22 @@ class LembreteController extends Controller
         );
     }
 
-    public function due(): JsonResponse
+    public function due(ReminderDispatchService $reminders): JsonResponse
     {
         $now = now();
-
-        $lembretes = Lembrete::with('compromisso')
-            ->ownedBy(Auth::id())
-            ->where('ativo', true)
-            ->get()
-            ->filter(function (Lembrete $lembrete) use ($now) {
-                $momento = $lembrete->momento_disparo;
-
-                if (!$momento) {
-                    return false;
-                }
-
-                if ($lembrete->isStandalone()) {
-                    return $momento->lessThanOrEqualTo($now);
-                }
-
-                return is_null($lembrete->notificado_em)
-                    && $momento->lessThanOrEqualTo($now);
-            })
-            ->values();
+        $lembretes = $reminders->due(Auth::id(), $now);
 
         if ($lembretes->isEmpty()) {
             return response()->json([]);
         }
 
-        foreach ($lembretes as $lembrete) {
-            if ($lembrete->isStandalone()) {
-                $this->advanceStandaloneReminder($lembrete, $now);
-                continue;
-            }
+        $payloads = $lembretes->map(fn (Lembrete $lembrete) => $reminders->payload($lembrete))->values();
 
-            $lembrete->update([
-                'notificado_em' => $now,
-                'ultima_execucao_em' => $now,
-            ]);
+        foreach ($lembretes as $lembrete) {
+            $reminders->acknowledge($lembrete, $now);
         }
 
-        return response()->json($lembretes->map(function (Lembrete $lembrete) {
-            $momento = $lembrete->momento_disparo;
-            $mensagemBase = $lembrete->descricao_exibicao
-                ?: 'Seu lembrete esta programado para agora.';
-
-            return [
-                'id' => $lembrete->id,
-                'titulo' => $lembrete->titulo_exibicao,
-                'mensagem' => $mensagemBase,
-                'quando' => $momento ? $momento->format('d/m/Y H:i') : now()->format('d/m/Y H:i'),
-                'url' => $lembrete->compromisso_id
-                    ? route('compromissos.edit', $lembrete->compromisso_id)
-                    : route('lembretes.edit', $lembrete->id),
-            ];
-        })->values());
+        return response()->json($payloads);
     }
 
     private function validatedPayload(Request $request, ?Lembrete $lembrete = null): array
@@ -292,72 +254,6 @@ class LembreteController extends Controller
             'notificado_em' => null,
             'ultima_execucao_em' => null,
         ];
-    }
-
-    private function advanceStandaloneReminder(Lembrete $lembrete, Carbon $now): void
-    {
-        $proximaExecucao = $this->calculateNextExecution($lembrete);
-
-        $lembrete->update([
-            'notificado_em' => $now,
-            'ultima_execucao_em' => $now,
-            'proxima_execucao_em' => $proximaExecucao,
-            'ativo' => !is_null($proximaExecucao),
-        ]);
-    }
-
-    private function calculateNextExecution(Lembrete $lembrete): ?Carbon
-    {
-        $base = $lembrete->proxima_execucao_em
-            ? Carbon::parse($lembrete->proxima_execucao_em)
-            : Carbon::parse($lembrete->inicio_em);
-
-        if (!$lembrete->recorrencia) {
-            return null;
-        }
-
-        $intervalo = max((int) ($lembrete->intervalo_recorrencia ?? 1), 1);
-        $proxima = match ($lembrete->recorrencia) {
-            'diaria' => $base->copy()->addDays($intervalo),
-            'semanal' => $base->copy()->addWeeks($intervalo),
-            'mensal' => $base->copy()->addMonthsNoOverflow($intervalo),
-            'dias_semana' => $this->nextWeekdayOccurrence($base, $lembrete->dias_semana ?? []),
-            default => null,
-        };
-
-        if (!$proxima) {
-            return null;
-        }
-
-        if ($lembrete->fim_recorrencia_em && $proxima->greaterThan($lembrete->fim_recorrencia_em->copy()->endOfDay())) {
-            return null;
-        }
-
-        return $proxima;
-    }
-
-    private function nextWeekdayOccurrence(Carbon $base, array $weekdays): ?Carbon
-    {
-        $dias = collect($weekdays)
-            ->map(fn ($dia) => (int) $dia)
-            ->unique()
-            ->sort()
-            ->values();
-
-        if ($dias->isEmpty()) {
-            return null;
-        }
-
-        $cursor = $base->copy()->addDay();
-        for ($i = 0; $i < 14; $i++) {
-            if ($dias->contains($cursor->dayOfWeek)) {
-                return $cursor;
-            }
-
-            $cursor->addDay();
-        }
-
-        return null;
     }
 
     private function compromissosDoUsuario()

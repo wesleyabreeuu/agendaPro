@@ -11,3 +11,7 @@ Artisan::command('inspire', function () {
 Schedule::command('messages:dispatch-due')
     ->everyMinute()
     ->withoutOverlapping();
+
+Schedule::command('reminders:push-due')
+    ->everyMinute()
+    ->withoutOverlapping();

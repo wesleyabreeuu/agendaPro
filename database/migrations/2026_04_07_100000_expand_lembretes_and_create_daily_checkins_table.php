@@ -9,6 +9,8 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $driver = DB::getDriverName();
+
         Schema::table('lembretes', function (Blueprint $table) {
             $table->foreignId('user_id')->nullable()->after('id')->constrained('usuarios')->cascadeOnDelete();
             $table->string('tipo')->default('compromisso')->after('user_id');
@@ -25,16 +27,34 @@ return new class extends Migration
             $table->timestamp('ultima_execucao_em')->nullable()->after('notificado_em');
         });
 
-        DB::table('lembretes')
-            ->join('compromissos', 'compromissos.id', '=', 'lembretes.compromisso_id')
-            ->update([
-                'lembretes.user_id' => DB::raw('compromissos.usuarios_id'),
-                'lembretes.titulo' => DB::raw('compromissos.titulo'),
-                'lembretes.descricao' => DB::raw('compromissos.descricao'),
-                'lembretes.inicio_em' => DB::raw('compromissos.data_inicio'),
-            ]);
+        if ($driver === 'sqlite') {
+            DB::table('lembretes')
+                ->select('lembretes.id', 'compromissos.usuarios_id', 'compromissos.titulo', 'compromissos.descricao', 'compromissos.data_inicio')
+                ->join('compromissos', 'compromissos.id', '=', 'lembretes.compromisso_id')
+                ->orderBy('lembretes.id')
+                ->get()
+                ->each(function ($lembrete) {
+                    DB::table('lembretes')
+                        ->where('id', $lembrete->id)
+                        ->update([
+                            'user_id' => $lembrete->usuarios_id,
+                            'titulo' => $lembrete->titulo,
+                            'descricao' => $lembrete->descricao,
+                            'inicio_em' => $lembrete->data_inicio,
+                        ]);
+                });
+        } else {
+            DB::table('lembretes')
+                ->join('compromissos', 'compromissos.id', '=', 'lembretes.compromisso_id')
+                ->update([
+                    'lembretes.user_id' => DB::raw('compromissos.usuarios_id'),
+                    'lembretes.titulo' => DB::raw('compromissos.titulo'),
+                    'lembretes.descricao' => DB::raw('compromissos.descricao'),
+                    'lembretes.inicio_em' => DB::raw('compromissos.data_inicio'),
+                ]);
 
-        DB::statement('ALTER TABLE lembretes MODIFY compromisso_id BIGINT UNSIGNED NULL');
+            DB::statement('ALTER TABLE lembretes MODIFY compromisso_id BIGINT UNSIGNED NULL');
+        }
 
         Schema::create('daily_checkins', function (Blueprint $table) {
             $table->id();
@@ -54,9 +74,13 @@ return new class extends Migration
 
     public function down(): void
     {
+        $driver = DB::getDriverName();
+
         Schema::dropIfExists('daily_checkins');
 
-        DB::statement('ALTER TABLE lembretes MODIFY compromisso_id BIGINT UNSIGNED NOT NULL');
+        if ($driver !== 'sqlite') {
+            DB::statement('ALTER TABLE lembretes MODIFY compromisso_id BIGINT UNSIGNED NOT NULL');
+        }
 
         Schema::table('lembretes', function (Blueprint $table) {
             $table->dropConstrainedForeignId('user_id');

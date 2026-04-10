@@ -8,6 +8,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\File;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -94,6 +96,23 @@ class User extends Authenticatable
     public function regra()
     {
         return $this->belongsTo(Regra::class, 'regra_id');
+    }
+
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(WebPushSubscription::class, 'user_id');
+    }
+
+    public function sharedCompromissos(): BelongsToMany
+    {
+        return $this->belongsToMany(Compromisso::class, 'compromisso_compartilhamentos', 'usuario_id', 'compromisso_id')
+            ->withPivot('permissao')
+            ->withTimestamps();
+    }
+
+    public function habitos(): HasMany
+    {
+        return $this->hasMany(Habito::class, 'user_id');
     }
 
     public function isAdmin(): bool

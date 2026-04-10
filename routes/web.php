@@ -15,6 +15,7 @@ use App\Http\Controllers\StravaController;
 use App\Http\Controllers\DailyCheckinController;
 use App\Http\Controllers\PermissaoController;
 use App\Http\Controllers\RegraController;
+use App\Http\Controllers\PushSubscriptionController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -39,13 +40,14 @@ Route::middleware('auth')->group(function () {
         Route::get('lembretes/{id}/enviar-whatsapp', [LembreteController::class, 'enviarWhatsApp'])
             ->name('lembretes.enviar-whatsapp');
         Route::get('/lembretes/due/feed', [LembreteController::class, 'due'])->name('lembretes.due');
+        Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
+        Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
         Route::get('compromissos/calendario', [CompromissoController::class, 'calendario'])->name('compromissos.calendario');
         Route::get('compromissos/calendario/eventos', [CompromissoController::class, 'calendarioEventos'])->name('compromissos.calendario.eventos');
     });
 
     Route::middleware('can:access-dia-a-dia')->group(function () {
         Route::get('check-ins', [DailyCheckinController::class, 'index'])->name('checkins.index');
-        Route::post('check-ins', [DailyCheckinController::class, 'store'])->name('checkins.store');
         Route::patch('todo/{todo}/status', [TodoController::class, 'status'])
         ->whereNumber('todo')
         ->name('todo.status');

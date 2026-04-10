@@ -13,12 +13,16 @@ return new class extends Migration
             $table->text('observacao')->nullable()->after('descricao');
         });
 
-        DB::statement("ALTER TABLE todos MODIFY urgencia ENUM('baixa', 'media', 'alta', 'urgente') NOT NULL DEFAULT 'media'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE todos MODIFY urgencia ENUM('baixa', 'media', 'alta', 'urgente') NOT NULL DEFAULT 'media'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE todos MODIFY urgencia ENUM('baixa', 'media', 'alta') NOT NULL DEFAULT 'media'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE todos MODIFY urgencia ENUM('baixa', 'media', 'alta') NOT NULL DEFAULT 'media'");
+        }
 
         Schema::table('todos', function (Blueprint $table) {
             $table->dropColumn('observacao');

@@ -6,6 +6,7 @@ use App\Models\Compromisso;
 use App\Models\Categoria;
 use App\Models\ScheduledMessage;
 use App\Models\Todo;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -22,8 +23,15 @@ class CompromissoController extends Controller
 
     public function index(): Response
     {
-        $compromissos = Compromisso::with('categoria')
+        $user = Auth::user();
+
+        $compromissos = Compromisso::with(['categoria', 'owner', 'compartilhamentos.usuario'])
             ->where('usuarios_id', Auth::id())
+            ->orderBy('data_inicio')
+            ->get();
+
+        $compromissosCompartilhados = $user->sharedCompromissos()
+            ->with(['categoria', 'owner', 'compartilhamentos.usuario'])
             ->orderBy('data_inicio')
             ->get();
 
@@ -31,11 +39,22 @@ class CompromissoController extends Controller
             ->orderBy('nome')
             ->get();
 
+        $usuarios = User::query()
+            ->whereKeyNot(Auth::id())
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
         return Inertia::render('Compromissos/Index', [
-            'compromissos' => $compromissos->map(fn (Compromisso $compromisso) => $this->serializeCompromisso($compromisso))->values()->all(),
+            'compromissos' => $compromissos->map(fn (Compromisso $compromisso) => $this->serializeCompromisso($compromisso, $user))->values()->all(),
+            'compromissosCompartilhados' => $compromissosCompartilhados->map(fn (Compromisso $compromisso) => $this->serializeCompromisso($compromisso, $user))->values()->all(),
             'categorias' => $categorias->map(fn (Categoria $categoria) => [
                 'id' => $categoria->id,
                 'nome' => $categoria->nome,
+            ])->values()->all(),
+            'usuarios' => $usuarios->map(fn (User $usuario) => [
+                'id' => $usuario->id,
+                'name' => $usuario->name,
+                'email' => $usuario->email,
             ])->values()->all(),
         ]);
     }
@@ -54,15 +73,21 @@ class CompromissoController extends Controller
                 'nome' => $categoria->nome,
             ])->values()->all(),
             'leadTimeOptions' => $this->leadTimeOptions(),
+            'usuarios' => [],
         ]);
     }
 
     public function edit($id): Response
     {
-        $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($id);
-        $categorias = Categoria::ownedBy(Auth::id())
+        $compromisso = Compromisso::with(['categoria', 'owner', 'compartilhamentos.usuario'])->findOrFail($id);
+        $this->authorize('update', $compromisso);
+        $categorias = Categoria::ownedBy($compromisso->usuarios_id)
             ->orderBy('nome')
             ->get();
+        $usuarios = User::query()
+            ->whereKeyNot($compromisso->usuarios_id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
 
         return Inertia::render('Compromissos/Form', [
             'modo' => 'edit',
@@ -72,6 +97,11 @@ class CompromissoController extends Controller
                 'nome' => $categoria->nome,
             ])->values()->all(),
             'leadTimeOptions' => $this->leadTimeOptions(),
+            'usuarios' => $usuarios->map(fn (User $usuario) => [
+                'id' => $usuario->id,
+                'name' => $usuario->name,
+                'email' => $usuario->email,
+            ])->values()->all(),
         ]);
     }
 
@@ -111,7 +141,8 @@ class CompromissoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($id);
+        $compromisso = Compromisso::with('compartilhamentos')->findOrFail($id);
+        $this->authorize('update', $compromisso);
 
         $rules = $this->rules();
         $rules['cancelar_lembrete'] = 'nullable|boolean';
@@ -122,7 +153,7 @@ class CompromissoController extends Controller
         );
 
         if ($request->filled('categoria_id')) {
-            Categoria::ownedBy(Auth::id())->findOrFail($request->categoria_id);
+            Categoria::ownedBy($compromisso->usuarios_id)->findOrFail($request->categoria_id);
         }
 
         $compromisso->update([
@@ -174,7 +205,8 @@ class CompromissoController extends Controller
 
     public function destroy($id)
     {
-        $compromisso = Compromisso::where('usuarios_id', Auth::id())->findOrFail($id);
+        $compromisso = Compromisso::with('compartilhamentos')->findOrFail($id);
+        $this->authorize('delete', $compromisso);
 
         // cancela lembretes pendentes antes de excluir
         ScheduledMessage::whereMorphedTo('related', $compromisso)
@@ -344,29 +376,37 @@ class CompromissoController extends Controller
         $inicio = $request->filled('start') ? Carbon::parse($request->start) : now()->startOfMonth();
         $fim = $request->filled('end') ? Carbon::parse($request->end) : now()->endOfMonth();
         $userId = Auth::id();
+        $user = Auth::user();
 
-        $compromissos = Compromisso::with('categoria')
-            ->where('usuarios_id', $userId)
+        $compromissos = Compromisso::with(['categoria', 'owner', 'compartilhamentos'])
+            ->where(function ($query) use ($userId) {
+                $query->where('usuarios_id', $userId)
+                    ->orWhereHas('compartilhamentos', fn ($shareQuery) => $shareQuery->where('usuario_id', $userId));
+            })
             ->where('data_inicio', '<=', $fim)
             ->where(function ($query) use ($inicio) {
                 $query->whereNull('data_fim')
                     ->orWhere('data_fim', '>=', $inicio);
             })
             ->get()
-            ->map(function (Compromisso $compromisso) {
+            ->map(function (Compromisso $compromisso) use ($user) {
+                $permissao = $compromisso->isOwnedBy($user) ? 'owner' : $compromisso->sharedPermissionFor($user);
+
                 return [
                     'id' => 'compromisso-'.$compromisso->id,
                     'title' => $compromisso->titulo,
                     'start' => $compromisso->data_inicio?->toIso8601String(),
                     'end' => $compromisso->data_fim?->toIso8601String(),
                     'allDay' => (bool) $compromisso->dia_inteiro,
-                    'backgroundColor' => '#1f6feb',
-                    'borderColor' => '#1f6feb',
+                    'backgroundColor' => $permissao === 'owner' ? '#1f6feb' : '#7c3aed',
+                    'borderColor' => $permissao === 'owner' ? '#1f6feb' : '#7c3aed',
                     'extendedProps' => [
                         'tipo' => 'compromisso',
                         'descricao' => $compromisso->descricao,
                         'categoria' => $compromisso->categoria->nome ?? 'Sem categoria',
-                        'editUrl' => route('compromissos.edit', $compromisso->id),
+                        'editUrl' => in_array($permissao, ['owner', 'editar'], true) ? route('compromissos.edit', $compromisso->id) : null,
+                        'owner' => $compromisso->owner?->name,
+                        'permissao' => $permissao,
                     ],
                 ];
             });
@@ -396,9 +436,10 @@ class CompromissoController extends Controller
         return response()->json($compromissos->concat($tarefas)->values());
     }
 
-    private function serializeCompromisso(Compromisso $compromisso): array
+    private function serializeCompromisso(Compromisso $compromisso, User $user): array
     {
         $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
+        $permissao = $compromisso->isOwnedBy($user) ? 'owner' : $compromisso->sharedPermissionFor($user);
 
         return [
             'id' => $compromisso->id,
@@ -413,12 +454,32 @@ class CompromissoController extends Controller
             'recorrencia' => $compromisso->recorrencia,
             'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
             'data_fim_recorrencia' => $fimRecorrencia?->format('d/m/Y'),
+            'owner' => [
+                'id' => $compromisso->owner?->id ?? $compromisso->usuarios_id,
+                'nome' => $compromisso->owner?->name,
+                'email' => $compromisso->owner?->email,
+            ],
+            'permissao' => $permissao,
+            'pode_editar' => in_array($permissao, ['owner', 'editar'], true),
+            'pode_excluir' => $permissao === 'owner',
+            'pode_compartilhar' => $permissao === 'owner',
+            'compartilhado_com' => $compromisso->compartilhamentos
+                ->map(fn ($compartilhamento) => [
+                    'usuario_id' => $compartilhamento->usuario_id,
+                    'nome' => $compartilhamento->usuario?->name,
+                    'email' => $compartilhamento->usuario?->email,
+                    'permissao' => $compartilhamento->permissao,
+                ])
+                ->values()
+                ->all(),
         ];
     }
 
     private function serializeCompromissoForm(Compromisso $compromisso): array
     {
         $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
+        $user = Auth::user();
+        $permissao = $compromisso->isOwnedBy($user) ? 'owner' : $compromisso->sharedPermissionFor($user);
 
         return [
             'id' => $compromisso->id,
@@ -433,6 +494,22 @@ class CompromissoController extends Controller
             'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
             'data_fim_recorrencia' => $fimRecorrencia?->format('Y-m-d'),
             'lead_time' => '',
+            'owner' => [
+                'id' => $compromisso->owner?->id ?? $compromisso->usuarios_id,
+                'nome' => $compromisso->owner?->name,
+                'email' => $compromisso->owner?->email,
+            ],
+            'permissao' => $permissao,
+            'pode_compartilhar' => $permissao === 'owner',
+            'compartilhado_com' => $compromisso->compartilhamentos
+                ->map(fn ($compartilhamento) => [
+                    'usuario_id' => $compartilhamento->usuario_id,
+                    'nome' => $compartilhamento->usuario?->name,
+                    'email' => $compartilhamento->usuario?->email,
+                    'permissao' => $compartilhamento->permissao,
+                ])
+                ->values()
+                ->all(),
         ];
     }
 

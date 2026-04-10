@@ -1,8 +1,13 @@
 import React from 'react'
 import { Link } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { Button } from '../../components/ui'
+import { useTheme } from '../../contexts/ThemeContext'
+import { Moon, Sun } from 'lucide-react'
 
 export default function UsuariosIndex({ usuario }) {
+  const { theme, toggleTheme } = useTheme()
+
   return (
     <AppLayout title="Meu Perfil">
       <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
@@ -31,6 +36,19 @@ export default function UsuariosIndex({ usuario }) {
                 <p className="mt-2 text-base font-medium text-zinc-950">{value}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h4 className="text-base font-semibold text-zinc-950">Aparência</h4>
+                <p className="mt-1 text-sm text-zinc-500">Escolha entre tema claro ou escuro para o sistema.</p>
+              </div>
+              <Button type="button" variant="outline" className="w-auto rounded-xl px-4" onClick={toggleTheme}>
+                {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+                {theme === 'dark' ? 'Usar claro' : 'Usar escuro'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>

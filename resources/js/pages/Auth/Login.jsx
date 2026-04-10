@@ -31,7 +31,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                   </div>
                 </div>
                 <CardDescription className="italic">
-                  O AgendaPro organiza sua rotina de forma simples e inteligente.
+                  Seu organizador de rotina de uma forma simples e inteligente.
                 </CardDescription>
               </CardHeader>
               <CardContent>

@@ -56,6 +56,12 @@ return [
         'webhook_callback_url' => env('STRAVA_WEBHOOK_CALLBACK_URL'),
     ],
 
+    'webpush' => [
+        'subject' => env('WEBPUSH_SUBJECT', env('APP_URL', 'http://localhost')),
+        'public_key' => env('WEBPUSH_PUBLIC_KEY'),
+        'private_key' => env('WEBPUSH_PRIVATE_KEY'),
+    ],
+
 
 
 ];
