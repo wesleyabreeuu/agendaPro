@@ -190,6 +190,7 @@ class CompromissoCompartilhamentoController extends Controller
                 ->all(),
             'permissao' => $permissao,
             'pode_editar' => in_array($permissao, ['owner', 'editar'], true),
+            'pode_compartilhar' => $permissao === 'owner',
         ];
     }
 }

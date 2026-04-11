@@ -27,13 +27,21 @@ function getInitials(name = '') {
     .join('') || 'AP'
 }
 
-function DashboardNavLink({ href, active, icon: Icon, children, collapsed = false, onClick }) {
+function DashboardNavLink({ href, active, icon: Icon, children, collapsed = false, onClick, isDark = false }) {
   return (
     <Link
       href={href}
       onClick={onClick}
       title={collapsed ? children : undefined}
-      className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition ${collapsed ? 'justify-center' : 'gap-3'} ${active ? 'border border-zinc-200 bg-white font-medium text-zinc-950 shadow-sm' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'}`}
+      className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition ${collapsed ? 'justify-center' : 'gap-3'} ${
+        active
+          ? isDark
+            ? 'border border-zinc-700 bg-zinc-100 font-medium text-zinc-950 shadow-sm'
+            : 'border border-zinc-200 bg-white font-medium text-zinc-950 shadow-sm'
+          : isDark
+            ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
+            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+      }`}
     >
       <Icon className={`h-4 w-4 ${active ? 'text-zinc-950' : ''}`} strokeWidth={2} />
       {!collapsed ? <span>{children}</span> : null}
@@ -41,24 +49,37 @@ function DashboardNavLink({ href, active, icon: Icon, children, collapsed = fals
   )
 }
 
-function DashboardSubLink({ href, active, children, collapsed = false, onClick }) {
+function DashboardSubLink({ href, active, children, collapsed = false, onClick, isDark = false }) {
   return (
     <Link
       href={href}
       onClick={onClick}
       title={collapsed ? children : undefined}
-      className={`block rounded-xl px-4 py-2.5 text-sm transition ${active ? 'bg-zinc-100 font-medium text-zinc-950' : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'}`}
+      className={`block rounded-xl px-4 py-2.5 text-sm transition ${
+        active
+          ? isDark
+            ? 'bg-zinc-100 font-medium text-zinc-950'
+            : 'bg-zinc-100 font-medium text-zinc-950'
+          : isDark
+            ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
+            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+      }`}
     >
       {collapsed ? children.slice(0, 1) : children}
     </Link>
   )
 }
 
-function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = false }) {
+function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = false, isDark = false }) {
   if (collapsed) {
     return (
       <div className="space-y-1">
-        <div title={label} className="flex items-center justify-center rounded-xl px-3 py-2.5 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950">
+        <div
+          title={label}
+          className={`flex items-center justify-center rounded-xl px-3 py-2.5 text-sm transition ${
+            isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+          }`}
+        >
           <Icon className="h-4 w-4" strokeWidth={2} />
         </div>
       </div>
@@ -67,12 +88,16 @@ function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = fals
 
   return (
     <details open={open} className="rounded-2xl">
-      <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-2.5 text-sm text-zinc-700 transition hover:bg-zinc-100 hover:text-zinc-950">
+      <summary
+        className={`flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
+          isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+        }`}
+      >
         <span className="flex items-center gap-3">
           <Icon className="h-4 w-4" strokeWidth={2} />
           <span>{label}</span>
         </span>
-        <ChevronDown className="h-4 w-4 text-zinc-400" />
+        <ChevronDown className={`h-4 w-4 ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`} />
       </summary>
       <div className="mt-1 space-y-1 pl-8">
         {children}
@@ -81,13 +106,17 @@ function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = fals
   )
 }
 
-function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle, mobileOpen = false, onClose, mobile = false }) {
+function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle, mobileOpen = false, onClose, mobile = false, isDark = false }) {
   const userName = auth?.user?.name || 'Usuário'
   const isAdmin = Boolean(auth?.user?.is_admin)
 
   const asideClassName = mobile
-    ? `fixed inset-y-0 left-0 z-50 w-[304px] border-r border-zinc-200/80 bg-zinc-50/95 backdrop-blur transition-transform duration-200 lg:hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`
-    : `hidden border-r border-zinc-200/80 bg-zinc-50/70 lg:flex lg:flex-col ${collapsed ? 'lg:w-[96px]' : 'lg:w-[304px]'}`
+    ? `fixed inset-y-0 left-0 z-50 w-[304px] border-r backdrop-blur transition-transform duration-200 lg:hidden ${
+      isDark ? 'border-zinc-800 bg-zinc-950/96' : 'border-zinc-200/80 bg-zinc-50/95'
+    } ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`
+    : `hidden border-r lg:flex lg:flex-col ${
+      isDark ? 'border-zinc-800 bg-zinc-950/92' : 'border-zinc-200/80 bg-zinc-50/70'
+    } ${collapsed ? 'lg:w-[96px]' : 'lg:w-[304px]'}`
 
   const handleNavigate = () => {
     if (mobile && onClose) {
@@ -100,20 +129,24 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
       <div className="flex h-full flex-col p-5">
         <div className={`relative flex items-center px-2 ${collapsed ? 'justify-center' : 'justify-between gap-3'}`}>
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm">
+            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border p-2 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <img src="/brand/agendapro-mark.svg" alt="AgendaPro" className="h-full w-full object-contain" />
             </div>
             {!collapsed ? (
               <div>
-                <p className="text-base font-semibold text-zinc-950">Agenda Pro</p>
-                <p className="text-xs text-zinc-500">{auth?.user?.profile_role_label || 'Workspace'}</p>
+                <p className={`text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Agenda Pro</p>
+                <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{auth?.user?.profile_role_label || 'Workspace'}</p>
               </div>
             ) : null}
           </div>
           <button
             type="button"
             onClick={mobile ? onClose : onToggle}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950 ${collapsed ? 'absolute top-5 -right-4 shadow-sm' : ''}`}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+              isDark
+                ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+            } ${collapsed ? 'absolute top-5 -right-4 shadow-sm' : ''}`}
             title={mobile ? 'Fechar menu' : collapsed ? 'Expandir menu' : 'Recolher menu'}
           >
             {mobile ? <X className="h-4 w-4" /> : <ChevronLeft className={`h-4 w-4 transition ${collapsed ? 'rotate-180' : ''}`} />}
@@ -121,11 +154,11 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
         </div>
 
         <nav className="mt-6 flex-1 space-y-1.5 overflow-y-auto">
-          <DashboardNavLink href="/home" active={currentPath === '/home'} icon={LayoutGrid} collapsed={collapsed} onClick={handleNavigate}>
+          <DashboardNavLink href="/home" active={currentPath === '/home'} icon={LayoutGrid} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
             Dashboard
           </DashboardNavLink>
 
-          <DashboardNavLink href="/usuarios" active={currentPath.startsWith('/usuarios')} icon={UserCircle2} collapsed={collapsed} onClick={handleNavigate}>
+          <DashboardNavLink href="/usuarios" active={currentPath.startsWith('/usuarios')} icon={UserCircle2} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
             Meu Perfil
           </DashboardNavLink>
 
@@ -135,14 +168,15 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               icon={CalendarDays}
               open={currentPath.startsWith('/compromissos') || currentPath.startsWith('/categorias') || currentPath.startsWith('/lembretes')}
               collapsed={collapsed}
+              isDark={isDark}
             >
-              <DashboardSubLink href="/compromissos" active={currentPath.startsWith('/compromissos') && !currentPath.includes('/calendario')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/compromissos" active={currentPath.startsWith('/compromissos') && !currentPath.includes('/calendario')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Compromissos
               </DashboardSubLink>
-              <DashboardSubLink href="/categorias" active={currentPath.startsWith('/categorias')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/categorias" active={currentPath.startsWith('/categorias')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Categorias
               </DashboardSubLink>
-              <DashboardSubLink href="/lembretes" active={currentPath.startsWith('/lembretes')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/lembretes" active={currentPath.startsWith('/lembretes')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Lembretes
               </DashboardSubLink>
             </DashboardNavGroup>
@@ -154,35 +188,36 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               icon={CheckSquare}
               open={currentPath.startsWith('/todo') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
               collapsed={collapsed}
+              isDark={isDark}
             >
-              <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Todo list
               </DashboardSubLink>
-              <DashboardSubLink href="/check-ins" active={currentPath.startsWith('/check-ins')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/check-ins" active={currentPath.startsWith('/check-ins')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Habitos
               </DashboardSubLink>
-              <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Calendário
               </DashboardSubLink>
             </DashboardNavGroup>
           ) : null}
 
           {permissions.projetos ? (
-            <DashboardNavGroup label="Projetos" icon={FolderKanban} open={currentPath.startsWith('/kanban')} collapsed={collapsed}>
-              <DashboardSubLink href="/kanban" active={currentPath.startsWith('/kanban')} collapsed={collapsed} onClick={handleNavigate}>
+            <DashboardNavGroup label="Projetos" icon={FolderKanban} open={currentPath.startsWith('/kanban')} collapsed={collapsed} isDark={isDark}>
+              <DashboardSubLink href="/kanban" active={currentPath.startsWith('/kanban')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Kanban
               </DashboardSubLink>
             </DashboardNavGroup>
           ) : null}
 
           {permissions.financeiro ? (
-            <DashboardNavLink href="/financeiro" active={currentPath.startsWith('/financeiro')} icon={Wallet} collapsed={collapsed} onClick={handleNavigate}>
+            <DashboardNavLink href="/financeiro" active={currentPath.startsWith('/financeiro')} icon={Wallet} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
               Controle Financeiro
             </DashboardNavLink>
           ) : null}
 
           {permissions.saude ? (
-            <DashboardNavLink href="/saude" active={currentPath.startsWith('/saude') || currentPath.startsWith('/integracoes/strava')} icon={HeartPulse} collapsed={collapsed} onClick={handleNavigate}>
+            <DashboardNavLink href="/saude" active={currentPath.startsWith('/saude') || currentPath.startsWith('/integracoes/strava')} icon={HeartPulse} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
               Saúde e Fitness
             </DashboardNavLink>
           ) : null}
@@ -193,23 +228,26 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               icon={ClipboardList}
               open={currentPath.startsWith('/regras') || currentPath.startsWith('/permissoes') || currentPath.startsWith('/admin/usuarios')}
               collapsed={collapsed}
+              isDark={isDark}
             >
-              <DashboardSubLink href="/admin/usuarios" active={currentPath.startsWith('/admin/usuarios')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/admin/usuarios" active={currentPath.startsWith('/admin/usuarios')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Usuários
               </DashboardSubLink>
-              <DashboardSubLink href="/regras" active={currentPath.startsWith('/regras')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/regras" active={currentPath.startsWith('/regras')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Regras
               </DashboardSubLink>
-              <DashboardSubLink href="/permissoes" active={currentPath.startsWith('/permissoes')} collapsed={collapsed} onClick={handleNavigate}>
+              <DashboardSubLink href="/permissoes" active={currentPath.startsWith('/permissoes')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Permissões
               </DashboardSubLink>
             </DashboardNavGroup>
           ) : null}
         </nav>
 
-        <div className={`mt-5 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm ${collapsed ? 'space-y-3' : 'flex items-center gap-3'}`}>
+        <div className={`mt-5 rounded-2xl border p-3 shadow-sm ${
+          isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'
+        } ${collapsed ? 'space-y-3' : 'flex items-center gap-3'}`}>
           {auth?.user?.profile_image_url ? (
-            <img src={auth.user.profile_image_url} alt={userName} className="h-11 w-11 rounded-xl object-cover ring-1 ring-zinc-200" />
+            <img src={auth.user.profile_image_url} alt={userName} className={`h-11 w-11 rounded-xl object-cover ring-1 ${isDark ? 'ring-zinc-700' : 'ring-zinc-200'}`} />
           ) : (
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white">
               {getInitials(userName)}
@@ -217,11 +255,19 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
           )}
           {!collapsed ? (
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-zinc-950">{userName}</p>
-              <p className="truncate text-xs text-zinc-500">{auth?.user?.email || auth?.user?.profile_role_label || 'Conta ativa'}</p>
+              <p className={`truncate text-sm font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{userName}</p>
+              <p className={`truncate text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{auth?.user?.email || auth?.user?.profile_role_label || 'Conta ativa'}</p>
             </div>
           ) : null}
-          <button type="button" onClick={() => router.post('/logout')} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950">
+          <button
+            type="button"
+            onClick={() => router.post('/logout')}
+            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+              isDark
+                ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                : 'border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+            }`}
+          >
             <LogOut className="h-4 w-4" />
           </button>
         </div>
@@ -585,7 +631,7 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
     <>
       <Head title={title} />
       <div className={`min-h-screen lg:grid ${sidebarCollapsed ? 'lg:grid-cols-[96px_minmax(0,1fr)]' : 'lg:grid-cols-[304px_minmax(0,1fr)]'} ${isDashboardChrome ? (isDark ? 'bg-zinc-950' : 'bg-zinc-100/70') : 'bg-white'}`}>
-        <DashboardSidebar currentPath={currentPath} permissions={permissions} auth={auth} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} />
+        <DashboardSidebar currentPath={currentPath} permissions={permissions} auth={auth} collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed((value) => !value)} isDark={isDark} />
         {mobileSidebarOpen ? (
           <button
             type="button"
@@ -602,6 +648,7 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
           mobile
           mobileOpen={mobileSidebarOpen}
           onClose={() => setMobileSidebarOpen(false)}
+          isDark={isDark}
         />
 
         <main className="min-w-0">
