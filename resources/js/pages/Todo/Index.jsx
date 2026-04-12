@@ -3,6 +3,7 @@ import { router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import { Check, ChevronDown, Clock3, MessageSquareText, MoreHorizontal, Plus, Save, Trash2, X } from 'lucide-react'
 import { Input, Select, Textarea } from '../../components/ui'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const statusOptions = [
   { value: 'aguardando', label: 'Não iniciado', tone: 'bg-rose-100 text-rose-700 border-rose-200', dot: 'bg-rose-400' },
@@ -34,9 +35,11 @@ function tableInputClassName(extra = '') {
 }
 
 export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
+  const { theme } = useTheme()
   const [rows, setRows] = useState(tarefas)
   const [savingRowId, setSavingRowId] = useState(null)
   const [observationModal, setObservationModal] = useState(null)
+  const isDark = theme === 'dark'
 
   const { data, setData, post, processing, reset } = useForm({
     data: dataSelecionada,
@@ -135,16 +138,16 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
   }
 
   return (
-    <AppLayout title="Todo List">
+    <AppLayout title="Todo List" chrome="dashboard">
       <div className="space-y-6">
-        <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight text-zinc-950">Nova tarefa</h2>
-              <p className="mt-1 text-sm text-zinc-500">Crie itens com horário, status, urgência e observação.</p>
+              <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Nova tarefa</h2>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie itens com horário, status, urgência e observação.</p>
             </div>
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm text-zinc-600">
-              Dia selecionado: <span className="font-medium text-zinc-950">{dataSelecionada}</span>
+            <div className={`rounded-2xl border px-4 py-2 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
+              Dia selecionado: <span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>{dataSelecionada}</span>
             </div>
           </div>
 
@@ -201,13 +204,13 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
           </form>
         </section>
 
-        <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-4 border-b border-zinc-200 px-6 py-5">
+        <section className={`overflow-hidden rounded-[28px] border shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+          <div className={`flex items-center justify-between gap-4 border-b px-6 py-5 ${isDark ? 'border-zinc-700' : 'border-zinc-200'}`}>
             <div>
-              <h3 className="text-xl font-semibold tracking-tight text-zinc-950">Tarefas do dia</h3>
-              <p className="mt-1 text-sm text-zinc-500">Atualize status, urgência, observações e conclusão direto na tabela.</p>
+              <h3 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Tarefas do dia</h3>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Atualize status, urgência, observações e conclusão direto na tabela.</p>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700">
+            <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
               <Clock3 className="h-3.5 w-3.5" />
               {rows.length} tarefas
             </div>
@@ -215,7 +218,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
 
           <div className="overflow-x-auto">
             <table className="min-w-[980px] w-full">
-              <thead className="bg-zinc-50/80 text-left text-sm text-zinc-500">
+              <thead className={`text-left text-sm ${isDark ? 'bg-white text-black' : 'bg-zinc-50/80 text-zinc-500'}`}>
                 <tr>
                   <th className="px-4 py-4 font-medium">Hora</th>
                   <th className="px-4 py-4 font-medium">Descrição</th>
@@ -228,7 +231,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               </thead>
               <tbody>
                 {rows.length ? rows.map((row) => (
-                  <tr key={row.id} className="border-t border-zinc-200 align-top">
+                  <tr key={row.id} className={`align-top ${isDark ? 'border-t border-zinc-700' : 'border-t border-zinc-200'}`}>
                     <td className="px-4 py-4">
                       <input
                         type="time"
@@ -251,14 +254,14 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                           <span className="truncate">{statusMeta(row.status).label}</span>
                           <ChevronDown className="ml-auto h-3.5 w-3.5 opacity-70" />
                         </summary>
-                        <div className="absolute left-0 top-[calc(100%+8px)] z-20 min-w-[172px] rounded-2xl border border-zinc-200 bg-white p-2 shadow-lg">
+                        <div className={`absolute left-0 top-[calc(100%+8px)] z-20 min-w-[172px] rounded-2xl border p-2 shadow-lg ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                           <div className="space-y-1">
                             {statusOptions.map((option) => (
                               <button
                                 key={option.value}
                                 type="button"
                                 onClick={() => handleStatusChange(row, option.value)}
-                                className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${row.status === option.value ? option.tone : 'text-zinc-700 hover:bg-zinc-50'}`}
+                                className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${row.status === option.value ? option.tone : isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-700 hover:bg-zinc-50'}`}
                               >
                                 <span className={`h-2.5 w-2.5 rounded-full ${option.dot}`} />
                                 <span className="truncate">{option.label}</span>
@@ -324,8 +327,8 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                   <tr>
                     <td colSpan="7" className="px-6 py-14 text-center">
                       <div className="space-y-2">
-                        <p className="text-lg font-semibold text-zinc-950">Nenhuma tarefa cadastrada para este dia</p>
-                        <p className="text-sm text-zinc-500">Crie a primeira linha acima e acompanhe o dia nesse formato de tabela.</p>
+                        <p className={`text-lg font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Nenhuma tarefa cadastrada para este dia</p>
+                        <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie a primeira linha acima e acompanhe o dia nesse formato de tabela.</p>
                       </div>
                     </td>
                   </tr>
@@ -338,24 +341,24 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
 
       {observationModal ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-[28px] border border-zinc-200 bg-white p-6 shadow-xl">
+          <div className={`w-full max-w-2xl rounded-[28px] border p-6 shadow-xl ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm text-zinc-500">Observação da tarefa</p>
-                <h3 className="mt-1 text-xl font-semibold tracking-tight text-zinc-950">{observationModal.descricao}</h3>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Observação da tarefa</p>
+                <h3 className={`mt-1 text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{observationModal.descricao}</h3>
               </div>
               <button
                 type="button"
                 onClick={closeObservationModal}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-600 transition hover:bg-zinc-50"
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition ${isDark ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="mt-5">
-              <label className="text-sm font-medium text-zinc-900">Observação</label>
-              <div className="mt-2 rounded-2xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+              <label className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Observação</label>
+              <div className={`mt-2 rounded-2xl border shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                 <Textarea
                   className="min-h-44 resize-y border-0 shadow-none focus:ring-0"
                   value={observationModal.observacao}
@@ -369,7 +372,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               <button
                 type="button"
                 onClick={closeObservationModal}
-                className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 shadow-sm"
+                className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}
               >
                 Cancelar
               </button>

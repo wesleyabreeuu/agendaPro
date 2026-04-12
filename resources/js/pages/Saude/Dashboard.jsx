@@ -1,25 +1,35 @@
 import React from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { useTheme } from '../../contexts/ThemeContext'
 
 export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria = [], metasProgresso = [], ultimasAtividades = [] }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
   return (
-    <AppLayout title="Saúde & Fitness">
+    <AppLayout title="Saúde & Fitness" chrome="dashboard">
       <div className="space-y-6">
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Integração com Strava</h2>
-              <p className="mt-1 text-sm text-zinc-500">Quando você salvar uma nova atividade no Strava, o sistema poderá importar para o módulo de saúde.</p>
+              <h2 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Integração com Strava</h2>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Quando você salvar uma nova atividade no Strava, o sistema poderá importar para o módulo de saúde.</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <span className={`inline-flex h-10 items-center rounded-md px-4 text-sm font-medium ${strava.connected ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-700'}`}>
+              <span className={`inline-flex h-10 items-center rounded-md px-4 text-sm font-medium ${
+                strava.connected
+                  ? 'bg-green-100 text-green-800'
+                  : isDark
+                    ? 'border border-zinc-700 bg-zinc-900 text-white'
+                    : 'bg-zinc-100 text-zinc-700'
+              }`}>
                 {strava.connected ? 'Conectado' : 'Desconectado'}
               </span>
               {strava.connected ? (
                 <>
-                  <button type="button" onClick={() => router.post('/integracoes/strava/sync')} className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Sincronizar agora</button>
-                  <button type="button" onClick={() => router.post('/integracoes/strava/disconnect')} className="inline-flex h-10 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600">Desconectar</button>
+                  <button type="button" onClick={() => router.post('/integracoes/strava/sync')} className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>Sincronizar agora</button>
+                  <button type="button" onClick={() => router.post('/integracoes/strava/disconnect')} className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>Desconectar</button>
                 </>
               ) : (
                 <a href="/integracoes/strava/connect" className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Conectar Strava</a>
@@ -99,19 +109,25 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
 }
 
 function Metric({ title, value }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <p className="text-sm text-zinc-500">{title}</p>
-      <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
+    <div className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+      <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
+      <p className={`mt-3 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
     </div>
   )
 }
 
 function Panel({ title, action = null, children }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
+        <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h3>
         {action}
       </div>
       {children}

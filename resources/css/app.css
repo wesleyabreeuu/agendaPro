@@ -60,7 +60,13 @@ body.theme-dark .bg-zinc-50\/70 {
 body.theme-dark .bg-zinc-100,
 body.theme-dark .bg-zinc-100\/70,
 body.theme-dark .bg-zinc-100\/80,
-body.theme-dark .bg-zinc-100\/90 {
+body.theme-dark .bg-zinc-100\/90,
+body.theme-dark .bg-zinc-50\/80,
+body.theme-dark .bg-blue-50,
+body.theme-dark .bg-emerald-50,
+body.theme-dark .bg-amber-50,
+body.theme-dark .bg-violet-50,
+body.theme-dark .bg-red-50 {
     background-color: #f4f4f5 !important;
     color: #020617 !important;
 }
@@ -108,7 +114,13 @@ body.theme-dark :is(
     .bg-zinc-100,
     .bg-zinc-100\/70,
     .bg-zinc-100\/80,
-    .bg-zinc-100\/90
+    .bg-zinc-100\/90,
+    .bg-zinc-50\/80,
+    .bg-blue-50,
+    .bg-emerald-50,
+    .bg-amber-50,
+    .bg-violet-50,
+    .bg-red-50
 ) :is(.text-zinc-950, .text-zinc-900, .text-zinc-700, .text-zinc-600, .text-zinc-500, .text-zinc-400, .text-white) {
     color: #020617 !important;
 }
@@ -117,7 +129,13 @@ body.theme-dark :is(
     .bg-zinc-100,
     .bg-zinc-100\/70,
     .bg-zinc-100\/80,
-    .bg-zinc-100\/90
+    .bg-zinc-100\/90,
+    .bg-zinc-50\/80,
+    .bg-blue-50,
+    .bg-emerald-50,
+    .bg-amber-50,
+    .bg-violet-50,
+    .bg-red-50
 ) {
     color: #020617 !important;
 }

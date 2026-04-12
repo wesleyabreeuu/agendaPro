@@ -1,64 +1,85 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { Link, router } from '@inertiajs/react'
-import { X } from 'lucide-react'
 import AppLayout from '../../layouts/AppLayout'
+import { useTheme } from '../../contexts/ThemeContext'
 
-function CompromissoCard({ compromisso, onOpenShare }) {
+function buildShareText(compromisso) {
+  const lines = [
+    `Compromisso: ${compromisso.titulo}`,
+    `Início: ${compromisso.data_inicio || 'Não definido'}`,
+    `Fim: ${compromisso.data_fim || 'Não definido'}`,
+  ]
+
+  if (compromisso.owner?.nome) {
+    lines.push(`Owner: ${compromisso.owner.nome}`)
+  }
+
+  if (compromisso.descricao) {
+    lines.push(`Descrição: ${compromisso.descricao}`)
+  }
+
+  return lines.join('\n')
+}
+
+function CompromissoCard({ compromisso, onShare }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
+
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-base font-semibold text-zinc-950">{compromisso.titulo}</h3>
-          <p className="mt-1 text-sm text-zinc-500">{compromisso.categoria || 'Sem categoria'}</p>
+          <h3 className={`text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{compromisso.titulo}</h3>
+          <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{compromisso.categoria || 'Sem categoria'}</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           {compromisso.permissao ? (
-            <span className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700">
+            <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${isDark ? 'border-zinc-700 text-zinc-200' : 'border-zinc-200 text-zinc-700'}`}>
               {compromisso.permissao === 'owner' ? 'Owner' : compromisso.permissao}
             </span>
           ) : null}
           {compromisso.dia_inteiro ? (
-            <span className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs font-medium text-zinc-700">Dia inteiro</span>
+            <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${isDark ? 'border-zinc-700 text-zinc-200' : 'border-zinc-200 text-zinc-700'}`}>Dia inteiro</span>
           ) : null}
         </div>
       </div>
 
-      <div className="mt-4 space-y-2 text-sm text-zinc-600">
-        <p><span className="font-medium text-zinc-900">Início:</span> {compromisso.data_inicio}</p>
-        <p><span className="font-medium text-zinc-900">Fim:</span> {compromisso.data_fim || 'Não definido'}</p>
-        {compromisso.owner?.nome ? <p><span className="font-medium text-zinc-900">Owner:</span> {compromisso.owner.nome}</p> : null}
-        {compromisso.telefone ? <p><span className="font-medium text-zinc-900">WhatsApp:</span> {compromisso.telefone}</p> : null}
+      <div className={`mt-4 space-y-2 text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+        <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Início:</span> {compromisso.data_inicio}</p>
+        <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Fim:</span> {compromisso.data_fim || 'Não definido'}</p>
+        {compromisso.owner?.nome ? <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Owner:</span> {compromisso.owner.nome}</p> : null}
+        {compromisso.telefone ? <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>WhatsApp:</span> {compromisso.telefone}</p> : null}
         {compromisso.recorrencia ? (
           <p>
-            <span className="font-medium text-zinc-900">Recorrência:</span> {compromisso.recorrencia}
+            <span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Recorrência:</span> {compromisso.recorrencia}
             {compromisso.recorrencia_intervalo ? ` a cada ${compromisso.recorrencia_intervalo}` : ''}
           </p>
         ) : null}
         {compromisso.compartilhado_com?.length ? (
           <div className="pt-1">
-            <p className="font-medium text-zinc-900">Compartilhado com</p>
+            <p className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Compartilhado com</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {compromisso.compartilhado_com.map((item) => (
-                <span key={item.usuario_id} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">
+                <span key={item.usuario_id} className="rounded-full border border-zinc-200 bg-zinc-100 px-3 py-1 text-xs text-black">
                   {item.nome} • {item.permissao}
                 </span>
               ))}
             </div>
           </div>
         ) : null}
-        {compromisso.descricao ? <p className="pt-1 text-zinc-500">{compromisso.descricao}</p> : null}
+        {compromisso.descricao ? <p className={`pt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{compromisso.descricao}</p> : null}
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
         {compromisso.pode_editar ? (
-          <Link href={`/compromissos/${compromisso.id}/edit`} className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
+          <Link href={`/compromissos/${compromisso.id}/edit`} className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
             Editar
           </Link>
         ) : null}
         {compromisso.pode_compartilhar ? (
           <button
             type="button"
-            onClick={() => onOpenShare(compromisso)}
+            onClick={() => onShare(compromisso)}
             className="inline-flex h-10 items-center justify-center rounded-md border border-blue-200 bg-blue-50 px-4 text-sm font-medium text-blue-700"
           >
             Compartilhar
@@ -68,7 +89,7 @@ function CompromissoCard({ compromisso, onOpenShare }) {
           <button
             type="button"
             onClick={() => router.delete(`/compromissos/${compromisso.id}`)}
-            className="inline-flex h-10 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600"
+            className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}
           >
             Excluir
           </button>
@@ -78,194 +99,41 @@ function CompromissoCard({ compromisso, onOpenShare }) {
   )
 }
 
-function SharePanel({ compromisso, usuarios = [], onClose, onSave, onRemove, processing }) {
-  const [usuarioId, setUsuarioId] = useState('')
-  const [permissao, setPermissao] = useState('visualizar')
-
-  const availableUsers = useMemo(
-    () => usuarios.filter((usuario) => !compromisso?.compartilhado_com?.some((item) => item.usuario_id === usuario.id)),
-    [usuarios, compromisso]
-  )
-
-  if (!compromisso) {
-    return null
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-zinc-950/55 p-4 sm:items-center">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-5 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-semibold text-zinc-950">Compartilhar compromisso</h3>
-            <p className="mt-1 text-sm text-zinc-600">{compromisso.titulo}</p>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-950"
-            aria-label="Fechar compartilhamento"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_180px_auto]">
-          <select
-            value={usuarioId}
-            onChange={(e) => setUsuarioId(e.target.value)}
-            className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm"
-          >
-            <option value="">Selecione um usuário</option>
-            {availableUsers.map((usuario) => (
-              <option key={usuario.id} value={usuario.id}>
-                {usuario.name} {usuario.email ? `• ${usuario.email}` : ''}
-              </option>
-            ))}
-          </select>
-          <select
-            value={permissao}
-            onChange={(e) => setPermissao(e.target.value)}
-            className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm"
-          >
-            <option value="visualizar">visualizar</option>
-            <option value="editar">editar</option>
-          </select>
-          <button
-            type="button"
-            disabled={processing || !usuarioId}
-            onClick={async () => {
-              const saved = await onSave(compromisso.id, Number(usuarioId), permissao)
-              if (saved) {
-                setUsuarioId('')
-                setPermissao('visualizar')
-              }
-            }}
-            className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white disabled:opacity-60"
-          >
-            Adicionar
-          </button>
-        </div>
-
-        <div className="mt-5 space-y-3">
-          {compromisso.compartilhado_com?.length ? (
-            compromisso.compartilhado_com.map((item) => (
-              <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
-                  <p className="text-sm text-zinc-500">{item.email || 'Sem e-mail'} • {item.permissao}</p>
-                </div>
-                <button
-                  type="button"
-                  disabled={processing}
-                  onClick={() => onRemove(compromisso.id, item.usuario_id)}
-                  className="inline-flex h-10 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600 disabled:opacity-60"
-                >
-                  Remover
-                </button>
-              </div>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-6 text-sm text-zinc-500">
-              Este compromisso ainda não foi compartilhado com ninguém.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function CompromissosIndex({ compromissos = [], compromissosCompartilhados = [], usuarios = [] }) {
   const [ownedItems, setOwnedItems] = useState(compromissos)
   const [sharedItems] = useState(compromissosCompartilhados)
-  const [activeShareId, setActiveShareId] = useState(null)
-  const [processingShare, setProcessingShare] = useState(false)
   const [shareFeedback, setShareFeedback] = useState(null)
 
-  const activeCompromisso = useMemo(
-    () => ownedItems.find((item) => item.id === activeShareId) || null,
-    [ownedItems, activeShareId]
-  )
+  const shareCompromisso = async (compromisso) => {
+    const shareText = buildShareText(compromisso)
+    const shareUrl = `${window.location.origin}/compromissos/${compromisso.id}/edit`
 
-  const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-
-  const updateOwnedCompromisso = (compromissoId, updater) => {
-    setOwnedItems((current) => current.map((item) => (item.id === compromissoId ? updater(item) : item)))
-  }
-
-  const shareCompromisso = async (compromissoId, usuarioId, permissao) => {
-    setProcessingShare(true)
     setShareFeedback(null)
 
     try {
-      const response = await fetch(`/api/compromissos/${compromissoId}/compartilhar`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrf(),
-          Accept: 'application/json',
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({ usuario_id: usuarioId, permissao }),
-      })
+      if (navigator.share) {
+        await navigator.share({
+          title: compromisso.titulo,
+          text: shareText,
+          url: shareUrl,
+        })
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        throw new Error(data?.message || 'Falha ao compartilhar compromisso.')
+        return
       }
 
-      const selectedUser = usuarios.find((usuario) => usuario.id === usuarioId)
-
-      updateOwnedCompromisso(compromissoId, (item) => ({
-        ...item,
-        compartilhado_com: [
-          ...(item.compartilhado_com || []).filter((entry) => entry.usuario_id !== usuarioId),
-          {
-            usuario_id: usuarioId,
-            nome: selectedUser?.name || 'Usuário',
-            email: selectedUser?.email || '',
-            permissao,
-          },
-        ],
-      }))
-      setShareFeedback({ type: 'success', message: 'Compartilhamento salvo com sucesso.' })
-      return true
-    } catch (error) {
-      setShareFeedback({ type: 'error', message: error.message || 'Falha ao compartilhar compromisso.' })
-      return false
-    } finally {
-      setProcessingShare(false)
-    }
-  }
-
-  const removeShare = async (compromissoId, usuarioId) => {
-    setProcessingShare(true)
-    setShareFeedback(null)
-
-    try {
-      const response = await fetch(`/api/compromissos/${compromissoId}/compartilhar/${usuarioId}`, {
-        method: 'DELETE',
-        headers: {
-          'X-CSRF-TOKEN': csrf(),
-          Accept: 'application/json',
-        },
-        credentials: 'same-origin',
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => null)
-        throw new Error(data?.message || 'Falha ao remover compartilhamento.')
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`)
+        setShareFeedback({ type: 'success', message: 'Detalhes do compromisso copiados para a área de transferência.' })
+        return
       }
 
-      updateOwnedCompromisso(compromissoId, (item) => ({
-        ...item,
-        compartilhado_com: (item.compartilhado_com || []).filter((entry) => entry.usuario_id !== usuarioId),
-      }))
-      setShareFeedback({ type: 'success', message: 'Acesso removido com sucesso.' })
+      throw new Error('Compartilhamento não suportado neste dispositivo.')
     } catch (error) {
-      setShareFeedback({ type: 'error', message: error.message || 'Falha ao remover compartilhamento.' })
-    } finally {
-      setProcessingShare(false)
+      if (error?.name === 'AbortError') {
+        return
+      }
+
+      setShareFeedback({ type: 'error', message: error.message || 'Não foi possível compartilhar este compromisso.' })
     }
   }
 
@@ -305,7 +173,7 @@ export default function CompromissosIndex({ compromissos = [], compromissosCompa
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {ownedItems.map((compromisso) => (
-              <CompromissoCard key={compromisso.id} compromisso={compromisso} onOpenShare={setActiveShareId} />
+              <CompromissoCard key={compromisso.id} compromisso={compromisso} onShare={shareCompromisso} />
             ))}
           </div>
         </div>
@@ -319,7 +187,7 @@ export default function CompromissosIndex({ compromissos = [], compromissosCompa
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
               {sharedItems.map((compromisso) => (
-                <CompromissoCard key={`shared-${compromisso.id}`} compromisso={compromisso} onOpenShare={() => {}} />
+                <CompromissoCard key={`shared-${compromisso.id}`} compromisso={compromisso} onShare={shareCompromisso} />
               ))}
             </div>
           </div>
@@ -332,19 +200,6 @@ export default function CompromissosIndex({ compromissos = [], compromissosCompa
           </div>
         ) : null}
       </div>
-      {activeCompromisso ? (
-        <SharePanel
-          compromisso={activeCompromisso}
-          usuarios={usuarios}
-          processing={processingShare}
-          onClose={() => {
-            setActiveShareId(null)
-            setShareFeedback(null)
-          }}
-          onSave={shareCompromisso}
-          onRemove={removeShare}
-        />
-      ) : null}
     </AppLayout>
   )
 }

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Link, router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { useTheme } from '../../contexts/ThemeContext'
 import {
   CalendarDays,
   CheckSquare,
@@ -69,6 +70,8 @@ function sanitizeTask(task) {
 }
 
 export default function KanbanShow({ board, lists = [], tarefas = {}, backgroundOptions = [], errors = {} }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const [activeCard, setActiveCard] = useState(null)
   const [newListTitle, setNewListTitle] = useState('')
   const [editingBoard, setEditingBoard] = useState(false)
@@ -124,30 +127,30 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
   }
 
   return (
-    <AppLayout title={board.nome}>
-      <div className={`min-h-[calc(100vh-11rem)] rounded-[32px] border border-zinc-200 p-5 shadow-sm ${boardBackgrounds[board.background_style] || boardBackgrounds.paper}`}>
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-zinc-200 bg-white px-5 py-4 text-zinc-950 shadow-sm">
+    <AppLayout title={board.nome} chrome="dashboard">
+      <div className={`min-h-[calc(100vh-11rem)] rounded-[32px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : `${boardBackgrounds[board.background_style] || boardBackgrounds.paper} border-zinc-200`}`}>
+        <div className={`flex flex-wrap items-center justify-between gap-4 rounded-[24px] border px-5 py-4 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-50' : 'border-zinc-200 bg-white text-zinc-950'}`}>
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-semibold tracking-tight">{board.nome}</h2>
-              <button type="button" onClick={() => setEditingBoard(true)} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 transition hover:bg-zinc-50">
+              <button type="button" onClick={() => setEditingBoard(true)} className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'}`}>
                 <SquarePen className="h-4 w-4" />
               </button>
             </div>
-            <p className="mt-1 text-sm text-zinc-500">{board.descricao || 'Organize listas e cartões como em um quadro de trabalho visual.'}</p>
+            <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{board.descricao || 'Organize listas e cartões como em um quadro de trabalho visual.'}</p>
           </div>
 
-          <Link href="/kanban" className="inline-flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-950 shadow-sm">
+          <Link href="/kanban" className={`inline-flex h-11 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
             Voltar aos quadros
           </Link>
         </div>
 
         <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
           {boardLists.map((list) => (
-            <section key={list.key} className="flex w-[320px] shrink-0 flex-col rounded-[22px] bg-zinc-100/90 p-3 shadow-lg">
+            <section key={list.key} className={`flex w-[320px] shrink-0 flex-col rounded-[22px] p-3 shadow-lg ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'bg-zinc-100/90'}`}>
               <div className="mb-3 flex items-center justify-between gap-3 px-2 pt-1">
-                <h3 className="text-base font-semibold text-zinc-900">{list.title}</h3>
-                <span className="rounded-full bg-white px-2.5 py-1 text-xs text-zinc-600 shadow-sm">{(tarefas[list.key] || []).length}</span>
+                <h3 className={`text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>{list.title}</h3>
+                <span className={`rounded-full px-2.5 py-1 text-xs shadow-sm ${isDark ? 'bg-zinc-800 text-zinc-100' : 'bg-white text-zinc-600'}`}>{(tarefas[list.key] || []).length}</span>
               </div>
 
               <div className="space-y-3">
@@ -156,20 +159,20 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     key={task.id}
                     type="button"
                     onClick={() => openCard(task)}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md"
+                    className={`w-full rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${isDark ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
                   >
                     <div className="flex flex-wrap gap-1.5">
                       {(task.etiquetas || []).slice(0, 3).map((etiqueta, index) => (
-                        <span key={`${etiqueta.nome}-${index}`} className="rounded-md px-2 py-1 text-[11px] font-medium text-zinc-900" style={{ backgroundColor: etiqueta.cor }}>
+                        <span key={`${etiqueta.nome}-${index}`} className={`rounded-md px-2 py-1 text-[11px] font-medium ${isDark ? 'text-slate-950' : 'text-zinc-900'}`} style={{ backgroundColor: etiqueta.cor }}>
                           {etiqueta.nome}
                         </span>
                       ))}
                     </div>
 
-                    <h4 className="mt-3 text-[15px] font-medium leading-6 text-zinc-950">{task.titulo}</h4>
-                    {task.descricao ? <p className="mt-2 line-clamp-3 text-sm leading-5 text-zinc-600">{task.descricao}</p> : null}
+                    <h4 className={`mt-3 text-[15px] font-medium leading-6 ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{task.titulo}</h4>
+                    {task.descricao ? <p className={`mt-2 line-clamp-3 text-sm leading-5 ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{task.descricao}</p> : null}
 
-                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                    <div className={`mt-3 flex flex-wrap items-center gap-2 text-xs ${isDark ? 'text-zinc-300' : 'text-zinc-500'}`}>
                       {task.data_limite_label ? (
                         <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-red-600">
                           <CalendarDays className="h-3.5 w-3.5" />
@@ -177,13 +180,13 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                         </span>
                       ) : null}
                       {task.checklist_resumo?.total ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-1">
+                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
                           <CheckSquare className="h-3.5 w-3.5" />
                           {task.checklist_resumo.concluidos}/{task.checklist_resumo.total}
                         </span>
                       ) : null}
                       {task.anexos?.length ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-1">
+                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
                           <Paperclip className="h-3.5 w-3.5" />
                           {task.anexos.length}
                         </span>
@@ -191,11 +194,11 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                       <span className={`rounded-md px-2 py-1 capitalize ${urgencyTone(task.urgencia)}`}>{task.urgencia}</span>
                     </div>
 
-                    <div className="mt-4 border-t border-zinc-100 pt-3">
+                    <div className={`mt-4 border-t pt-3 ${isDark ? 'border-zinc-700' : 'border-zinc-100'}`}>
                       <Select
                         value={task.list_key}
                         onChange={(e) => moveTask(task.id, e.target.value)}
-                        className="h-9 rounded-xl border-zinc-200 bg-zinc-50 text-xs shadow-none"
+                        className={`h-9 rounded-xl text-xs shadow-none ${isDark ? 'border-zinc-600 bg-zinc-700 text-zinc-100' : 'border-zinc-200 bg-zinc-50'}`}
                       >
                         {boardLists.map((option) => <option key={option.key} value={option.key}>{option.title}</option>)}
                       </Select>
@@ -204,7 +207,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                 ))}
               </div>
 
-              <form onSubmit={submitQuickTask} className="mt-3 rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
+              <form onSubmit={submitQuickTask} className={`mt-3 rounded-2xl border p-3 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
                 <input type="hidden" value={list.key} onChange={() => {}} />
                 <Input
                   value={taskForm.data.list_key === list.key ? taskForm.data.titulo : ''}
@@ -213,12 +216,12 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     taskForm.setData('titulo', e.target.value)
                   }}
                   placeholder="Adicionar um cartão"
-                  className="border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0"
+                  className={`border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0 ${isDark ? 'text-zinc-100 placeholder:text-zinc-400' : 'text-zinc-950 placeholder:text-zinc-500'}`}
                 />
                 <button
                   type="submit"
                   onClick={() => taskForm.setData('list_key', list.key)}
-                  className="mt-3 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white"
+                  className={`mt-3 inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
                 >
                   <Plus className="h-4 w-4" />
                   Adicionar cartão
@@ -227,16 +230,16 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
             </section>
           ))}
 
-          <section className="w-[300px] shrink-0 rounded-[22px] border border-zinc-200 bg-zinc-50 p-4 text-zinc-950 shadow-sm">
+          <section className={`w-[300px] shrink-0 rounded-[22px] border p-4 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-zinc-50 text-zinc-950'}`}>
             <h3 className="text-base font-semibold">Nova lista</h3>
-            <p className="mt-1 text-sm text-zinc-500">Crie colunas como no Trello para separar o fluxo do quadro.</p>
+            <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie colunas como no Trello para separar o fluxo do quadro.</p>
             <div className="mt-4 space-y-3">
               <Input value={newListTitle} onChange={(e) => setNewListTitle(e.target.value)} placeholder="Nome da lista" />
               <button type="button" onClick={addList} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
                 <Plus className="h-4 w-4" />
                 Criar lista
               </button>
-              <button type="button" onClick={saveBoard} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
+              <button type="button" onClick={saveBoard} className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
                 <Save className="h-4 w-4" />
                 Salvar quadro
               </button>
@@ -403,20 +406,20 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                 </div>
               </div>
 
-              <aside className="border-l border-zinc-200 bg-zinc-50/80 p-6">
+              <aside className={`${isDark ? 'border-l border-zinc-700 bg-zinc-900' : 'border-l border-zinc-200 bg-zinc-50/80'} p-6`}>
                 <div className="space-y-6">
                   <section>
                     <div className="flex items-center justify-between gap-3">
-                      <h4 className="text-xl font-semibold text-zinc-800">Comentários e atividade</h4>
+                      <h4 className={`text-xl font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-800'}`}>Comentários e atividade</h4>
                     </div>
-                    <div className="mt-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-400">
+                    <div className={`mt-3 rounded-2xl border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-400'}`}>
                       Escrever um comentário...
                     </div>
                   </section>
 
                   <section>
-                    <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">Observações</h4>
-                    <div className="mt-3 rounded-2xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+                    <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-400'}`}>Observações</h4>
+                    <div className={`mt-3 rounded-2xl border shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
                       <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={activeCard.observacoes || ''} onChange={(e) => updateActiveCard({ observacoes: e.target.value })} placeholder="Anote contexto, decisões e próximos passos" />
                     </div>
                   </section>
@@ -425,13 +428,13 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">Anexos</h4>
                     <div className="mt-3 space-y-3">
                       {(activeCard.anexos || []).map((anexo, index) => (
-                        <div key={index} className="rounded-2xl border border-zinc-200 bg-white p-3 shadow-sm">
+                        <div key={index} className={`rounded-2xl border p-3 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
                           <Input value={anexo.nome} onChange={(e) => updateActiveCard({ anexos: activeCard.anexos.map((item, itemIndex) => itemIndex === index ? { ...item, nome: e.target.value } : item) })} placeholder="Nome do anexo" />
                           <Input value={anexo.url} onChange={(e) => updateActiveCard({ anexos: activeCard.anexos.map((item, itemIndex) => itemIndex === index ? { ...item, url: e.target.value } : item) })} placeholder="https://..." className="mt-2" />
                         </div>
                       ))}
                       {!activeCard.anexos?.length ? (
-                        <button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
+                        <button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
                           <Link2 className="h-4 w-4" />
                           Adicionar anexo
                         </button>
@@ -446,7 +449,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                         <Save className="h-4 w-4" />
                         Salvar cartão
                       </button>
-                      <button type="button" onClick={() => router.delete(`/kanban/tasks/${activeCard.id}`)} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-4 text-sm font-medium text-red-600">
+                      <button type="button" onClick={() => router.delete(`/kanban/tasks/${activeCard.id}`)} className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-950 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
                         <X className="h-4 w-4" />
                         Excluir cartão
                       </button>

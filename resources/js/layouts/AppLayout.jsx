@@ -36,14 +36,14 @@ function DashboardNavLink({ href, active, icon: Icon, children, collapsed = fals
       className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition ${collapsed ? 'justify-center' : 'gap-3'} ${
         active
           ? isDark
-            ? 'border border-zinc-700 bg-zinc-100 font-medium text-zinc-950 shadow-sm'
+            ? 'border border-white/80 bg-white font-medium text-black shadow-sm'
             : 'border border-zinc-200 bg-white font-medium text-zinc-950 shadow-sm'
           : isDark
             ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
             : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
       }`}
     >
-      <Icon className={`h-4 w-4 ${active ? 'text-zinc-950' : ''}`} strokeWidth={2} />
+      <Icon className={`h-4 w-4 ${active ? 'text-black' : ''}`} strokeWidth={2} />
       {!collapsed ? <span>{children}</span> : null}
     </Link>
   )
@@ -58,7 +58,7 @@ function DashboardSubLink({ href, active, children, collapsed = false, onClick, 
       className={`block rounded-xl px-4 py-2.5 text-sm transition ${
         active
           ? isDark
-            ? 'bg-zinc-100 font-medium text-zinc-950'
+            ? 'border border-white/80 bg-white font-medium text-black shadow-sm'
             : 'bg-zinc-100 font-medium text-zinc-950'
           : isDark
             ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'

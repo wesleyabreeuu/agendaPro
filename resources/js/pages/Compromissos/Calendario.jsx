@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../../layouts/AppLayout'
 import { CalendarDays, ChevronLeft, ChevronRight, List, ListChecks } from 'lucide-react'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
 const fullWeekdayLabels = ['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado', 'Domingo']
@@ -63,21 +64,23 @@ function normalizeEvent(evento) {
 }
 
 function eventTone(tipo) {
-  if (tipo === 'todo') return 'border-emerald-200 bg-emerald-50 text-emerald-700'
-  return 'border-blue-200 bg-blue-50 text-blue-700'
+  if (tipo === 'todo') return 'border-emerald-200 bg-emerald-50 text-slate-950'
+  return 'border-blue-200 bg-blue-50 text-slate-950'
 }
 
 function permissionTone(permissao) {
-  if (permissao === 'owner') return 'border-blue-200 bg-blue-50 text-blue-700'
-  if (permissao === 'editar') return 'border-violet-200 bg-violet-50 text-violet-700'
-  return 'border-amber-200 bg-amber-50 text-amber-700'
+  if (permissao === 'owner') return 'border-blue-200 bg-blue-50 text-slate-950'
+  if (permissao === 'editar') return 'border-violet-200 bg-violet-50 text-slate-950'
+  return 'border-amber-200 bg-amber-50 text-slate-950'
 }
 
 export default function CompromissosCalendario() {
+  const { theme } = useTheme()
   const [currentDate, setCurrentDate] = useState(startOfMonth(new Date()))
   const [viewMode, setViewMode] = useState('month')
   const [eventos, setEventos] = useState([])
   const [loading, setLoading] = useState(true)
+  const isDark = theme === 'dark'
 
   useEffect(() => {
     async function load() {
@@ -142,21 +145,27 @@ export default function CompromissosCalendario() {
   }, [eventsByDay])
 
   return (
-    <AppLayout title="Calendário">
+    <AppLayout title="Calendário" chrome="dashboard">
       <div className="space-y-6">
-        <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
+        <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold tracking-tight text-zinc-950">Calendário consolidado</h2>
-              <p className="mt-1 text-sm text-zinc-500">Veja compromissos e tarefas no calendário mensal ou em lista semanal.</p>
+              <h2 className={`text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Calendário consolidado</h2>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Veja compromissos e tarefas no calendário mensal ou em lista semanal.</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex rounded-xl border border-zinc-200 bg-zinc-50 p-1">
+              <div className={`inline-flex rounded-xl border p-1 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
                 <button
                   type="button"
                   onClick={() => setViewMode('month')}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${viewMode === 'month' ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-600'}`}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
+                    viewMode === 'month'
+                      ? 'bg-white text-black shadow-sm'
+                      : isDark
+                        ? 'text-zinc-300'
+                        : 'text-zinc-600'
+                  }`}
                 >
                   <CalendarDays className="h-4 w-4" />
                   Calendário
@@ -164,19 +173,25 @@ export default function CompromissosCalendario() {
                 <button
                   type="button"
                   onClick={() => setViewMode('week-list')}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${viewMode === 'week-list' ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-600'}`}
+                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
+                    viewMode === 'week-list'
+                      ? 'bg-white text-black shadow-sm'
+                      : isDark
+                        ? 'text-zinc-300'
+                        : 'text-zinc-600'
+                  }`}
                 >
                   <List className="h-4 w-4" />
                   Lista semanal
                 </button>
               </div>
 
-              <div className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white p-1 shadow-sm">
-                <button type="button" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))} className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-600 hover:bg-zinc-100">
+              <div className={`inline-flex items-center gap-2 rounded-xl border p-1 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                <button type="button" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <div className="min-w-[170px] text-center text-sm font-medium capitalize text-zinc-950">{monthLabel(currentDate)}</div>
-                <button type="button" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))} className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-600 hover:bg-zinc-100">
+                <div className={`min-w-[170px] text-center text-sm font-medium capitalize ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{monthLabel(currentDate)}</div>
+                <button type="button" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
@@ -185,16 +200,16 @@ export default function CompromissosCalendario() {
         </section>
 
         {loading ? (
-          <div className="rounded-[28px] border border-zinc-200 bg-white p-10 text-center text-sm text-zinc-500 shadow-sm">
+          <div className={`rounded-[28px] border p-10 text-center text-sm shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-500'}`}>
             Carregando eventos...
           </div>
         ) : null}
 
         {!loading && viewMode === 'month' ? (
-          <section className="overflow-hidden rounded-[28px] border border-zinc-200 bg-white shadow-sm">
-            <div className="grid grid-cols-7 border-b border-zinc-200 bg-zinc-50/80">
+          <section className={`overflow-hidden rounded-[28px] border shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <div className={`grid grid-cols-7 border-b ${isDark ? 'border-zinc-700 bg-white' : 'border-zinc-200 bg-zinc-50/80'}`}>
               {weekdayLabels.map((day) => (
-                <div key={day} className="px-4 py-3 text-sm font-medium text-zinc-500">{day}</div>
+                <div key={day} className={`px-4 py-3 text-sm font-medium ${isDark ? 'text-black' : 'text-zinc-500'}`}>{day}</div>
               ))}
             </div>
 
@@ -206,12 +221,22 @@ export default function CompromissosCalendario() {
                 const isToday = key === toDateKey(new Date())
 
                 return (
-                  <div key={key} className="min-h-[160px] border-b border-r border-zinc-200 p-3">
+                  <div key={key} className={`min-h-[160px] border-b border-r p-3 ${isDark ? 'border-zinc-700' : 'border-zinc-200'}`}>
                     <div className="flex items-center justify-between">
-                      <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm ${isToday ? 'bg-zinc-950 text-white' : isCurrentMonth ? 'text-zinc-950' : 'text-zinc-400'}`}>
+                      <span className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-sm ${
+                        isToday
+                          ? isDark
+                            ? 'bg-white text-black'
+                            : 'bg-zinc-950 text-white'
+                          : isCurrentMonth
+                            ? isDark
+                              ? 'text-zinc-100'
+                              : 'text-zinc-950'
+                            : 'text-zinc-400'
+                      }`}>
                         {day.getDate()}
                       </span>
-                      <span className="text-xs text-zinc-400">{dayEvents.length ? `${dayEvents.length} item(ns)` : ''}</span>
+                      <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>{dayEvents.length ? `${dayEvents.length} item(ns)` : ''}</span>
                     </div>
 
                     <div className="mt-3 space-y-2">
@@ -226,14 +251,14 @@ export default function CompromissosCalendario() {
                           }}
                           className={`block rounded-xl border px-3 py-2 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao) : eventTone(evento.extendedProps?.tipo)}`}
                         >
-                          <div className="font-medium">{evento.title}</div>
-                          <div className="mt-1 opacity-80">{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</div>
-                          {evento.extendedProps?.owner ? <div className="mt-1 opacity-70">Owner: {evento.extendedProps.owner}</div> : null}
+                          <div className="font-medium text-slate-950">{evento.title}</div>
+                          <div className="mt-1 text-slate-700">{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</div>
+                          {evento.extendedProps?.owner ? <div className="mt-1 text-slate-600">Owner: {evento.extendedProps.owner}</div> : null}
                         </a>
                       ))}
 
                       {dayEvents.length > 3 ? (
-                        <div className="text-xs text-zinc-500">+{dayEvents.length - 3} mais</div>
+                        <div className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>+{dayEvents.length - 3} mais</div>
                       ) : null}
                     </div>
                   </div>
@@ -246,13 +271,13 @@ export default function CompromissosCalendario() {
         {!loading && viewMode === 'week-list' ? (
           <section className="space-y-4">
             {weeklyGroups.map((group) => (
-              <div key={group.label} className="rounded-[24px] border border-zinc-200 bg-white p-5 shadow-sm">
+              <div key={group.label} className={`rounded-[24px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold tracking-tight text-zinc-950">{group.label}</h3>
-                    <p className="text-sm text-zinc-500">{group.shortDate}</p>
+                    <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{group.label}</h3>
+                    <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{group.shortDate}</p>
                   </div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600">
+                  <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
                     <ListChecks className="h-3.5 w-3.5" />
                     {group.items.length} item(ns)
                   </div>
@@ -260,33 +285,33 @@ export default function CompromissosCalendario() {
 
                 <div className="mt-4 space-y-3">
                   {group.items.length ? group.items.map((evento) => (
-                    <div key={evento.id} className="rounded-2xl border border-zinc-200 p-4">
+                    <div key={evento.id} className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
                             <span className={`rounded-full border px-2.5 py-1 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao) : eventTone(evento.extendedProps?.tipo)}`}>
                               {evento.extendedProps?.tipo === 'todo' ? 'Tarefa' : 'Compromisso'}
                             </span>
-                            {evento.extendedProps?.permissao ? <span className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-600">{evento.extendedProps.permissao}</span> : null}
-                            <span className="text-xs text-zinc-500">{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</span>
+                            {evento.extendedProps?.permissao ? <span className={`rounded-full border px-2.5 py-1 text-xs ${isDark ? 'border-zinc-700 text-zinc-300' : 'border-zinc-200 text-zinc-600'}`}>{evento.extendedProps.permissao}</span> : null}
+                            <span className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</span>
                           </div>
-                          <h4 className="mt-2 text-base font-semibold text-zinc-950">{evento.title}</h4>
-                          {evento.extendedProps?.owner ? <p className="mt-1 text-sm text-zinc-500">Owner: {evento.extendedProps.owner}</p> : null}
-                          {evento.extendedProps?.descricao ? <p className="mt-1 text-sm text-zinc-600">{evento.extendedProps.descricao}</p> : null}
+                          <h4 className={`mt-2 text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{evento.title}</h4>
+                          {evento.extendedProps?.owner ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Owner: {evento.extendedProps.owner}</p> : null}
+                          {evento.extendedProps?.descricao ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{evento.extendedProps.descricao}</p> : null}
                         </div>
                         {evento.extendedProps?.editUrl ? (
-                          <a href={evento.extendedProps.editUrl} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 shadow-sm">
+                          <a href={evento.extendedProps.editUrl} className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
                             Editar
                           </a>
                         ) : (
-                          <span className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-400 shadow-sm">
+                          <span className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-500' : 'border-zinc-200 bg-white text-zinc-400'}`}>
                             Somente leitura
                           </span>
                         )}
                       </div>
                     </div>
                   )) : (
-                    <div className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
+                    <div className={`rounded-2xl border border-dashed p-6 text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
                       Nenhum item programado para este dia.
                     </div>
                   )}
@@ -297,7 +322,7 @@ export default function CompromissosCalendario() {
         ) : null}
 
         {!loading && eventos.length === 0 ? (
-          <div className="rounded-[28px] border border-dashed border-zinc-300 bg-white p-10 text-center text-sm text-zinc-500 shadow-sm">
+          <div className={`rounded-[28px] border border-dashed p-10 text-center text-sm shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-400' : 'border-zinc-300 bg-white text-zinc-500'}`}>
             Nenhum evento encontrado no período atual.
           </div>
         ) : null}
