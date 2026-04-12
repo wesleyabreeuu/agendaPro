@@ -39,22 +39,12 @@ class CompromissoController extends Controller
             ->orderBy('nome')
             ->get();
 
-        $usuarios = User::query()
-            ->whereKeyNot(Auth::id())
-            ->orderBy('name')
-            ->get(['id', 'name', 'email']);
-
         return Inertia::render('Compromissos/Index', [
             'compromissos' => $compromissos->map(fn (Compromisso $compromisso) => $this->serializeCompromisso($compromisso, $user))->values()->all(),
             'compromissosCompartilhados' => $compromissosCompartilhados->map(fn (Compromisso $compromisso) => $this->serializeCompromisso($compromisso, $user))->values()->all(),
             'categorias' => $categorias->map(fn (Categoria $categoria) => [
                 'id' => $categoria->id,
                 'nome' => $categoria->nome,
-            ])->values()->all(),
-            'usuarios' => $usuarios->map(fn (User $usuario) => [
-                'id' => $usuario->id,
-                'name' => $usuario->name,
-                'email' => $usuario->email,
             ])->values()->all(),
         ]);
     }
@@ -73,7 +63,6 @@ class CompromissoController extends Controller
                 'nome' => $categoria->nome,
             ])->values()->all(),
             'leadTimeOptions' => $this->leadTimeOptions(),
-            'usuarios' => [],
         ]);
     }
 
@@ -84,11 +73,6 @@ class CompromissoController extends Controller
         $categorias = Categoria::ownedBy($compromisso->usuarios_id)
             ->orderBy('nome')
             ->get();
-        $usuarios = User::query()
-            ->whereKeyNot($compromisso->usuarios_id)
-            ->orderBy('name')
-            ->get(['id', 'name', 'email']);
-
         return Inertia::render('Compromissos/Form', [
             'modo' => 'edit',
             'compromisso' => $this->serializeCompromissoForm($compromisso),
@@ -97,11 +81,6 @@ class CompromissoController extends Controller
                 'nome' => $categoria->nome,
             ])->values()->all(),
             'leadTimeOptions' => $this->leadTimeOptions(),
-            'usuarios' => $usuarios->map(fn (User $usuario) => [
-                'id' => $usuario->id,
-                'name' => $usuario->name,
-                'email' => $usuario->email,
-            ])->values()->all(),
         ]);
     }
 

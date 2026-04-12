@@ -29,17 +29,32 @@ class CompromissoCompartilhamentoController extends Controller
         $this->authorize('share', $compromisso);
 
         $validated = $request->validate([
-            'usuario_id' => 'required|integer|exists:usuarios,id',
+            'usuario_id' => 'nullable|integer|exists:usuarios,id',
+            'email' => 'nullable|email',
             'permissao' => 'required|in:visualizar,editar',
         ]);
 
-        if ((int) $validated['usuario_id'] === (int) $compromisso->usuarios_id) {
+        if (empty($validated['usuario_id']) && empty($validated['email'])) {
+            return response()->json([
+                'message' => 'Informe o e-mail do usuário para compartilhar.',
+            ], 422);
+        }
+
+        $usuario = !empty($validated['usuario_id'])
+            ? User::find($validated['usuario_id'])
+            : User::where('email', $validated['email'])->first();
+
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'Usuário não foi encontrado com este e-mail.',
+            ], 404);
+        }
+
+        if ((int) $usuario->id === (int) $compromisso->usuarios_id) {
             return response()->json([
                 'message' => 'O dono do compromisso nao precisa ser compartilhado.',
             ], 422);
         }
-
-        $usuario = User::findOrFail($validated['usuario_id']);
 
         $compromisso->usuariosCompartilhados()->syncWithoutDetaching([
             $usuario->id => ['permissao' => $validated['permissao']],
@@ -55,6 +70,7 @@ class CompromissoCompartilhamentoController extends Controller
                 'compromisso_id' => $compromisso->id,
                 'usuario_id' => $usuario->id,
                 'usuario_nome' => $usuario->name,
+                'usuario_email' => $usuario->email,
                 'permissao' => $validated['permissao'],
             ],
         ], 201);

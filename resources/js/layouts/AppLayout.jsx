@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+// import AIAssistantWidget from '../components/AIAssistantWidget'
 
 function getInitials(name = '') {
   return name
@@ -734,6 +735,8 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
         items={reminderToasts}
         onDismiss={(key) => setReminderToasts((current) => current.filter((item) => item.key !== key))}
       />
+      {/* Assistente de IA temporariamente oculto até retomarmos esse fluxo. */}
+      {/* {auth?.user ? <AIAssistantWidget permissions={permissions} isDark={isDark} /> : null} */}
     </>
   )
 }

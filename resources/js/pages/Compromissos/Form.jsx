@@ -1,24 +1,30 @@
-import React, { useMemo, useState } from 'react'
+import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import { Input, Select, Textarea } from '../../components/ui'
 
-function ShareEditor({ compromisso, usuarios, processing }) {
-  const [selectedUserId, setSelectedUserId] = useState('')
-  const [permission, setPermission] = useState('visualizar')
-  const [saving, setSaving] = useState(false)
-  const [localItems, setLocalItems] = useState(compromisso?.compartilhado_com || [])
+function formatPermissionLabel(permission) {
+  return {
+    owner: 'Dono',
+    visualizar: 'Pode visualizar',
+    editar: 'Pode editar',
+  }[permission] || permission
+}
 
-  const availableUsers = useMemo(
-    () => usuarios.filter((usuario) => !localItems.some((item) => item.usuario_id === usuario.id)),
-    [usuarios, localItems]
-  )
+function ShareEditor({ compromisso, processing }) {
+  const [email, setEmail] = React.useState('')
+  const [permission, setPermission] = React.useState('visualizar')
+  const [saving, setSaving] = React.useState(false)
+  const [feedback, setFeedback] = React.useState(null)
+  const [localItems, setLocalItems] = React.useState(compromisso?.compartilhado_com || [])
 
   const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
 
   const addShare = async () => {
-    if (!selectedUserId) return
+    if (!email.trim()) return
+
     setSaving(true)
+    setFeedback(null)
 
     try {
       const response = await fetch(`/api/compromissos/${compromisso.id}/compartilhar`, {
@@ -27,27 +33,32 @@ function ShareEditor({ compromisso, usuarios, processing }) {
           'Content-Type': 'application/json',
           'X-CSRF-TOKEN': csrf(),
           Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         credentials: 'same-origin',
-        body: JSON.stringify({ usuario_id: Number(selectedUserId), permissao: permission }),
+        body: JSON.stringify({ email: email.trim(), permissao: permission }),
       })
 
+      const payload = await response.json().catch(() => ({}))
+
       if (!response.ok) {
-        throw new Error('Falha ao compartilhar compromisso.')
+        throw new Error(payload?.message || 'Não foi possível compartilhar compromisso.')
       }
 
-      const selectedUser = usuarios.find((usuario) => usuario.id === Number(selectedUserId))
       setLocalItems((current) => [
-        ...current.filter((item) => item.usuario_id !== Number(selectedUserId)),
+        ...current.filter((item) => Number(item.usuario_id) !== Number(payload?.data?.usuario_id)),
         {
-          usuario_id: Number(selectedUserId),
-          nome: selectedUser?.name || 'Usuário',
-          email: selectedUser?.email || '',
-          permissao: permission,
+          usuario_id: payload?.data?.usuario_id,
+          nome: payload?.data?.usuario_nome || 'Usuário',
+          email: payload?.data?.usuario_email || email.trim(),
+          permissao: payload?.data?.permissao || permission,
         },
       ])
-      setSelectedUserId('')
+      setFeedback({ type: 'success', message: payload?.message || 'Compromisso compartilhado com sucesso.' })
+      setEmail('')
       setPermission('visualizar')
+    } catch (error) {
+      setFeedback({ type: 'error', message: error.message || 'Não foi possível compartilhar compromisso.' })
     } finally {
       setSaving(false)
     }
@@ -55,6 +66,7 @@ function ShareEditor({ compromisso, usuarios, processing }) {
 
   const removeShare = async (usuarioId) => {
     setSaving(true)
+    setFeedback(null)
 
     try {
       const response = await fetch(`/api/compromissos/${compromisso.id}/compartilhar/${usuarioId}`, {
@@ -62,15 +74,21 @@ function ShareEditor({ compromisso, usuarios, processing }) {
         headers: {
           'X-CSRF-TOKEN': csrf(),
           Accept: 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         credentials: 'same-origin',
       })
 
+      const payload = await response.json().catch(() => ({}))
+
       if (!response.ok) {
-        throw new Error('Falha ao remover compartilhamento.')
+        throw new Error(payload?.message || 'Não foi possível remover compartilhamento.')
       }
 
-      setLocalItems((current) => current.filter((item) => item.usuario_id !== usuarioId))
+      setLocalItems((current) => current.filter((item) => Number(item.usuario_id) !== Number(usuarioId)))
+      setFeedback({ type: 'success', message: payload?.message || 'Compartilhamento removido com sucesso.' })
+    } catch (error) {
+      setFeedback({ type: 'error', message: error.message || 'Não foi possível remover compartilhamento.' })
     } finally {
       setSaving(false)
     }
@@ -84,34 +102,39 @@ function ShareEditor({ compromisso, usuarios, processing }) {
     <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-zinc-950">Compartilhamento</h3>
-        <p className="mt-1 text-sm text-zinc-600">Gerencie quem pode visualizar ou editar este compromisso.</p>
+        <p className="mt-1 text-sm text-zinc-600">Digite o e-mail do usuário do sistema. Se ele existir, o compromisso será compartilhado.</p>
       </div>
 
+      {feedback ? (
+        <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${
+          feedback.type === 'success'
+            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+            : 'border-red-200 bg-red-50 text-red-700'
+        }`}>
+          {feedback.message}
+        </div>
+      ) : null}
+
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_auto]">
-        <select
-          value={selectedUserId}
-          onChange={(e) => setSelectedUserId(e.target.value)}
-          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm"
-        >
-          <option value="">Selecione um usuário</option>
-          {availableUsers.map((usuario) => (
-            <option key={usuario.id} value={usuario.id}>
-              {usuario.name} {usuario.email ? `• ${usuario.email}` : ''}
-            </option>
-          ))}
-        </select>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="usuario@exemplo.com"
+          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
+        />
         <select
           value={permission}
           onChange={(e) => setPermission(e.target.value)}
-          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm"
+          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
         >
-          <option value="visualizar">visualizar</option>
-          <option value="editar">editar</option>
+          <option value="visualizar">Pode visualizar</option>
+          <option value="editar">Pode editar</option>
         </select>
         <button
           type="button"
           onClick={addShare}
-          disabled={saving || processing || !selectedUserId}
+          disabled={saving || processing || !email.trim()}
           className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white disabled:opacity-60"
         >
           Compartilhar
@@ -123,7 +146,7 @@ function ShareEditor({ compromisso, usuarios, processing }) {
           <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
             <div>
               <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
-              <p className="text-sm text-zinc-500">{item.email || 'Sem e-mail'} • {item.permissao}</p>
+              <p className="text-sm text-zinc-500">{item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
             </div>
             <button
               type="button"
@@ -144,7 +167,7 @@ function ShareEditor({ compromisso, usuarios, processing }) {
   )
 }
 
-export default function CompromissosForm({ modo = 'create', compromisso = null, categorias = [], leadTimeOptions = [], usuarios = [], errors = {} }) {
+export default function CompromissosForm({ modo = 'create', compromisso = null, categorias = [], leadTimeOptions = [], errors = {} }) {
   const editing = modo === 'edit' && compromisso?.id
   const { data, setData, post, put, processing } = useForm({
     titulo: compromisso?.titulo || '',
@@ -177,8 +200,8 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
         <form onSubmit={submit} className="space-y-6">
           {editing && compromisso?.owner?.nome ? (
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
-              Owner: <span className="font-medium text-zinc-900">{compromisso.owner.nome}</span>
-              {compromisso.permissao ? <span className="ml-2 rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs">{compromisso.permissao}</span> : null}
+              Dono: <span className="font-medium text-zinc-900">{compromisso.owner.nome}</span>
+              {compromisso.permissao ? <span className="ml-2 rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs">{formatPermissionLabel(compromisso.permissao)}</span> : null}
             </div>
           ) : null}
 
@@ -309,7 +332,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           </div>
         </form>
 
-        {editing ? <div className="mt-6"><ShareEditor compromisso={compromisso} usuarios={usuarios} processing={processing} /></div> : null}
+        {editing ? <div className="mt-6"><ShareEditor compromisso={compromisso} processing={processing} /></div> : null}
       </div>
     </AppLayout>
   )

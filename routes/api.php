@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AIController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CompromissoCompartilhamentoController;
 use App\Http\Controllers\Api\HabitoController;
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::post('/ai/command', [AIController::class, 'handle']);
 });
 
 Route::middleware(['web', 'auth', 'can:access-compromissos'])->group(function () {
