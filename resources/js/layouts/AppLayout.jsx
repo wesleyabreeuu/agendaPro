@@ -35,16 +35,12 @@ function DashboardNavLink({ href, active, icon: Icon, children, collapsed = fals
       onClick={onClick}
       title={collapsed ? children : undefined}
       className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition ${collapsed ? 'justify-center' : 'gap-3'} ${
-        active
-          ? isDark
-            ? 'border border-white/80 bg-white font-medium text-black shadow-sm'
-            : 'border border-zinc-200 bg-white font-medium text-zinc-950 shadow-sm'
-          : isDark
-            ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
-            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+        isDark
+          ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
+          : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
       }`}
     >
-      <Icon className={`h-4 w-4 ${active ? 'text-black' : ''}`} strokeWidth={2} />
+      <Icon className="h-4 w-4" strokeWidth={2} />
       {!collapsed ? <span>{children}</span> : null}
     </Link>
   )
@@ -57,13 +53,9 @@ function DashboardSubLink({ href, active, children, collapsed = false, onClick, 
       onClick={onClick}
       title={collapsed ? children : undefined}
       className={`block rounded-xl px-4 py-2.5 text-sm transition ${
-        active
-          ? isDark
-            ? 'border border-white/80 bg-white font-medium text-black shadow-sm'
-            : 'bg-zinc-100 font-medium text-zinc-950'
-          : isDark
-            ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
-            : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+        isDark
+          ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
+          : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
       }`}
     >
       {collapsed ? children.slice(0, 1) : children}
@@ -78,7 +70,7 @@ function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = fals
         <div
           title={label}
           className={`flex items-center justify-center rounded-xl px-3 py-2.5 text-sm transition ${
-            isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+            isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
           }`}
         >
           <Icon className="h-4 w-4" strokeWidth={2} />
@@ -91,7 +83,7 @@ function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = fals
     <details open={open} className="rounded-2xl">
       <summary
         className={`flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
-          isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950'
+          isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
         }`}
       >
         <span className="flex items-center gap-3">

@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import {
   CalendarDays,
   CheckSquare,
+  GripVertical,
   Link2,
   ListTodo,
   Paperclip,
@@ -69,12 +70,33 @@ function sanitizeTask(task) {
   }
 }
 
+function reorderLists(lists, draggedKey, targetKey) {
+  if (!draggedKey || !targetKey || draggedKey === targetKey) {
+    return lists
+  }
+
+  const draggedIndex = lists.findIndex((list) => list.key === draggedKey)
+  const targetIndex = lists.findIndex((list) => list.key === targetKey)
+
+  if (draggedIndex === -1 || targetIndex === -1) {
+    return lists
+  }
+
+  const nextLists = [...lists]
+  const [draggedList] = nextLists.splice(draggedIndex, 1)
+  nextLists.splice(targetIndex, 0, draggedList)
+
+  return nextLists
+}
+
 export default function KanbanShow({ board, lists = [], tarefas = {}, backgroundOptions = [], errors = {} }) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
   const [activeCard, setActiveCard] = useState(null)
   const [newListTitle, setNewListTitle] = useState('')
   const [editingBoard, setEditingBoard] = useState(false)
+  const [draggedListKey, setDraggedListKey] = useState(null)
+  const [dragOverListKey, setDragOverListKey] = useState(null)
 
   const boardForm = useForm({
     nome: board.nome || '',
@@ -91,11 +113,57 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
     boardForm.put(`/kanban/boards/${board.id}`, { preserveScroll: true, onSuccess: () => setEditingBoard(false) })
   }
 
+  function persistLists(nextLists) {
+    boardForm.transform((data) => ({ ...data, listas: nextLists }))
+    boardForm.put(`/kanban/boards/${board.id}`, {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => setEditingBoard(false),
+      onFinish: () => {
+        boardForm.transform((data) => data)
+        setDraggedListKey(null)
+        setDragOverListKey(null)
+      },
+    })
+  }
+
   function addList() {
     if (!newListTitle.trim()) return
     const key = newListTitle.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^a-z0-9]+/g, '-')
     boardForm.setData('listas', [...boardLists, { key: `${key || 'lista'}-${Date.now()}`, title: newListTitle.trim() }])
     setNewListTitle('')
+  }
+
+  function handleListDragStart(listKey) {
+    setDraggedListKey(listKey)
+    setDragOverListKey(listKey)
+  }
+
+  function handleListDragEnter(targetKey) {
+    if (!draggedListKey || draggedListKey === targetKey) {
+      return
+    }
+
+    setDragOverListKey(targetKey)
+    boardForm.setData('listas', reorderLists(boardLists, draggedListKey, targetKey))
+  }
+
+  function handleListDrop(targetKey) {
+    const nextLists = reorderLists(boardLists, draggedListKey, targetKey)
+
+    if (!draggedListKey || draggedListKey === targetKey) {
+      setDraggedListKey(null)
+      setDragOverListKey(null)
+      return
+    }
+
+    boardForm.setData('listas', nextLists)
+    persistLists(nextLists)
+  }
+
+  function handleListDragEnd() {
+    setDraggedListKey(null)
+    setDragOverListKey(null)
   }
 
   function submitQuickTask(e) {
@@ -147,9 +215,26 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
 
         <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
           {boardLists.map((list) => (
-            <section key={list.key} className={`flex w-[320px] shrink-0 flex-col rounded-[22px] p-3 shadow-lg ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'bg-zinc-100/90'}`}>
-              <div className="mb-3 flex items-center justify-between gap-3 px-2 pt-1">
-                <h3 className={`text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>{list.title}</h3>
+            <section
+              key={list.key}
+              draggable
+              onDragStart={() => handleListDragStart(list.key)}
+              onDragEnter={() => handleListDragEnter(list.key)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => handleListDrop(list.key)}
+              onDragEnd={handleListDragEnd}
+              className={`flex w-[320px] shrink-0 flex-col rounded-[22px] p-3 shadow-lg transition ${draggedListKey === list.key ? 'scale-[0.98] opacity-70' : ''} ${dragOverListKey === list.key ? 'ring-2 ring-sky-300 ring-offset-2 ring-offset-transparent' : ''} ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'bg-zinc-100/90'}`}
+            >
+              <div className="mb-3 flex cursor-grab items-center justify-between gap-3 px-2 pt-1 active:cursor-grabbing">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span
+                    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${isDark ? 'border-zinc-700 bg-zinc-800 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-400'}`}
+                    title="Arraste para mover a lista"
+                  >
+                    <GripVertical className="h-4 w-4" />
+                  </span>
+                  <h3 className={`truncate text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>{list.title}</h3>
+                </div>
                 <span className={`rounded-full px-2.5 py-1 text-xs shadow-sm ${isDark ? 'bg-zinc-800 text-zinc-100' : 'bg-white text-zinc-600'}`}>{(tarefas[list.key] || []).length}</span>
               </div>
 
