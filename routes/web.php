@@ -36,6 +36,9 @@ Auth::routes(['register' => false]);
 
 Route::middleware('guest')->group(function () {
     Route::post('password/check-account', [ForgotPasswordController::class, 'verifyAccount'])->name('password.check-account');
+    Route::get('password/code', [ResetPasswordController::class, 'showCodeForm'])->name('password.code.form');
+    Route::post('password/code/verify', [ResetPasswordController::class, 'verifyCode'])->name('password.code.verify');
+    Route::post('password/code/resend', [ForgotPasswordController::class, 'resendCode'])->name('password.code.resend');
     Route::get('password/change', [ResetPasswordController::class, 'showDirectResetForm'])->name('password.direct.reset.form');
     Route::post('password/change', [ResetPasswordController::class, 'updateDirect'])->name('password.direct.reset');
 });

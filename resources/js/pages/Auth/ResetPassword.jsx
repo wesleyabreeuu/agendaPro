@@ -32,6 +32,7 @@ export default function ResetPassword({ mode = 'token', token, email = '', error
             <CardContent>
               <form onSubmit={submit} className="grid gap-6">
                 {errors.email ? <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{errors.email}</div> : null}
+                {errors.password ? <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{errors.password}</div> : null}
                 <div className="grid gap-2">
                   <label htmlFor="email" className="text-sm font-medium text-zinc-900">Email</label>
                   <Input
