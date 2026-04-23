@@ -109,6 +109,11 @@ class FinanceiroController extends Controller
         $metasEconomia = $this->carregarMetasEconomia($user->id);
         $metasBens = $this->carregarMetasBens($user->id);
 
+        $categorias = CategoriaFinanceira::where('user_id', $user->id)
+            ->orderBy('tipo')
+            ->orderBy('nome')
+            ->get();
+
         return Inertia::render('Financeiro/Dashboard', [
             'filtros' => [
                 'data_inicio' => $inicio->toDateString(),
@@ -122,6 +127,7 @@ class FinanceiroController extends Controller
                 'resultado' => (float) $resultado,
             ],
             'contas' => $contas->map(fn (ContaBancaria $conta) => $this->serializeConta($conta))->values()->all(),
+            'categorias' => $categorias->map(fn (CategoriaFinanceira $categoria) => $this->serializeCategoria($categoria))->values()->all(),
             'despesasPorCategoria' => $despesasPorCategoria->values()->all(),
             'pendentes' => $pendentes->map(fn (TransacaoFinanceira $transacao) => $this->serializeTransacao($transacao))->values()->all(),
             'ultimasTransacoes' => $ultimasTransacoes->map(fn (TransacaoFinanceira $transacao) => $this->serializeTransacao($transacao))->values()->all(),
@@ -134,6 +140,7 @@ class FinanceiroController extends Controller
                     'valor_atual' => (float) $item['meta']->valor_atual,
                     'periodicidade' => $item['meta']->periodicidade,
                     'prazo_final' => $item['meta']->prazo_final?->format('d/m/Y'),
+                    'meses_planejados' => $item['analise']['meses_planejados'],
                 ],
                 'analise' => $item['analise'],
             ])->values()->all(),
@@ -145,6 +152,7 @@ class FinanceiroController extends Controller
                     'valor_bem' => (float) $item['meta']->valor_bem,
                     'valor_ja_guardado' => (float) $item['meta']->valor_ja_guardado,
                     'valor_guardar_mes' => (float) $item['meta']->valor_guardar_mes,
+                    'meses_planejados' => $item['analise']['meses_planejados'],
                 ],
                 'analise' => $item['analise'],
             ])->values()->all(),
@@ -235,39 +243,40 @@ class FinanceiroController extends Controller
 
     public function storeTransacao(Request $request)
     {
-        if (!$this->hasFinanceiroFlowColumns()) {
-            return redirect()->route('financeiro.transacoes')
-                ->with('error', 'Atualize o banco com as novas migrations do financeiro para usar esse fluxo.');
-        }
-
         $user = Auth::user();
         $this->garantirCategoriasPadrao($user->id);
         $this->garantirContaPadrao($user->id);
+        $financeiroAvancado = $this->hasFinanceiroFlowColumns();
 
         $data = $this->validateTransacao($request);
 
         $conta = ContaBancaria::where('user_id', $user->id)->findOrFail($data['conta_bancaria_id']);
         $categoria = CategoriaFinanceira::where('user_id', $user->id)->findOrFail($data['categoria_financeira_id']);
 
-        $status = $this->normalizeStatus($data['tipo'], $data['status'] ?? null);
+        $status = $financeiroAvancado ? $this->normalizeStatus($data['tipo'], $data['status'] ?? null) : null;
 
-        $transacao = TransacaoFinanceira::create([
+        $payload = [
             'user_id' => $user->id,
             'conta_bancaria_id' => $conta->id,
             'categoria_financeira_id' => $categoria->id,
             'tipo' => $data['tipo'],
-            'status' => $status,
-            'forma_pagamento' => $status === 'pendente' ? null : ($data['forma_pagamento'] ?? 'conta'),
             'descricao' => $data['descricao'],
-            'complemento' => $data['complemento'] ?? null,
             'valor' => $data['valor'],
             'data' => $data['data'],
             'recorrente' => (bool) ($data['recorrente'] ?? false),
             'frequencia' => !empty($data['recorrente']) ? ($data['frequencia'] ?? null) : null,
             'observacoes' => $data['observacoes'] ?? null,
-        ]);
+        ];
 
-        if ($this->shouldImpactBalance($transacao->tipo, $transacao->status)) {
+        if ($financeiroAvancado) {
+            $payload['status'] = $status;
+            $payload['forma_pagamento'] = $status === 'pendente' ? null : ($data['forma_pagamento'] ?? 'conta');
+            $payload['complemento'] = $data['complemento'] ?? null;
+        }
+
+        $transacao = TransacaoFinanceira::create($payload);
+
+        if ($financeiroAvancado ? $this->shouldImpactBalance($transacao->tipo, $transacao->status) : true) {
             $this->applyBalanceImpact($conta, $transacao->tipo, (float) $transacao->valor);
         }
 
@@ -600,9 +609,10 @@ class FinanceiroController extends Controller
             'descricao' => 'nullable|string|max:255',
             'valor_alvo' => 'required|numeric|min:0.01',
             'valor_atual' => 'nullable|numeric|min:0',
-            'periodicidade' => 'required|in:dia,mes,ano',
-            'prazo_final' => 'required|date|after:today',
+            'meses_planejados' => 'required|integer|min:1|max:600',
         ]);
+
+        $mesesPlanejados = (int) $request->meses_planejados;
 
         MetaEconomia::create([
             'user_id' => $user->id,
@@ -610,8 +620,9 @@ class FinanceiroController extends Controller
             'descricao' => $request->descricao,
             'valor_alvo' => $request->valor_alvo,
             'valor_atual' => $request->input('valor_atual', 0),
-            'periodicidade' => $request->periodicidade,
-            'prazo_final' => $request->prazo_final,
+            'periodicidade' => 'mes',
+            'prazo_final' => now()->addMonths($mesesPlanejados)->toDateString(),
+            'meses_planejados' => $mesesPlanejados,
         ]);
 
         return redirect()->route('financeiro.dashboard')
@@ -646,16 +657,23 @@ class FinanceiroController extends Controller
             'descricao' => 'nullable|string|max:255',
             'valor_bem' => 'required|numeric|min:0.01',
             'valor_ja_guardado' => 'nullable|numeric|min:0',
-            'valor_guardar_mes' => 'required|numeric|min:0.01',
+            'meses_planejados' => 'required|integer|min:1|max:600',
         ]);
+
+        $valorBem = (float) $request->valor_bem;
+        $valorJaGuardado = (float) $request->input('valor_ja_guardado', 0);
+        $mesesPlanejados = (int) $request->meses_planejados;
+        $faltante = max($valorBem - $valorJaGuardado, 0);
+        $valorGuardarMes = $mesesPlanejados > 0 ? round($faltante / $mesesPlanejados, 2) : 0;
 
         MetaBemMaterial::create([
             'user_id' => $user->id,
             'nome_bem' => $request->nome_bem,
             'descricao' => $request->descricao,
-            'valor_bem' => $request->valor_bem,
-            'valor_ja_guardado' => $request->input('valor_ja_guardado', 0),
-            'valor_guardar_mes' => $request->valor_guardar_mes,
+            'valor_bem' => $valorBem,
+            'valor_ja_guardado' => $valorJaGuardado,
+            'valor_guardar_mes' => $valorGuardarMes,
+            'meses_planejados' => $mesesPlanejados,
         ]);
 
         return redirect()->route('financeiro.dashboard')
@@ -825,16 +843,21 @@ class FinanceiroController extends Controller
             default => max($hoje->diffInMonths($prazo, false), 1),
         };
 
+        $mesesPlanejados = $meta->meses_planejados ?: max($hoje->diffInMonths($prazo), 1);
         $valorPorPeriodo = $faltante > 0 ? $faltante / $periodosRestantes : 0;
+        $valorMensalPlanejado = $mesesPlanejados > 0 ? $faltante / $mesesPlanejados : 0;
 
         return [
             'faltante' => $faltante,
             'progresso' => $progresso,
             'periodos_restantes' => $periodosRestantes,
+            'meses_planejados' => $mesesPlanejados,
             'valor_por_periodo' => $valorPorPeriodo,
+            'valor_mensal_planejado' => $valorMensalPlanejado,
             'equivalente_mensal' => $meta->periodicidade === 'mes'
                 ? $valorPorPeriodo
                 : ($meta->periodicidade === 'dia' ? $valorPorPeriodo * 30 : $valorPorPeriodo / 12),
+            'cenarios' => $this->buildSavingsScenarios($faltante, $mesesPlanejados),
         ];
     }
 
@@ -843,6 +866,7 @@ class FinanceiroController extends Controller
         $faltante = max((float) $meta->valor_bem - (float) $meta->valor_ja_guardado, 0);
         $aporteMensal = (float) $meta->valor_guardar_mes;
         $mesesEstimados = $aporteMensal > 0 ? (int) ceil($faltante / $aporteMensal) : null;
+        $mesesPlanejados = $meta->meses_planejados ?: $mesesEstimados ?: 1;
         $progresso = (float) $meta->valor_bem > 0
             ? min((((float) $meta->valor_ja_guardado / (float) $meta->valor_bem) * 100), 100)
             : 0;
@@ -850,13 +874,35 @@ class FinanceiroController extends Controller
         return [
             'faltante' => $faltante,
             'meses_estimados' => $mesesEstimados,
+            'meses_planejados' => $mesesPlanejados,
             'progresso' => $progresso,
-            'cenarios' => [
-                '24 meses' => (float) $meta->valor_bem / 24,
-                '12 meses' => (float) $meta->valor_bem / 12,
-                '6 meses' => (float) $meta->valor_bem / 6,
-            ],
+            'valor_mensal_planejado' => $mesesPlanejados > 0 ? $faltante / $mesesPlanejados : 0,
+            'cenarios' => $this->buildSavingsScenarios($faltante, $mesesPlanejados),
         ];
+    }
+
+    private function buildSavingsScenarios(float $faltante, int $mesesPlanejados): array
+    {
+        $options = collect([$mesesPlanejados, 12, 18, 24])
+            ->filter(fn (int $meses) => $meses > 0)
+            ->unique()
+            ->values();
+
+        return $options->map(fn (int $meses) => [
+            'meses' => $meses,
+            'label' => $this->formatarPrazoLabel($meses),
+            'valor_mensal' => $meses > 0 ? $faltante / $meses : 0,
+        ])->all();
+    }
+
+    private function formatarPrazoLabel(int $meses): string
+    {
+        return match ($meses) {
+            12 => '12 meses (1 ano)',
+            18 => '18 meses (1 ano e meio)',
+            24 => '24 meses (2 anos)',
+            default => $meses === 1 ? '1 mes' : "{$meses} meses",
+        };
     }
 
     private function serializeConta(ContaBancaria $conta): array

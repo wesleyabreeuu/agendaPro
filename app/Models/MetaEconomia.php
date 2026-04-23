@@ -19,12 +19,14 @@ class MetaEconomia extends Model
         'valor_atual',
         'periodicidade',
         'prazo_final',
+        'meses_planejados',
     ];
 
     protected $casts = [
         'valor_alvo' => 'decimal:2',
         'valor_atual' => 'decimal:2',
         'prazo_final' => 'date',
+        'meses_planejados' => 'integer',
     ];
 
     public function usuario()

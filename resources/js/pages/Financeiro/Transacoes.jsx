@@ -22,10 +22,10 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
     descricao: '',
     complemento: '',
     valor: '',
-    categoria_financeira_id: '',
+    categoria_financeira_id: categorias.find((categoria) => categoria.tipo === 'despesa')?.id || '',
     conta_bancaria_id: contas[0]?.id || '',
     forma_pagamento: 'conta',
-    data: '',
+    data: new Date().toISOString().slice(0, 10),
     recorrente: false,
     frequencia: '',
     observacoes: '',
@@ -45,7 +45,23 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
 
   function submitTransacao(e) {
     e.preventDefault()
-    transacaoForm.post('/financeiro/transacoes')
+    transacaoForm.post('/financeiro/transacoes', {
+      preserveScroll: true,
+      onSuccess: () => transacaoForm.setData({
+        tipo: 'despesa',
+        status: financeiroAvancado ? 'pago' : '',
+        descricao: '',
+        complemento: '',
+        valor: '',
+        categoria_financeira_id: categorias.find((categoria) => categoria.tipo === 'despesa')?.id || '',
+        conta_bancaria_id: contas[0]?.id || '',
+        forma_pagamento: 'conta',
+        data: new Date().toISOString().slice(0, 10),
+        recorrente: false,
+        frequencia: '',
+        observacoes: '',
+      }),
+    })
   }
 
   function submitCategoria(e) {
@@ -54,6 +70,15 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
   }
 
   const categoriasFiltradas = categorias.filter((categoria) => !transacaoForm.data.tipo || categoria.tipo === transacaoForm.data.tipo)
+
+  function updateTipoTransacao(tipo) {
+    transacaoForm.setData((data) => ({
+      ...data,
+      tipo,
+      status: !financeiroAvancado ? data.status : (tipo === 'receita' ? 'recebido' : 'pago'),
+      categoria_financeira_id: categorias.find((categoria) => categoria.tipo === tipo)?.id || '',
+    }))
+  }
 
   return (
     <AppLayout title="Lançamentos Financeiros">
@@ -111,7 +136,7 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
             <Box title="Novo lançamento">
               <form onSubmit={submitTransacao} className="grid gap-4">
                 <div className="grid gap-4 md:grid-cols-2">
-                  <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.tipo} onChange={(e) => transacaoForm.setData('tipo', e.target.value)}>
+                  <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
                     <option value="despesa">Despesa</option>
                     <option value="receita">Receita</option>
                   </select>
@@ -156,6 +181,11 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
                   </select>
                 ) : null}
                 <textarea className="min-h-24 rounded-md border border-zinc-200 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100" placeholder="Observações" value={transacaoForm.data.observacoes} onChange={(e) => transacaoForm.setData('observacoes', e.target.value)} />
+                {Object.keys(transacaoForm.errors).length ? (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {Object.values(transacaoForm.errors).join(' ')}
+                  </div>
+                ) : null}
                 <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar lançamento</button>
               </form>
             </Box>

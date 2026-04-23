@@ -7,10 +7,29 @@ function moeda(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0))
 }
 
-export default function FinanceiroDashboard({ filtros, resumo, contas = [], despesasPorCategoria = [], pendentes = [], ultimasTransacoes = [], metasEconomia = [], metasBens = [], financeiroAvancado }) {
+function metaPrazoLabel(item) {
+  return item?.meta?.meses_planejados ? `${item.meta.meses_planejados} meses` : 'Prazo flexivel'
+}
+
+export default function FinanceiroDashboard({ filtros, resumo, contas = [], categorias = [], despesasPorCategoria = [], pendentes = [], ultimasTransacoes = [], metasEconomia = [], metasBens = [], financeiroAvancado }) {
   const filterForm = useForm({
     data_inicio: filtros.data_inicio || '',
     data_fim: filtros.data_fim || '',
+  })
+
+  const transacaoForm = useForm({
+    tipo: 'despesa',
+    status: financeiroAvancado ? 'pago' : '',
+    descricao: '',
+    complemento: '',
+    valor: '',
+    categoria_financeira_id: categorias.find((categoria) => categoria.tipo === 'despesa')?.id || '',
+    conta_bancaria_id: contas[0]?.id || '',
+    forma_pagamento: 'conta',
+    data: new Date().toISOString().slice(0, 10),
+    recorrente: false,
+    frequencia: '',
+    observacoes: '',
   })
 
   const metaEconomiaForm = useForm({
@@ -18,8 +37,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], desp
     descricao: '',
     valor_alvo: '',
     valor_atual: 0,
-    periodicidade: 'mes',
-    prazo_final: '',
+    meses_planejados: 12,
   })
 
   const metaBemForm = useForm({
@@ -27,12 +45,44 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], desp
     descricao: '',
     valor_bem: '',
     valor_ja_guardado: 0,
-    valor_guardar_mes: '',
+    meses_planejados: 10,
   })
+
+  const categoriasTransacao = categorias.filter((categoria) => categoria.tipo === transacaoForm.data.tipo)
+
+  function updateTipoTransacao(tipo) {
+    transacaoForm.setData((data) => ({
+      ...data,
+      tipo,
+      status: !financeiroAvancado ? data.status : (tipo === 'receita' ? 'recebido' : 'pago'),
+      categoria_financeira_id: categorias.find((categoria) => categoria.tipo === tipo)?.id || '',
+    }))
+  }
 
   function filtrar(e) {
     e.preventDefault()
     router.get('/financeiro', filterForm.data)
+  }
+
+  function submitTransacao(e) {
+    e.preventDefault()
+    transacaoForm.post('/financeiro/transacoes', {
+      preserveScroll: true,
+      onSuccess: () => transacaoForm.setData({
+        tipo: 'despesa',
+        status: financeiroAvancado ? 'pago' : '',
+        descricao: '',
+        complemento: '',
+        valor: '',
+        categoria_financeira_id: categorias.find((categoria) => categoria.tipo === 'despesa')?.id || '',
+        conta_bancaria_id: contas[0]?.id || '',
+        forma_pagamento: 'conta',
+        data: new Date().toISOString().slice(0, 10),
+        recorrente: false,
+        frequencia: '',
+        observacoes: '',
+      }),
+    })
   }
 
   return (
@@ -65,6 +115,55 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], desp
           <MetricCard title="Pendente" value={moeda(resumo.pendencias)} />
           <MetricCard title={Number(resumo.resultado) >= 0 ? 'Lucro' : 'Prejuízo'} value={moeda(Math.abs(Number(resumo.resultado || 0)))} />
         </div>
+
+        <Panel title="Cadastrar receita ou gasto" action={<Link href="/financeiro/transacoes" className="text-sm text-zinc-600 hover:text-zinc-900">Abrir tela completa</Link>}>
+          <form onSubmit={submitTransacao} className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
+                <option value="despesa">Despesa</option>
+                <option value="receita">Receita</option>
+              </select>
+              {financeiroAvancado ? (
+                <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.status} onChange={(e) => transacaoForm.setData('status', e.target.value)}>
+                  <option value={transacaoForm.data.tipo === 'receita' ? 'recebido' : 'pago'}>{transacaoForm.data.tipo === 'receita' ? 'Recebido agora' : 'Pago agora'}</option>
+                  <option value="pendente">Deixar pendente</option>
+                </select>
+              ) : null}
+              <Input type="number" step="0.01" min="0.01" placeholder="Valor" value={transacaoForm.data.valor} onChange={(e) => transacaoForm.setData('valor', e.target.value)} />
+              <Input type="date" value={transacaoForm.data.data} onChange={(e) => transacaoForm.setData('data', e.target.value)} />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Input placeholder="Descricao" value={transacaoForm.data.descricao} onChange={(e) => transacaoForm.setData('descricao', e.target.value)} />
+              <Input placeholder="Complemento" value={transacaoForm.data.complemento} onChange={(e) => transacaoForm.setData('complemento', e.target.value)} />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.categoria_financeira_id} onChange={(e) => transacaoForm.setData('categoria_financeira_id', e.target.value)}>
+                <option value="">Selecione a categoria</option>
+                {categoriasTransacao.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
+              </select>
+              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.conta_bancaria_id} onChange={(e) => transacaoForm.setData('conta_bancaria_id', e.target.value)}>
+                <option value="">Selecione a conta</option>
+                {contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}
+              </select>
+              {financeiroAvancado ? (
+                <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.forma_pagamento} onChange={(e) => transacaoForm.setData('forma_pagamento', e.target.value)}>
+                  <option value="conta">Saldo da conta</option>
+                  <option value="pix">Pix</option>
+                  <option value="dinheiro">Dinheiro</option>
+                </select>
+              ) : null}
+              <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar lancamento</button>
+            </div>
+
+            {Object.keys(transacaoForm.errors).length ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {Object.values(transacaoForm.errors).join(' ')}
+              </div>
+            ) : null}
+          </form>
+        </Panel>
 
         <div className="grid gap-6 xl:grid-cols-2">
           <Panel title="Pendências financeiras">
@@ -132,20 +231,20 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], desp
 
         <div className="grid gap-6 xl:grid-cols-2">
           <Panel title="Meta de economia">
-            <form onSubmit={(e) => { e.preventDefault(); metaEconomiaForm.post('/financeiro/metas-economia') }} className="grid gap-4 rounded-2xl border border-zinc-200 p-4">
+            <form onSubmit={(e) => { e.preventDefault(); metaEconomiaForm.post('/financeiro/metas-economia', { preserveScroll: true }) }} className="grid gap-4 rounded-2xl border border-zinc-200 p-4">
               <Input placeholder="Título" value={metaEconomiaForm.data.titulo} onChange={(e) => metaEconomiaForm.setData('titulo', e.target.value)} />
               <Input placeholder="Descrição" value={metaEconomiaForm.data.descricao} onChange={(e) => metaEconomiaForm.setData('descricao', e.target.value)} />
               <div className="grid gap-4 md:grid-cols-3">
                 <Input type="number" step="0.01" min="0.01" placeholder="Valor alvo" value={metaEconomiaForm.data.valor_alvo} onChange={(e) => metaEconomiaForm.setData('valor_alvo', e.target.value)} />
                 <Input type="number" step="0.01" min="0" placeholder="Já guardado" value={metaEconomiaForm.data.valor_atual} onChange={(e) => metaEconomiaForm.setData('valor_atual', e.target.value)} />
-                <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={metaEconomiaForm.data.periodicidade} onChange={(e) => metaEconomiaForm.setData('periodicidade', e.target.value)}>
-                  <option value="dia">Dia</option>
-                  <option value="mes">Mês</option>
-                  <option value="ano">Ano</option>
-                </select>
+                <Input type="number" min="1" step="1" placeholder="Prazo em meses" value={metaEconomiaForm.data.meses_planejados} onChange={(e) => metaEconomiaForm.setData('meses_planejados', e.target.value)} />
               </div>
-              <Input type="date" value={metaEconomiaForm.data.prazo_final} onChange={(e) => metaEconomiaForm.setData('prazo_final', e.target.value)} />
               <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar meta</button>
+              {Object.keys(metaEconomiaForm.errors).length ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {Object.values(metaEconomiaForm.errors).join(' ')}
+                </div>
+              ) : null}
             </form>
 
             <div className="mt-4 space-y-3">
@@ -154,26 +253,39 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], desp
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-medium text-zinc-950">{item.meta.titulo}</p>
-                      <p className="mt-1 text-sm text-zinc-500">{item.meta.descricao || 'Sem descrição'} • até {item.meta.prazo_final}</p>
+                      <p className="mt-1 text-sm text-zinc-500">{item.meta.descricao || 'Sem descrição'} • {metaPrazoLabel(item)} • até {item.meta.prazo_final}</p>
                     </div>
                     <button type="button" onClick={() => router.delete(`/financeiro/metas-economia/${item.meta.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-xs text-red-600">Excluir</button>
                   </div>
-                  <p className="mt-3 text-sm text-zinc-600">Progresso: {item.analise.progresso.toFixed(1)}% • Falta {moeda(item.analise.faltante)}</p>
+                  <p className="mt-3 text-sm text-zinc-600">Progresso: {item.analise.progresso.toFixed(1)}% • Falta {moeda(item.analise.faltante)} • Precisa guardar {moeda(item.analise.valor_mensal_planejado)}/mês no plano cadastrado</p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-3">
+                    {item.analise.cenarios.map((cenario) => (
+                      <div key={`${item.meta.id}-${cenario.meses}`} className="rounded-xl bg-zinc-50 px-3 py-3 text-sm text-zinc-700">
+                        <p className="font-medium text-zinc-900">{cenario.label}</p>
+                        <p className="mt-1">{moeda(cenario.valor_mensal)}/mês</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
           </Panel>
 
           <Panel title="Meta de bem material">
-            <form onSubmit={(e) => { e.preventDefault(); metaBemForm.post('/financeiro/metas-bens') }} className="grid gap-4 rounded-2xl border border-zinc-200 p-4">
+            <form onSubmit={(e) => { e.preventDefault(); metaBemForm.post('/financeiro/metas-bens', { preserveScroll: true }) }} className="grid gap-4 rounded-2xl border border-zinc-200 p-4">
               <Input placeholder="Nome do bem" value={metaBemForm.data.nome_bem} onChange={(e) => metaBemForm.setData('nome_bem', e.target.value)} />
               <Input placeholder="Descrição" value={metaBemForm.data.descricao} onChange={(e) => metaBemForm.setData('descricao', e.target.value)} />
               <div className="grid gap-4 md:grid-cols-3">
                 <Input type="number" step="0.01" min="0.01" placeholder="Valor do bem" value={metaBemForm.data.valor_bem} onChange={(e) => metaBemForm.setData('valor_bem', e.target.value)} />
                 <Input type="number" step="0.01" min="0" placeholder="Já guardado" value={metaBemForm.data.valor_ja_guardado} onChange={(e) => metaBemForm.setData('valor_ja_guardado', e.target.value)} />
-                <Input type="number" step="0.01" min="0.01" placeholder="Guardar por mês" value={metaBemForm.data.valor_guardar_mes} onChange={(e) => metaBemForm.setData('valor_guardar_mes', e.target.value)} />
+                <Input type="number" min="1" step="1" placeholder="Prazo em meses" value={metaBemForm.data.meses_planejados} onChange={(e) => metaBemForm.setData('meses_planejados', e.target.value)} />
               </div>
               <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar meta</button>
+              {Object.keys(metaBemForm.errors).length ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {Object.values(metaBemForm.errors).join(' ')}
+                </div>
+              ) : null}
             </form>
 
             <div className="mt-4 space-y-3">
@@ -182,11 +294,19 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], desp
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-medium text-zinc-950">{item.meta.nome_bem}</p>
-                      <p className="mt-1 text-sm text-zinc-500">{item.meta.descricao || 'Sem descrição'}</p>
+                      <p className="mt-1 text-sm text-zinc-500">{item.meta.descricao || 'Sem descrição'} • {metaPrazoLabel(item)}</p>
                     </div>
                     <button type="button" onClick={() => router.delete(`/financeiro/metas-bens/${item.meta.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-xs text-red-600">Excluir</button>
                   </div>
-                  <p className="mt-3 text-sm text-zinc-600">Progresso: {item.analise.progresso.toFixed(1)}% • Falta {moeda(item.analise.faltante)}</p>
+                  <p className="mt-3 text-sm text-zinc-600">Progresso: {item.analise.progresso.toFixed(1)}% • Falta {moeda(item.analise.faltante)} • Precisa guardar {moeda(item.analise.valor_mensal_planejado)}/mês no plano cadastrado</p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-3">
+                    {item.analise.cenarios.map((cenario) => (
+                      <div key={`${item.meta.id}-${cenario.meses}`} className="rounded-xl bg-zinc-50 px-3 py-3 text-sm text-zinc-700">
+                        <p className="font-medium text-zinc-900">{cenario.label}</p>
+                        <p className="mt-1">{moeda(cenario.valor_mensal)}/mês</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>

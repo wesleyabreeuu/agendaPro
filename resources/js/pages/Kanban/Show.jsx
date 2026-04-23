@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext'
 import {
   CalendarDays,
   CheckSquare,
+  Trash2,
   GripVertical,
   Link2,
   ListTodo,
@@ -97,6 +98,9 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
   const [editingBoard, setEditingBoard] = useState(false)
   const [draggedListKey, setDraggedListKey] = useState(null)
   const [dragOverListKey, setDragOverListKey] = useState(null)
+  const [draggedTask, setDraggedTask] = useState(null)
+  const [dragOverTaskListKey, setDragOverTaskListKey] = useState(null)
+  const [cardActionError, setCardActionError] = useState('')
 
   const boardForm = useForm({
     nome: board.nome || '',
@@ -175,6 +179,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
   }
 
   function openCard(task) {
+    setCardActionError('')
     setActiveCard({ ...task })
   }
 
@@ -184,14 +189,61 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
 
   function saveActiveCard() {
     if (!activeCard) return
+    setCardActionError('')
     router.put(`/kanban/tasks/${activeCard.id}`, sanitizeTask(activeCard), {
       preserveScroll: true,
+      preserveState: true,
       onSuccess: () => setActiveCard(null),
+      onError: (errors) => {
+        setCardActionError(Object.values(errors || {}).flat().find(Boolean) || 'Nao foi possivel salvar este cartao.')
+      },
     })
   }
 
   function moveTask(taskId, listKey) {
-    router.patch(`/kanban/tasks/${taskId}/status`, { list_key: listKey }, { preserveScroll: true })
+    setCardActionError('')
+    router.patch(`/kanban/tasks/${taskId}/status`, { list_key: listKey }, { preserveScroll: true, preserveState: true })
+  }
+
+  function handleTaskDragStart(task) {
+    setDraggedTask(task)
+    setDragOverTaskListKey(task.list_key)
+  }
+
+  function handleTaskDragEnd() {
+    setDraggedTask(null)
+    setDragOverTaskListKey(null)
+  }
+
+  function handleTaskDrop(listKey) {
+    if (!draggedTask) {
+      return
+    }
+
+    const nextListKey = listKey || draggedTask.list_key
+
+    if (draggedTask.list_key !== nextListKey) {
+      moveTask(draggedTask.id, nextListKey)
+    }
+
+    setDraggedTask(null)
+    setDragOverTaskListKey(null)
+  }
+
+  function deleteTask(taskId, { closeModal = false } = {}) {
+    setCardActionError('')
+    router.delete(`/kanban/tasks/${taskId}`, {
+      preserveScroll: true,
+      preserveState: true,
+      onSuccess: () => {
+        if (closeModal) {
+          setActiveCard(null)
+        }
+      },
+      onError: () => {
+        setCardActionError('Nao foi possivel excluir este cartao.')
+      },
+    })
   }
 
   return (
@@ -217,15 +269,35 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
           {boardLists.map((list) => (
             <section
               key={list.key}
-              draggable
-              onDragStart={() => handleListDragStart(list.key)}
-              onDragEnter={() => handleListDragEnter(list.key)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleListDrop(list.key)}
-              onDragEnd={handleListDragEnd}
-              className={`flex w-[320px] shrink-0 flex-col rounded-[22px] p-3 shadow-lg transition ${draggedListKey === list.key ? 'scale-[0.98] opacity-70' : ''} ${dragOverListKey === list.key ? 'ring-2 ring-sky-300 ring-offset-2 ring-offset-transparent' : ''} ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'bg-zinc-100/90'}`}
+              onDragEnter={() => {
+                if (draggedTask) {
+                  setDragOverTaskListKey(list.key)
+                  return
+                }
+
+                handleListDragEnter(list.key)
+              }}
+              onDragOver={(e) => {
+                if (draggedTask || draggedListKey) {
+                  e.preventDefault()
+                }
+              }}
+              onDrop={() => {
+                if (draggedTask) {
+                  handleTaskDrop(list.key)
+                  return
+                }
+
+                handleListDrop(list.key)
+              }}
+              className={`flex w-[320px] shrink-0 flex-col rounded-[22px] p-3 shadow-lg transition ${dragOverListKey === list.key || dragOverTaskListKey === list.key ? 'ring-2 ring-sky-300 ring-offset-2 ring-offset-transparent' : ''} ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'bg-zinc-100/90'}`}
             >
-              <div className="mb-3 flex cursor-grab items-center justify-between gap-3 px-2 pt-1 active:cursor-grabbing">
+              <div
+                draggable
+                onDragStart={() => handleListDragStart(list.key)}
+                onDragEnd={handleListDragEnd}
+                className="mb-3 flex cursor-grab items-center justify-between gap-3 px-2 pt-1 active:cursor-grabbing"
+              >
                 <div className="flex min-w-0 items-center gap-2">
                   <span
                     className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${isDark ? 'border-zinc-700 bg-zinc-800 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-400'}`}
@@ -240,55 +312,76 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
 
               <div className="space-y-3">
                 {(tarefas[list.key] || []).map((task) => (
-                  <button
+                  <div
                     key={task.id}
-                    type="button"
-                    onClick={() => openCard(task)}
-                    className={`w-full rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${isDark ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
+                    draggable
+                    onDragStart={() => handleTaskDragStart(task)}
+                    onDragEnd={handleTaskDragEnd}
+                    className={`w-full rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${draggedTask?.id === task.id ? 'opacity-60' : ''} ${isDark ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
                   >
-                    <div className="flex flex-wrap gap-1.5">
-                      {(task.etiquetas || []).slice(0, 3).map((etiqueta, index) => (
-                        <span key={`${etiqueta.nome}-${index}`} className={`rounded-md px-2 py-1 text-[11px] font-medium ${isDark ? 'text-slate-950' : 'text-zinc-900'}`} style={{ backgroundColor: etiqueta.cor }}>
-                          {etiqueta.nome}
-                        </span>
-                      ))}
-                    </div>
+                    <div className="flex items-start justify-between gap-3">
+                      <button type="button" onClick={() => openCard(task)} className="min-w-0 flex-1 text-left">
+                        <div className="flex flex-wrap gap-1.5">
+                          {(task.etiquetas || []).slice(0, 3).map((etiqueta, index) => (
+                            <span key={`${etiqueta.nome}-${index}`} className={`rounded-md px-2 py-1 text-[11px] font-medium ${isDark ? 'text-slate-950' : 'text-zinc-900'}`} style={{ backgroundColor: etiqueta.cor }}>
+                              {etiqueta.nome}
+                            </span>
+                          ))}
+                        </div>
 
-                    <h4 className={`mt-3 text-[15px] font-medium leading-6 ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{task.titulo}</h4>
-                    {task.descricao ? <p className={`mt-2 line-clamp-3 text-sm leading-5 ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{task.descricao}</p> : null}
+                        <h4 className={`mt-3 text-[15px] font-medium leading-6 ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{task.titulo}</h4>
+                        {task.descricao ? <p className={`mt-2 line-clamp-3 text-sm leading-5 ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{task.descricao}</p> : null}
 
-                    <div className={`mt-3 flex flex-wrap items-center gap-2 text-xs ${isDark ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                      {task.data_limite_label ? (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-red-600">
-                          <CalendarDays className="h-3.5 w-3.5" />
-                          {task.data_limite_label}
-                        </span>
-                      ) : null}
-                      {task.checklist_resumo?.total ? (
-                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
-                          <CheckSquare className="h-3.5 w-3.5" />
-                          {task.checklist_resumo.concluidos}/{task.checklist_resumo.total}
-                        </span>
-                      ) : null}
-                      {task.anexos?.length ? (
-                        <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
-                          <Paperclip className="h-3.5 w-3.5" />
-                          {task.anexos.length}
-                        </span>
-                      ) : null}
-                      <span className={`rounded-md px-2 py-1 capitalize ${urgencyTone(task.urgencia)}`}>{task.urgencia}</span>
+                        <div className={`mt-3 flex flex-wrap items-center gap-2 text-xs ${isDark ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                          {task.data_limite_label ? (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-red-600">
+                              <CalendarDays className="h-3.5 w-3.5" />
+                              {task.data_limite_label}
+                            </span>
+                          ) : null}
+                          {task.checklist_resumo?.total ? (
+                            <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
+                              <CheckSquare className="h-3.5 w-3.5" />
+                              {task.checklist_resumo.concluidos}/{task.checklist_resumo.total}
+                            </span>
+                          ) : null}
+                          {task.anexos?.length ? (
+                            <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
+                              <Paperclip className="h-3.5 w-3.5" />
+                              {task.anexos.length}
+                            </span>
+                          ) : null}
+                          <span className={`rounded-md px-2 py-1 capitalize ${urgencyTone(task.urgencia)}`}>{task.urgencia}</span>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteTask(task.id)
+                        }}
+                        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400 hover:bg-zinc-800' : 'border-red-200 bg-white text-red-600 hover:bg-red-50'}`}
+                        title="Excluir cartão"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
 
                     <div className={`mt-4 border-t pt-3 ${isDark ? 'border-zinc-700' : 'border-zinc-100'}`}>
                       <Select
                         value={task.list_key}
-                        onChange={(e) => moveTask(task.id, e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          e.stopPropagation()
+                          moveTask(task.id, e.target.value)
+                        }}
                         className={`h-9 rounded-xl text-xs shadow-none ${isDark ? 'border-zinc-600 bg-zinc-700 text-zinc-100' : 'border-zinc-200 bg-zinc-50'}`}
                       >
                         {boardLists.map((option) => <option key={option.key} value={option.key}>{option.title}</option>)}
                       </Select>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
 
@@ -530,11 +623,16 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                   <section>
                     <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">Ações</h4>
                     <div className="mt-3 grid gap-3">
+                      {cardActionError ? (
+                        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                          {cardActionError}
+                        </div>
+                      ) : null}
                       <button type="button" onClick={saveActiveCard} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
                         <Save className="h-4 w-4" />
                         Salvar cartão
                       </button>
-                      <button type="button" onClick={() => router.delete(`/kanban/tasks/${activeCard.id}`)} className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-950 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
+                      <button type="button" onClick={() => deleteTask(activeCard.id, { closeModal: true })} className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-950 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
                         <X className="h-4 w-4" />
                         Excluir cartão
                       </button>

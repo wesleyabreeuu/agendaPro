@@ -18,12 +18,14 @@ class MetaBemMaterial extends Model
         'valor_bem',
         'valor_ja_guardado',
         'valor_guardar_mes',
+        'meses_planejados',
     ];
 
     protected $casts = [
         'valor_bem' => 'decimal:2',
         'valor_ja_guardado' => 'decimal:2',
         'valor_guardar_mes' => 'decimal:2',
+        'meses_planejados' => 'integer',
     ];
 
     public function usuario()
