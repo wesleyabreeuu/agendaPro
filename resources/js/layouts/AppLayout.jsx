@@ -10,6 +10,7 @@ import {
   FolderKanban,
   HeartPulse,
   LayoutGrid,
+  ListChecks,
   LogOut,
   Menu,
   UserCircle2,
@@ -179,15 +180,29 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
             <DashboardNavGroup
               label="Dia a dia"
               icon={CheckSquare}
-              open={currentPath.startsWith('/todo') || currentPath.startsWith('/rotinas') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
+              open={currentPath.startsWith('/todo') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
               collapsed={collapsed}
               isDark={isDark}
             >
               <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Todo list
               </DashboardSubLink>
+              <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Calendário
+              </DashboardSubLink>
+            </DashboardNavGroup>
+          ) : null}
+
+          {permissions.dia_a_dia ? (
+            <DashboardNavGroup
+              label="Rotinas"
+              icon={ListChecks}
+              open={currentPath.startsWith('/rotinas')}
+              collapsed={collapsed}
+              isDark={isDark}
+            >
               <DashboardSubLink href="/rotinas" active={currentPath === '/rotinas'} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
-                Dashboard Rotinas
+                Dashboard
               </DashboardSubLink>
               <DashboardSubLink href="/rotinas/minhas" active={currentPath.startsWith('/rotinas/minhas') || currentPath.startsWith('/rotinas/criar') || currentPath.includes('/editar')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Minhas Rotinas
@@ -200,9 +215,6 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               </DashboardSubLink>
               <DashboardSubLink href="/rotinas/templates" active={currentPath.startsWith('/rotinas/templates')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Templates
-              </DashboardSubLink>
-              <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
-                Calendário
               </DashboardSubLink>
             </DashboardNavGroup>
           ) : null}

@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Models\Compromisso;
+use App\Models\ContaBancaria;
 use App\Models\KanbanTask;
 use App\Models\Lembrete;
+use App\Models\TransacaoFinanceira;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardService
 {
@@ -24,6 +27,7 @@ class DashboardService
         $canCompromissos = $user->hasModuleAccess('compromissos');
         $canProjetos = $user->hasModuleAccess('projetos');
         $canDiaADia = $user->hasModuleAccess('dia_a_dia');
+        $canFinanceiro = $user->hasModuleAccess('financeiro');
 
         $today = now()->startOfDay();
         $tomorrow = $today->copy()->addDay();
@@ -31,11 +35,14 @@ class DashboardService
         $windowEnd = $today->copy()->endOfDay();
         $previousWindowStart = $windowStart->copy()->subDays($periodDays);
         $previousWindowEnd = $windowEnd->copy()->subDays($periodDays);
+        $monthStart = $today->copy()->startOfMonth();
+        $monthEnd = $today->copy()->endOfMonth();
 
         $compromissos = $canCompromissos ? $this->accessibleCompromissos($user)->get() : collect();
         $lembretes = $canCompromissos ? $this->accessibleLembretes($user)->get() : collect();
         $kanbanTasks = $canProjetos ? $this->kanbanTasks($user)->get() : collect();
         $rotinaWidget = $canDiaADia ? $this->rotinaAnalyticsService->buildWidget($user, $periodDays, $today) : null;
+        $financeiroWidget = $canFinanceiro ? $this->financeiroWidget($user, $monthStart, $monthEnd) : null;
 
         $compromissosHoje = $compromissos
             ->filter(fn (Compromisso $compromisso) => $compromisso->data_inicio?->betweenIncluded($today, $tomorrow->copy()->subSecond()))
@@ -138,6 +145,12 @@ class DashboardService
                 'taxa_semanal' => $rotinaWidget['taxa_semanal'] ?? 0,
                 'streak_atual' => $rotinaWidget['streak_atual'] ?? 0,
                 'maior_streak' => $rotinaWidget['maior_streak'] ?? 0,
+            ],
+            'financeiro' => $financeiroWidget ?? [
+                'saldo_total' => 0,
+                'resultado_mes' => 0,
+                'pendencias' => 0,
+                'transacoes_recentes' => [],
             ],
             'insights' => [
                 'periodo_dias' => $periodDays,
@@ -326,5 +339,54 @@ class DashboardService
         return collect(range(0, $start->diffInDays($end)))->map(
             fn (int $offset) => $start->copy()->addDays($offset)
         );
+    }
+
+    private function financeiroWidget(User $user, Carbon $monthStart, Carbon $monthEnd): array
+    {
+        $hasStatusColumn = Schema::hasColumn('transacao_financeira', 'status');
+
+        $contas = ContaBancaria::query()
+            ->where('user_id', $user->id)
+            ->get();
+
+        $transacoes = TransacaoFinanceira::query()
+            ->where('user_id', $user->id)
+            ->whereBetween('data', [$monthStart->toDateString(), $monthEnd->toDateString()])
+            ->with(['categoria', 'conta'])
+            ->get();
+
+        $recebido = $hasStatusColumn
+            ? $transacoes->where('tipo', 'receita')->where('status', 'recebido')->sum('valor')
+            : $transacoes->where('tipo', 'receita')->sum('valor');
+
+        $gasto = $hasStatusColumn
+            ? $transacoes->where('tipo', 'despesa')->where('status', 'pago')->sum('valor')
+            : $transacoes->where('tipo', 'despesa')->sum('valor');
+
+        $pendencias = $hasStatusColumn
+            ? (float) $transacoes->where('status', 'pendente')->sum('valor')
+            : 0.0;
+
+        $recentes = TransacaoFinanceira::query()
+            ->where('user_id', $user->id)
+            ->with(['categoria', 'conta'])
+            ->latest('data')
+            ->limit(4)
+            ->get();
+
+        return [
+            'saldo_total' => (float) $contas->sum('saldo_atual'),
+            'resultado_mes' => (float) ($recebido - $gasto),
+            'pendencias' => $pendencias,
+            'transacoes_recentes' => $recentes->map(fn (TransacaoFinanceira $transacao) => [
+                'id' => $transacao->id,
+                'descricao' => $transacao->descricao,
+                'tipo' => $transacao->tipo,
+                'status' => $transacao->status,
+                'valor' => (float) $transacao->valor,
+                'data' => $transacao->data?->toDateString(),
+                'categoria' => $transacao->categoria?->nome,
+            ])->values()->all(),
+        ];
     }
 }
