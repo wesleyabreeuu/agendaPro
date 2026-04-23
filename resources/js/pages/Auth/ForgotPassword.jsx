@@ -9,18 +9,18 @@ export default function ForgotPassword({ status = null, errors = {} }) {
 
   function submit(e) {
     e.preventDefault()
-    post('/password/email')
+    post('/password/check-account')
   }
 
   return (
     <>
-      <Head title="Forgot Password" />
+      <Head title="Recuperar senha" />
       <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
         <div className="w-full max-w-sm">
           <Card>
             <CardHeader>
-              <CardTitle>Forgot your password?</CardTitle>
-              <CardDescription>Enter your email and we will send a reset link.</CardDescription>
+              <CardTitle>Recuperar senha</CardTitle>
+              <CardDescription>Informe seu e-mail. Se ele estiver cadastrado, voce podera definir uma nova senha.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={submit} className="grid gap-6">
@@ -30,9 +30,9 @@ export default function ForgotPassword({ status = null, errors = {} }) {
                   <label htmlFor="email" className="text-sm font-medium text-zinc-900">Email</label>
                   <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                 </div>
-                <Button type="submit" disabled={processing}>Send reset link</Button>
+                <Button type="submit" disabled={processing}>Verificar cadastro</Button>
                 <div className="text-center text-sm text-zinc-500">
-                  <Link href="/login" className="underline underline-offset-4 text-zinc-900">Back to login</Link>
+                  <Link href="/login" className="underline underline-offset-4 text-zinc-900">Voltar para o login</Link>
                 </div>
               </form>
             </CardContent>

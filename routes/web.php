@@ -21,6 +21,8 @@ use App\Http\Controllers\RotinaDashboardController;
 use App\Http\Controllers\RotinaHojeController;
 use App\Http\Controllers\RotinaHistoricoController;
 use App\Http\Controllers\RotinaTemplateController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -31,6 +33,12 @@ Route::get('integracoes/strava/webhook', [StravaController::class, 'webhookVerif
 Route::post('integracoes/strava/webhook', [StravaController::class, 'webhook'])->name('strava.webhook');
 
 Auth::routes(['register' => false]);
+
+Route::middleware('guest')->group(function () {
+    Route::post('password/check-account', [ForgotPasswordController::class, 'verifyAccount'])->name('password.check-account');
+    Route::get('password/change', [ResetPasswordController::class, 'showDirectResetForm'])->name('password.direct.reset.form');
+    Route::post('password/change', [ResetPasswordController::class, 'updateDirect'])->name('password.direct.reset');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
