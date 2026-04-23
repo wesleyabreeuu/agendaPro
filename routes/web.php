@@ -16,6 +16,11 @@ use App\Http\Controllers\DailyCheckinController;
 use App\Http\Controllers\PermissaoController;
 use App\Http\Controllers\RegraController;
 use App\Http\Controllers\PushSubscriptionController;
+use App\Http\Controllers\RotinaController;
+use App\Http\Controllers\RotinaDashboardController;
+use App\Http\Controllers\RotinaHojeController;
+use App\Http\Controllers\RotinaHistoricoController;
+use App\Http\Controllers\RotinaTemplateController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -55,6 +60,22 @@ Route::middleware('auth')->group(function () {
         Route::resource('todo', TodoController::class)
             ->except(['create', 'show'])
             ->whereNumber('todo');
+
+        Route::prefix('rotinas')->name('rotinas.')->group(function () {
+            Route::get('/', [RotinaDashboardController::class, 'index'])->name('dashboard');
+            Route::get('/minhas', [RotinaController::class, 'index'])->name('index');
+            Route::get('/criar', [RotinaController::class, 'create'])->name('create');
+            Route::post('/', [RotinaController::class, 'store'])->name('store');
+            Route::get('/hoje', [RotinaHojeController::class, 'index'])->name('today');
+            Route::post('/{rotina}/execucoes', [RotinaHojeController::class, 'storeExecution'])->name('executions.store');
+            Route::get('/historico', [RotinaHistoricoController::class, 'index'])->name('history');
+            Route::get('/templates', [RotinaTemplateController::class, 'index'])->name('templates');
+            Route::post('/templates/{template}/aplicar', [RotinaTemplateController::class, 'apply'])->name('templates.apply');
+            Route::get('/{rotina}/editar', [RotinaController::class, 'edit'])->name('edit');
+            Route::put('/{rotina}', [RotinaController::class, 'update'])->name('update');
+            Route::patch('/{rotina}/toggle', [RotinaController::class, 'toggle'])->name('toggle');
+            Route::delete('/{rotina}', [RotinaController::class, 'destroy'])->name('destroy');
+        });
     });
 
     // outras rotas que você já tinha

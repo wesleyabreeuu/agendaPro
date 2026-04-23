@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use App\Models\Compromisso;
-use App\Models\Habito;
-use App\Models\HabitoLog;
 use App\Models\KanbanTask;
 use App\Models\Lembrete;
 use App\Models\User;
@@ -14,8 +12,9 @@ use Illuminate\Support\Collection;
 
 class DashboardService
 {
-    public function __construct(private readonly HabitStreakService $habitStreakService)
-    {
+    public function __construct(
+        private readonly RotinaAnalyticsService $rotinaAnalyticsService
+    ) {
     }
 
     public function build(User $user, int $periodDays = 7): array
@@ -36,18 +35,7 @@ class DashboardService
         $compromissos = $canCompromissos ? $this->accessibleCompromissos($user)->get() : collect();
         $lembretes = $canCompromissos ? $this->accessibleLembretes($user)->get() : collect();
         $kanbanTasks = $canProjetos ? $this->kanbanTasks($user)->get() : collect();
-        $habitos = $canDiaADia
-            ? Habito::ownedBy($user->id)
-                ->with(['logs' => fn ($query) => $query->orderByDesc('data')])
-                ->get()
-            : collect();
-        $habitoLogs = $canDiaADia
-            ? HabitoLog::query()
-                ->whereHas('habito', fn (Builder $query) => $query->where('user_id', $user->id))
-                ->whereBetween('data', [$windowStart->toDateString(), $today->toDateString()])
-                ->with('habito')
-                ->get()
-            : collect();
+        $rotinaWidget = $canDiaADia ? $this->rotinaAnalyticsService->buildWidget($user, $periodDays, $today) : null;
 
         $compromissosHoje = $compromissos
             ->filter(fn (Compromisso $compromisso) => $compromisso->data_inicio?->betweenIncluded($today, $tomorrow->copy()->subSecond()))
@@ -96,19 +84,10 @@ class DashboardService
             ->sortBy('data_limite')
             ->values();
 
-        $habitosDoDia = $canDiaADia
-            ? $habitos
-                ->where('ativo', true)
-                ->map(fn (Habito $habito) => $this->serializeHabitoDoDia($habito, $today))
-                ->values()
-            : collect();
-
-        $streakAtual = $canDiaADia
-            ? (int) $habitosDoDia->max(fn (array $habito) => $habito['estatisticas']['streak_atual'] ?? 0)
-            : 0;
         $percentualSemanaAtual = $canProjetos ? $this->completionRateForWindow($kanbanTasks, $windowStart, $windowEnd) : 0;
         $percentualSemanaAnterior = $canProjetos ? $this->completionRateForWindow($kanbanTasks, $previousWindowStart, $previousWindowEnd) : 0;
         $comparacao = $percentualSemanaAtual - $percentualSemanaAnterior;
+        $streakAtual = $rotinaWidget['streak_atual'] ?? 0;
 
         return [
             'compromissos' => [
@@ -149,12 +128,16 @@ class DashboardService
                 ],
             ],
             'rotina' => [
-                'habitos_do_dia' => [
-                    'total' => $habitosDoDia->count(),
-                    'concluidos' => $habitosDoDia->where('concluido_hoje', true)->count(),
-                    'items' => $habitosDoDia->take(6)->all(),
+                'rotinas_do_dia' => $rotinaWidget['rotinas_do_dia'] ?? [
+                    'total' => 0,
+                    'concluidos' => 0,
+                    'pendentes' => 0,
+                    'items' => [],
                 ],
-                'streak_atual' => $streakAtual,
+                'taxa_conclusao_hoje' => $rotinaWidget['taxa_conclusao_hoje'] ?? 0,
+                'taxa_semanal' => $rotinaWidget['taxa_semanal'] ?? 0,
+                'streak_atual' => $rotinaWidget['streak_atual'] ?? 0,
+                'maior_streak' => $rotinaWidget['maior_streak'] ?? 0,
             ],
             'insights' => [
                 'periodo_dias' => $periodDays,
@@ -183,8 +166,8 @@ class DashboardService
                 'compromissos_por_dia' => $canCompromissos
                     ? $this->buildCompromissosPerDaySeries($compromissos, $windowStart, $today)
                     : [],
-                'habitos_concluidos_por_dia' => $canDiaADia
-                    ? $this->buildHabitCompletionSeries($habitoLogs, $windowStart, $today)
+                'rotinas_concluidas_por_dia' => $canDiaADia
+                    ? ($rotinaWidget['series'] ?? [])
                     : [],
             ],
         ];
@@ -336,33 +319,6 @@ class DashboardService
                 )->count(),
             ];
         })->values()->all();
-    }
-
-    private function buildHabitCompletionSeries(Collection $logs, Carbon $start, Carbon $end): array
-    {
-        return $this->buildDateRange($start, $end)->map(function (Carbon $date) use ($logs) {
-            return [
-                'dia' => $date->translatedFormat('D'),
-                'label' => $date->format('d/m'),
-                'concluidos' => $logs->filter(
-                    fn (HabitoLog $log) => $log->data && $log->data->isSameDay($date)
-                )->count(),
-            ];
-        })->values()->all();
-    }
-
-    private function serializeHabitoDoDia(Habito $habito, Carbon $today): array
-    {
-        $stats = $this->habitStreakService->forHabit($habito);
-        $concluidoHoje = $habito->logs->contains(fn (HabitoLog $log) => $log->data && $log->data->isSameDay($today));
-
-        return [
-            'id' => $habito->id,
-            'nome' => $habito->nome,
-            'descricao' => $habito->descricao,
-            'concluido_hoje' => $concluidoHoje,
-            'estatisticas' => $stats,
-        ];
     }
 
     private function buildDateRange(Carbon $start, Carbon $end): Collection

@@ -203,7 +203,7 @@ export default function Dashboard() {
       {
         label: 'Melhor streak',
         value: dashboard.rotina?.streak_atual || 0,
-        helper: `${dashboard.rotina?.habitos_do_dia?.concluidos || 0} habitos concluidos hoje`,
+        helper: `${dashboard.rotina?.rotinas_do_dia?.concluidos || 0} rotinas concluídas hoje`,
         icon: Flame,
       },
     ]
@@ -215,7 +215,7 @@ export default function Dashboard() {
 
   const openCompromissos = () => router.visit('/compromissos/calendario')
   const openKanban = () => router.visit('/kanban')
-  const openCheckins = () => router.visit('/check-ins')
+  const openCheckins = () => router.visit('/rotinas/hoje')
 
   return (
     <AppLayout title="Dashboard" chrome="dashboard">
@@ -405,10 +405,10 @@ export default function Dashboard() {
 
           <ChartCard
             title="Rotina no período"
-            subtitle={`Quantidade de habitos concluidos em ${periodLabel}.`}
+            subtitle={`Quantidade de rotinas concluídas em ${periodLabel}.`}
             icon={Flame}
             onOpen={openCheckins}
-            openLabel="Abrir habitos"
+            openLabel="Abrir rotinas"
             isDark={isDark}
           >
             <ChartContainer
@@ -417,7 +417,7 @@ export default function Dashboard() {
                 concluidos: { label: 'Concluidos', color: '#18181b' },
               }}
             >
-              <BarChart data={chartData.habitos_concluidos_por_dia || []} onClick={openCheckins}>
+              <BarChart data={chartData.rotinas_concluidas_por_dia || []} onClick={openCheckins}>
                 <CartesianGrid vertical={false} stroke="#e4e4e7" />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
                 <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
@@ -481,30 +481,30 @@ export default function Dashboard() {
           <SectionCard title="Rotina" subtitle="Presença diária e consistência." isDark={isDark}>
             <div className="space-y-4">
               <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Hábitos do dia</p>
+                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Rotinas do dia</p>
                 <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>
-                  {(dashboard?.rotina?.habitos_do_dia?.concluidos || 0)} de {(dashboard?.rotina?.habitos_do_dia?.total || 0)} concluidos
+                  {(dashboard?.rotina?.rotinas_do_dia?.concluidos || 0)} de {(dashboard?.rotina?.rotinas_do_dia?.total || 0)} concluídas
                 </p>
               </div>
               <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                 <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Streak atual</p>
                 <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.rotina?.streak_atual || 0} dias</p>
               </div>
-              {dashboard?.rotina?.habitos_do_dia?.items?.length ? (
+              {dashboard?.rotina?.rotinas_do_dia?.items?.length ? (
                 <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200'}`}>
                   <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                     <ListChecks className="h-4 w-4" />
-                    Hábitos em foco hoje
+                    Rotinas em foco hoje
                   </div>
                   <div className="mt-3 space-y-2">
-                    {dashboard.rotina.habitos_do_dia.items.map((item) => (
+                    {dashboard.rotina.rotinas_do_dia.items.map((item) => (
                       <div key={item.id} className={`flex items-center justify-between gap-3 rounded-2xl border px-3 py-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50/60'}`}>
                         <div>
                           <p className={`text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
-                          <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>streak {item.estatisticas?.streak_atual || 0} dias</p>
+                          <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.categoria || 'rotina'}{item.horario ? ` • ${item.horario}` : ''}</p>
                         </div>
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${item.concluido_hoje ? 'bg-emerald-100 text-emerald-700' : isDark ? 'bg-zinc-100 text-black' : 'bg-zinc-200 text-zinc-600'}`}>
-                          {item.concluido_hoje ? 'feito' : 'pendente'}
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${item.status === 'concluida' ? 'bg-emerald-100 text-emerald-700' : item.status === 'pulada' ? 'bg-amber-100 text-amber-700' : isDark ? 'bg-zinc-100 text-black' : 'bg-zinc-200 text-zinc-600'}`}>
+                          {item.status === 'concluida' ? (item.modo_usado === 'minimo' ? 'mínimo' : 'feito') : item.status === 'pulada' ? 'pulada' : 'pendente'}
                         </span>
                       </div>
                     ))}

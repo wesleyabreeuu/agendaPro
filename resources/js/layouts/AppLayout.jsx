@@ -179,15 +179,27 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
             <DashboardNavGroup
               label="Dia a dia"
               icon={CheckSquare}
-              open={currentPath.startsWith('/todo') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
+              open={currentPath.startsWith('/todo') || currentPath.startsWith('/rotinas') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
               collapsed={collapsed}
               isDark={isDark}
             >
               <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Todo list
               </DashboardSubLink>
-              <DashboardSubLink href="/check-ins" active={currentPath.startsWith('/check-ins')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
-                Habitos
+              <DashboardSubLink href="/rotinas" active={currentPath === '/rotinas'} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Dashboard Rotinas
+              </DashboardSubLink>
+              <DashboardSubLink href="/rotinas/minhas" active={currentPath.startsWith('/rotinas/minhas') || currentPath.startsWith('/rotinas/criar') || currentPath.includes('/editar')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Minhas Rotinas
+              </DashboardSubLink>
+              <DashboardSubLink href="/rotinas/hoje" active={currentPath.startsWith('/rotinas/hoje')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Rotinas de Hoje
+              </DashboardSubLink>
+              <DashboardSubLink href="/rotinas/historico" active={currentPath.startsWith('/rotinas/historico')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Histórico
+              </DashboardSubLink>
+              <DashboardSubLink href="/rotinas/templates" active={currentPath.startsWith('/rotinas/templates')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Templates
               </DashboardSubLink>
               <DashboardSubLink href="/compromissos/calendario" active={currentPath === '/compromissos/calendario'} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Calendário

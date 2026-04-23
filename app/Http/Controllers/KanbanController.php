@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\KanbanBoard;
 use App\Models\KanbanTask;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -234,7 +233,7 @@ class KanbanController extends Controller
             ->with('success', 'Tarefa removida com sucesso.');
     }
 
-    public function status(Request $request, KanbanTask $task): JsonResponse
+    public function status(Request $request, KanbanTask $task): RedirectResponse|\Illuminate\Http\JsonResponse
     {
         $this->authorizeTask($task);
 
@@ -251,7 +250,13 @@ class KanbanController extends Controller
 
         $task->update($updateData);
 
-        return response()->json(['ok' => true]);
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
+
+        return redirect()
+            ->route('kanban.show', $task->kanban_board_id)
+            ->with('success', 'Cartão movido com sucesso.');
     }
 
     public function extendDeadline(Request $request, KanbanTask $task): RedirectResponse

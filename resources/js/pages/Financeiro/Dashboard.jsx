@@ -12,6 +12,8 @@ function metaPrazoLabel(item) {
 }
 
 export default function FinanceiroDashboard({ filtros, resumo, contas = [], categorias = [], despesasPorCategoria = [], pendentes = [], ultimasTransacoes = [], metasEconomia = [], metasBens = [], financeiroAvancado }) {
+  const quickFieldClassName = 'border-zinc-300 shadow-none'
+
   const filterForm = useForm({
     data_inicio: filtros.data_inicio || '',
     data_fim: filtros.data_fim || '',
@@ -119,18 +121,18 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
         <Panel title="Cadastrar receita ou gasto" action={<Link href="/financeiro/transacoes" className="text-sm text-zinc-600 hover:text-zinc-900">Abrir tela completa</Link>}>
           <form onSubmit={submitTransacao} className="grid gap-4">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
+              <select className={`h-10 rounded-md border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 ${quickFieldClassName}`} value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
                 <option value="despesa">Despesa</option>
                 <option value="receita">Receita</option>
               </select>
               {financeiroAvancado ? (
-                <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.status} onChange={(e) => transacaoForm.setData('status', e.target.value)}>
+                <select className={`h-10 rounded-md border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 ${quickFieldClassName}`} value={transacaoForm.data.status} onChange={(e) => transacaoForm.setData('status', e.target.value)}>
                   <option value={transacaoForm.data.tipo === 'receita' ? 'recebido' : 'pago'}>{transacaoForm.data.tipo === 'receita' ? 'Recebido agora' : 'Pago agora'}</option>
                   <option value="pendente">Deixar pendente</option>
                 </select>
               ) : null}
-              <Input type="number" step="0.01" min="0.01" placeholder="Valor" value={transacaoForm.data.valor} onChange={(e) => transacaoForm.setData('valor', e.target.value)} />
-              <Input type="date" value={transacaoForm.data.data} onChange={(e) => transacaoForm.setData('data', e.target.value)} />
+              <Input className={quickFieldClassName} type="number" step="0.01" min="0.01" placeholder="Valor" value={transacaoForm.data.valor} onChange={(e) => transacaoForm.setData('valor', e.target.value)} />
+              <Input className={quickFieldClassName} type="date" value={transacaoForm.data.data} onChange={(e) => transacaoForm.setData('data', e.target.value)} />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
