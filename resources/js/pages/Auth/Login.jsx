@@ -65,7 +65,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       <label htmlFor="password" className="text-sm font-medium text-zinc-900">Password</label>
                       {canResetPassword ? (
                         <Link href="/password/reset" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
-                          Forgot your password?
+                          Esqueceu sua senha?
                         </Link>
                       ) : null}
                     </div>

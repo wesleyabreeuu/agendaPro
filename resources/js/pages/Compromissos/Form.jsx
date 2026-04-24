@@ -167,7 +167,7 @@ function ShareEditor({ compromisso, processing }) {
   )
 }
 
-export default function CompromissosForm({ modo = 'create', compromisso = null, categorias = [], leadTimeOptions = [], errors = {} }) {
+export default function CompromissosForm({ modo = 'create', compromisso = null, categorias = [], errors = {} }) {
   const editing = modo === 'edit' && compromisso?.id
   const { data, setData, post, put, processing } = useForm({
     titulo: compromisso?.titulo || '',
@@ -179,8 +179,6 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
     recorrencia: compromisso?.recorrencia || '',
     recorrencia_intervalo: compromisso?.recorrencia_intervalo || '',
     data_fim_recorrencia: compromisso?.data_fim_recorrencia || '',
-    telefone: compromisso?.telefone || '',
-    lead_time: compromisso?.lead_time || '',
     cancelar_lembrete: false,
   })
 
@@ -241,28 +239,9 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
                 </Select>
               </div>
             </div>
-
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Telefone para WhatsApp</label>
-              <div className={shellClassName}>
-                <Input value={data.telefone} onChange={(e) => setData('telefone', e.target.value)} placeholder="5511999999999" className={shellInputClassName} />
-              </div>
-              {errors.telefone ? <p className="text-sm text-red-600">{errors.telefone}</p> : null}
-            </div>
           </div>
 
           <div className={sectionClassName}>
-            <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Lembrete por WhatsApp</label>
-              <div className={shellClassName}>
-                <Select value={data.lead_time} onChange={(e) => setData('lead_time', e.target.value)} className={shellInputClassName}>
-                  {leadTimeOptions.map((option) => (
-                    <option key={option.value || 'none'} value={option.value}>{option.label}</option>
-                  ))}
-                </Select>
-              </div>
-            </div>
-
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Recorrência</label>
               <div className={shellClassName}>
