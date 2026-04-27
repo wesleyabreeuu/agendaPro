@@ -197,6 +197,14 @@ class LembreteController extends Controller
 
             $compromisso = Compromisso::where('usuarios_id', Auth::id())
                 ->findOrFail($validated['compromisso_id'] ?? 0);
+            $minutosAntes = (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 15));
+            $momentoDisparo = Carbon::parse($compromisso->data_inicio)->subMinutes($minutosAntes);
+
+            if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(now())) {
+                throw ValidationException::withMessages([
+                    'minutos_antes' => 'Esse lembrete dispararia imediatamente. Escolha uma antecedencia menor ou mova o compromisso para um horario futuro.',
+                ]);
+            }
 
             return [
                 'user_id' => Auth::id(),
@@ -212,7 +220,7 @@ class LembreteController extends Controller
                 'dias_semana' => null,
                 'fim_recorrencia_em' => null,
                 'ativo' => $request->boolean('ativo', true),
-                'minutos_antes' => (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 15)),
+                'minutos_antes' => $minutosAntes,
                 'notificado_em' => null,
                 'ultima_execucao_em' => null,
             ];
@@ -234,6 +242,12 @@ class LembreteController extends Controller
         $recorrencia = $validated['recorrencia'] ?? null;
         $minutosAntes = (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 0));
         $momentoDisparo = $inicio->copy()->subMinutes($minutosAntes);
+
+        if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(now())) {
+            throw ValidationException::withMessages([
+                'minutos_antes' => 'Esse lembrete dispararia imediatamente. Escolha uma antecedencia menor ou defina um horario mais a frente.',
+            ]);
+        }
 
         return [
             'user_id' => Auth::id(),
