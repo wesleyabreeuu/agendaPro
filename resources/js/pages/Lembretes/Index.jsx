@@ -29,6 +29,7 @@ export default function LembretesIndex({ lembretes, proximos }) {
                 <tr>
                   <th className="px-4 py-3 text-left">Título</th>
                   <th className="px-4 py-3 text-left">Origem</th>
+                  <th className="px-4 py-3 text-left">Antecedência</th>
                   <th className="px-4 py-3 text-left">Recorrência</th>
                   <th className="px-4 py-3 text-left">Próximo disparo</th>
                   <th className="px-4 py-3 text-left">Status</th>
@@ -43,6 +44,7 @@ export default function LembretesIndex({ lembretes, proximos }) {
                       <div className="text-zinc-500">{lembrete.categoria || 'Sem categoria'}</div>
                     </td>
                     <td className="px-4 py-3">{lembrete.origem}</td>
+                    <td className="px-4 py-3">{lembrete.minutos_antes > 0 ? `${lembrete.minutos_antes} min antes` : 'No horário'}</td>
                     <td className="px-4 py-3">{lembrete.recorrencia || 'Único'}</td>
                     <td className="px-4 py-3">{lembrete.momento_disparo || '-'}</td>
                     <td className="px-4 py-3">{lembrete.ativo ? 'Ativo' : 'Finalizado'}</td>

@@ -92,6 +92,14 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                   {errors.inicio_em ? <p className="text-sm text-red-600">{errors.inicio_em}</p> : null}
                 </div>
                 <div className="grid gap-2">
+                  <label className="text-sm font-medium text-zinc-900">Disparar quantos minutos antes?</label>
+                  <div className={shellClassName}>
+                    <Input type="number" min="0" max="10080" value={data.minutos_antes} onChange={(e) => setData('minutos_antes', e.target.value)} className={shellInputClassName} />
+                  </div>
+                  <p className="text-xs text-zinc-500">Use 0 para disparar exatamente no horário informado.</p>
+                  {errors.minutos_antes ? <p className="text-sm text-red-600">{errors.minutos_antes}</p> : null}
+                </div>
+                <div className="grid gap-2">
                   <label className="text-sm font-medium text-zinc-900">Recorrência</label>
                   <div className={shellClassName}>
                     <Select value={data.recorrencia} onChange={(e) => setData('recorrencia', e.target.value)} className={shellInputClassName}>

@@ -35,6 +35,7 @@ class LembreteController extends Controller
                 'descricao_exibicao' => $lembrete->descricao_exibicao,
                 'categoria' => $lembrete->categoria,
                 'origem' => $lembrete->compromisso_id ? 'Compromisso' : 'Personalizado',
+                'minutos_antes' => (int) $lembrete->minutos_antes,
                 'recorrencia' => $lembrete->recorrencia ? ucfirst(str_replace('_', ' ', $lembrete->recorrencia)) : null,
                 'momento_disparo' => optional($lembrete->momento_disparo)?->format('d/m/Y H:i'),
                 'ativo' => $lembrete->ativo,
@@ -231,6 +232,8 @@ class LembreteController extends Controller
 
         $inicio = Carbon::parse($validated['inicio_em'] ?? now());
         $recorrencia = $validated['recorrencia'] ?? null;
+        $minutosAntes = (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 0));
+        $momentoDisparo = $inicio->copy()->subMinutes($minutosAntes);
 
         return [
             'user_id' => Auth::id(),
@@ -240,9 +243,7 @@ class LembreteController extends Controller
             'descricao' => $validated['descricao'] ?? null,
             'categoria' => $validated['categoria'] ?? 'pessoal',
             'inicio_em' => $inicio,
-            'proxima_execucao_em' => $lembrete?->isStandalone() && $lembrete->proxima_execucao_em
-                ? $inicio->copy()
-                : $inicio->copy(),
+            'proxima_execucao_em' => $momentoDisparo,
             'recorrencia' => $recorrencia,
             'intervalo_recorrencia' => $recorrencia ? (int) ($validated['intervalo_recorrencia'] ?? 1) : null,
             'dias_semana' => $recorrencia === 'dias_semana'
@@ -250,7 +251,7 @@ class LembreteController extends Controller
                 : null,
             'fim_recorrencia_em' => $validated['fim_recorrencia_em'] ?? null,
             'ativo' => $request->boolean('ativo', true),
-            'minutos_antes' => 0,
+            'minutos_antes' => $minutosAntes,
             'notificado_em' => null,
             'ultima_execucao_em' => null,
         ];
