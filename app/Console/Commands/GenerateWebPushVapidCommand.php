@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Minishlink\WebPush\VAPID;
-use Base64Url\Base64Url;
 use Throwable;
 
 class GenerateWebPushVapidCommand extends Command
@@ -71,8 +70,8 @@ class GenerateWebPushVapidCommand extends Command
             }
 
             return [
-                'publicKey' => Base64Url::encode($publicKey),
-                'privateKey' => Base64Url::encode($privateKey),
+                'publicKey' => $this->base64UrlEncode($publicKey),
+                'privateKey' => $this->base64UrlEncode($privateKey),
             ];
         } finally {
             File::delete($privateKeyPath);
@@ -86,5 +85,10 @@ class GenerateWebPushVapidCommand extends Command
         }
 
         return strtolower(preg_replace('/[^0-9a-f]/i', '', $matches[1]));
+    }
+
+    private function base64UrlEncode(string $value): string
+    {
+        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
     }
 }
