@@ -42,6 +42,30 @@ php artisan key:generate
 ./vendor/bin/sail artisan migrate
 ```
 
+## Web Push no PWA
+Para que as notificacoes cheguem mesmo com o sistema fechado, o navegador/PWA precisa estar inscrito em Web Push e o servidor precisa executar o agendador do Laravel continuamente.
+
+### Variaveis de ambiente
+Adicione no `.env`:
+
+```env
+WEBPUSH_SUBJECT=mailto:suporte@seu-dominio.com
+WEBPUSH_PUBLIC_KEY=
+WEBPUSH_PRIVATE_KEY=
+```
+
+Para gerar as chaves VAPID:
+
+```bash
+./vendor/bin/sail artisan webpush:vapid
+```
+
+### Requisitos
+- O site precisa estar em HTTPS em producao.
+- O usuario precisa permitir notificacoes do site.
+- No iPhone/iPad, o Web Push exige que o app seja instalado na tela inicial como PWA.
+- O scheduler do Laravel precisa estar rodando para disparar `reminders:push-due`.
+
 ## Integracao com Strava
 Essa integracao permite conectar a conta do usuario ao Strava e importar automaticamente atividades novas para o modulo de saude.
 
