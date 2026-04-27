@@ -4,8 +4,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Jose\Component\KeyManagement\JWKFactory;
-use Minishlink\WebPush\Utils;
 use Minishlink\WebPush\VAPID;
 use Base64Url\Base64Url;
 use Throwable;
@@ -47,14 +45,46 @@ class GenerateWebPushVapidCommand extends Command
         }
 
         try {
-            $jwk = JWKFactory::createFromKeyFile($privateKeyPath);
+            exec(
+                sprintf('openssl ec -in %s -text -noout 2>&1', escapeshellarg($privateKeyPath)),
+                $detailsOutput,
+                $detailsStatus
+            );
+
+            if ($detailsStatus !== 0) {
+                throw new \RuntimeException('Falha ao extrair detalhes da chave VAPID via openssl.');
+            }
+
+            $detailsText = implode("\n", $detailsOutput);
+            $privateHex = $this->extractHexBlock($detailsText, '/priv:\s*((?:\s*[0-9a-f]{2}:?)+)\s*pub:/i');
+            $publicHex = $this->extractHexBlock($detailsText, '/pub:\s*((?:\s*[0-9a-f]{2}:?)+)\s*(?:ASN1 OID|NIST CURVE|$)/i');
+
+            if ($privateHex === null || $publicHex === null) {
+                throw new \RuntimeException('Nao foi possivel interpretar a chave VAPID gerada pelo openssl.');
+            }
+
+            $privateKey = hex2bin(str_pad($privateHex, 64, '0', STR_PAD_LEFT));
+            $publicKey = hex2bin($publicHex);
+
+            if ($privateKey === false || $publicKey === false) {
+                throw new \RuntimeException('Falha ao converter a chave VAPID gerada pelo openssl.');
+            }
 
             return [
-                'publicKey' => base64_encode(hex2bin(Utils::serializePublicKeyFromJWK($jwk))),
-                'privateKey' => base64_encode(str_pad(Base64Url::decode($jwk->get('d')), 32, '0', STR_PAD_LEFT)),
+                'publicKey' => Base64Url::encode($publicKey),
+                'privateKey' => Base64Url::encode($privateKey),
             ];
         } finally {
             File::delete($privateKeyPath);
         }
+    }
+
+    private function extractHexBlock(string $detailsText, string $pattern): ?string
+    {
+        if (!preg_match($pattern, $detailsText, $matches)) {
+            return null;
+        }
+
+        return strtolower(preg_replace('/[^0-9a-f]/i', '', $matches[1]));
     }
 }
