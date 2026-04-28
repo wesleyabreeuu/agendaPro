@@ -122,6 +122,7 @@ class CompromissoController extends Controller
     {
         $compromisso = Compromisso::with('compartilhamentos')->findOrFail($id);
         $this->authorize('update', $compromisso);
+        $isOwner = $compromisso->isOwnedBy(Auth::user());
 
         $rules = $this->rules();
         $rules['cancelar_lembrete'] = 'nullable|boolean';
@@ -145,7 +146,7 @@ class CompromissoController extends Controller
             'recorrencia'           => $request->recorrencia,
             'recorrencia_intervalo' => $request->recorrencia_intervalo,
             'data_fim_recorrencia'  => $request->data_fim_recorrencia,
-            'telefone'              => $request->telefone,
+            'telefone'              => $isOwner ? $request->telefone : $compromisso->telefone,
         ]);
 
         $compromisso->lembretes()->update(['notificado_em' => null]);
@@ -419,6 +420,7 @@ class CompromissoController extends Controller
     {
         $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
         $permissao = $compromisso->isOwnedBy($user) ? 'owner' : $compromisso->sharedPermissionFor($user);
+        $isOwner = $permissao === 'owner';
 
         return [
             'id' => $compromisso->id,
@@ -429,28 +431,29 @@ class CompromissoController extends Controller
             'data_inicio' => $compromisso->data_inicio?->format('d/m/Y H:i'),
             'data_fim' => $compromisso->data_fim?->format('d/m/Y H:i'),
             'dia_inteiro' => (bool) $compromisso->dia_inteiro,
-            'telefone' => $compromisso->telefone,
+            'telefone' => $isOwner ? $compromisso->telefone : null,
             'recorrencia' => $compromisso->recorrencia,
             'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
             'data_fim_recorrencia' => $fimRecorrencia?->format('d/m/Y'),
             'owner' => [
                 'id' => $compromisso->owner?->id ?? $compromisso->usuarios_id,
                 'nome' => $compromisso->owner?->name,
-                'email' => $compromisso->owner?->email,
             ],
             'permissao' => $permissao,
             'pode_editar' => in_array($permissao, ['owner', 'editar'], true),
             'pode_excluir' => $permissao === 'owner',
             'pode_compartilhar' => $permissao === 'owner',
-            'compartilhado_com' => $compromisso->compartilhamentos
-                ->map(fn ($compartilhamento) => [
-                    'usuario_id' => $compartilhamento->usuario_id,
-                    'nome' => $compartilhamento->usuario?->name,
-                    'email' => $compartilhamento->usuario?->email,
-                    'permissao' => $compartilhamento->permissao,
-                ])
-                ->values()
-                ->all(),
+            'compartilhado_com' => $isOwner
+                ? $compromisso->compartilhamentos
+                    ->map(fn ($compartilhamento) => [
+                        'usuario_id' => $compartilhamento->usuario_id,
+                        'nome' => $compartilhamento->usuario?->name,
+                        'email_masked' => $this->maskEmail($compartilhamento->usuario?->email),
+                        'permissao' => $compartilhamento->permissao,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
         ];
     }
 
@@ -459,6 +462,7 @@ class CompromissoController extends Controller
         $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
         $user = Auth::user();
         $permissao = $compromisso->isOwnedBy($user) ? 'owner' : $compromisso->sharedPermissionFor($user);
+        $isOwner = $permissao === 'owner';
 
         return [
             'id' => $compromisso->id,
@@ -468,7 +472,7 @@ class CompromissoController extends Controller
             'data_inicio' => $compromisso->data_inicio?->format('Y-m-d\TH:i'),
             'data_fim' => $compromisso->data_fim?->format('Y-m-d\TH:i'),
             'dia_inteiro' => (bool) $compromisso->dia_inteiro,
-            'telefone' => $compromisso->telefone,
+            'telefone' => $isOwner ? $compromisso->telefone : null,
             'recorrencia' => $compromisso->recorrencia,
             'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
             'data_fim_recorrencia' => $fimRecorrencia?->format('Y-m-d'),
@@ -476,20 +480,33 @@ class CompromissoController extends Controller
             'owner' => [
                 'id' => $compromisso->owner?->id ?? $compromisso->usuarios_id,
                 'nome' => $compromisso->owner?->name,
-                'email' => $compromisso->owner?->email,
             ],
             'permissao' => $permissao,
             'pode_compartilhar' => $permissao === 'owner',
-            'compartilhado_com' => $compromisso->compartilhamentos
-                ->map(fn ($compartilhamento) => [
-                    'usuario_id' => $compartilhamento->usuario_id,
-                    'nome' => $compartilhamento->usuario?->name,
-                    'email' => $compartilhamento->usuario?->email,
-                    'permissao' => $compartilhamento->permissao,
-                ])
-                ->values()
-                ->all(),
+            'compartilhado_com' => $isOwner
+                ? $compromisso->compartilhamentos
+                    ->map(fn ($compartilhamento) => [
+                        'usuario_id' => $compartilhamento->usuario_id,
+                        'nome' => $compartilhamento->usuario?->name,
+                        'email_masked' => $this->maskEmail($compartilhamento->usuario?->email),
+                        'permissao' => $compartilhamento->permissao,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
         ];
+    }
+
+    private function maskEmail(?string $email): ?string
+    {
+        if (!$email || !str_contains($email, '@')) {
+            return null;
+        }
+
+        [$name, $domain] = explode('@', $email, 2);
+        $prefix = mb_substr($name, 0, 2);
+
+        return $prefix . str_repeat('*', max(mb_strlen($name) - 2, 1)) . '@' . $domain;
     }
 
     private function leadTimeOptions(): array

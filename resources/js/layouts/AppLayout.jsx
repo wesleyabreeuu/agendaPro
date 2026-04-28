@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import {
+  SunMedium,
   CalendarDays,
   ChevronLeft,
   ChevronDown,
@@ -18,6 +19,9 @@ import {
   X,
 } from 'lucide-react'
 import { useTheme } from '../contexts/ThemeContext'
+import DailyStartOverlay from '../components/DailyStartOverlay'
+import GlobalFAB from '../components/GlobalFAB'
+import { useDailySession } from '../hooks/useDailySession'
 // import AIAssistantWidget from '../components/AIAssistantWidget'
 
 function getInitials(name = '') {
@@ -180,10 +184,13 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
             <DashboardNavGroup
               label="Dia a dia"
               icon={CheckSquare}
-              open={currentPath.startsWith('/todo') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario'}
+              open={currentPath.startsWith('/todo') || currentPath.startsWith('/check-ins') || currentPath === '/compromissos/calendario' || currentPath.startsWith('/meu-dia')}
               collapsed={collapsed}
               isDark={isDark}
             >
+              <DashboardSubLink href="/meu-dia" active={currentPath.startsWith('/meu-dia')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Meu Dia
+              </DashboardSubLink>
               <DashboardSubLink href="/todo" active={currentPath.startsWith('/todo')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Todo list
               </DashboardSubLink>
@@ -397,6 +404,10 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
   const canWatchReminders = useMemo(() => Boolean(auth?.user && permissions.compromissos), [auth?.user, permissions.compromissos])
   const pushPublicKey = webPush?.publicKey || ''
   const pushEnabled = Boolean(webPush?.enabled && pushPublicKey)
+  const dailySession = useDailySession({
+    enabled: Boolean(auth?.user && permissions.dia_a_dia),
+    userId: auth?.user?.id || null,
+  })
   const notificationBannerStorageKey = useMemo(
     () => `agendapro.notifications.banner-dismissed.${auth?.user?.id || 'guest'}`,
     [auth?.user?.id],
@@ -751,6 +762,15 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
         items={reminderToasts}
         onDismiss={(key) => setReminderToasts((current) => current.filter((item) => item.key !== key))}
       />
+      <DailyStartOverlay
+        open={dailySession.open}
+        user={auth?.user}
+        preview={dailySession.preview}
+        onStart={dailySession.startDay}
+        onSkip={dailySession.skipForToday}
+        starting={dailySession.starting}
+      />
+      <GlobalFAB permissions={permissions} currentPath={currentPath} />
       {/* Assistente de IA temporariamente oculto até retomarmos esse fluxo. */}
       {/* {auth?.user ? <AIAssistantWidget permissions={permissions} isDark={isDark} /> : null} */}
     </>

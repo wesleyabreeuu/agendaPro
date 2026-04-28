@@ -121,6 +121,11 @@ class User extends Authenticatable
         return $this->hasMany(Rotina::class, 'user_id');
     }
 
+    public function dailySessions(): HasMany
+    {
+        return $this->hasMany(DailySession::class, 'user_id');
+    }
+
     public function isAdmin(): bool
     {
         return (bool) $this->is_admin;

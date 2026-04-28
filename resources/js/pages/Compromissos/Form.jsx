@@ -146,7 +146,7 @@ function ShareEditor({ compromisso, processing }) {
           <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
             <div>
               <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
-              <p className="text-sm text-zinc-500">{item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
+              <p className="text-sm text-zinc-500">{item.email_masked || item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
             </div>
             <button
               type="button"

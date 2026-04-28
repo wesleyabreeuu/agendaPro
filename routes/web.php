@@ -21,6 +21,7 @@ use App\Http\Controllers\RotinaDashboardController;
 use App\Http\Controllers\RotinaHojeController;
 use App\Http\Controllers\RotinaHistoricoController;
 use App\Http\Controllers\RotinaTemplateController;
+use App\Http\Controllers\MeuDiaController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
@@ -55,15 +56,16 @@ Route::middleware('auth')->group(function () {
         Route::resource('lembretes', LembreteController::class)->except(['show']);
         Route::get('lembretes/{id}/enviar-whatsapp', [LembreteController::class, 'enviarWhatsApp'])
             ->name('lembretes.enviar-whatsapp');
-        Route::get('/lembretes/due/feed', [LembreteController::class, 'due'])->name('lembretes.due');
-        Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->name('push-subscriptions.store');
-        Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->name('push-subscriptions.destroy');
+        Route::get('/lembretes/due/feed', [LembreteController::class, 'due'])->middleware(['secure.api', 'throttle:data-feeds'])->name('lembretes.due');
+        Route::post('/push-subscriptions', [PushSubscriptionController::class, 'store'])->middleware(['secure.api', 'throttle:data-feeds'])->name('push-subscriptions.store');
+        Route::delete('/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->middleware(['secure.api', 'throttle:data-feeds'])->name('push-subscriptions.destroy');
         Route::get('compromissos/calendario', [CompromissoController::class, 'calendario'])->name('compromissos.calendario');
-        Route::get('compromissos/calendario/eventos', [CompromissoController::class, 'calendarioEventos'])->name('compromissos.calendario.eventos');
+        Route::get('compromissos/calendario/eventos', [CompromissoController::class, 'calendarioEventos'])->middleware(['secure.api', 'throttle:data-feeds'])->name('compromissos.calendario.eventos');
     });
 
     Route::middleware('can:access-dia-a-dia')->group(function () {
         Route::get('check-ins', [DailyCheckinController::class, 'index'])->name('checkins.index');
+        Route::get('meu-dia', [MeuDiaController::class, 'page'])->name('meu-dia');
         Route::patch('todo/{todo}/status', [TodoController::class, 'status'])
         ->whereNumber('todo')
         ->name('todo.status');

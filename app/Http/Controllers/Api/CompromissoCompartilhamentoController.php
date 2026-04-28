@@ -126,6 +126,7 @@ class CompromissoCompartilhamentoController extends Controller
     {
         $compromisso->loadMissing(['categoria', 'owner', 'compartilhamentos.usuario']);
         $this->authorize('update', $compromisso);
+        $isOwner = $compromisso->isOwnedBy(Auth::user());
 
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
@@ -154,7 +155,7 @@ class CompromissoCompartilhamentoController extends Controller
             'recorrencia' => $validated['recorrencia'] ?? null,
             'recorrencia_intervalo' => $validated['recorrencia_intervalo'] ?? null,
             'data_fim_recorrencia' => $validated['data_fim_recorrencia'] ?? null,
-            'telefone' => $validated['telefone'] ?? null,
+            'telefone' => $isOwner ? ($validated['telefone'] ?? null) : $compromisso->telefone,
         ]);
 
         $compromisso->refresh()->load(['categoria', 'owner', 'compartilhamentos.usuario']);
@@ -170,6 +171,7 @@ class CompromissoCompartilhamentoController extends Controller
         $permissao = $compromisso->isOwnedBy(Auth::user())
             ? 'owner'
             : $compromisso->sharedPermissionFor(Auth::user());
+        $isOwner = $permissao === 'owner';
 
         return [
             'id' => $compromisso->id,
@@ -178,7 +180,7 @@ class CompromissoCompartilhamentoController extends Controller
             'data_inicio' => $compromisso->data_inicio?->toIso8601String(),
             'data_fim' => $compromisso->data_fim?->toIso8601String(),
             'dia_inteiro' => (bool) $compromisso->dia_inteiro,
-            'telefone' => $compromisso->telefone,
+            'telefone' => $isOwner ? $compromisso->telefone : null,
             'recorrencia' => $compromisso->recorrencia,
             'recorrencia_intervalo' => $compromisso->recorrencia_intervalo,
             'data_fim_recorrencia' => $compromisso->data_fim_recorrencia
@@ -193,20 +195,33 @@ class CompromissoCompartilhamentoController extends Controller
             'owner' => [
                 'id' => $compromisso->owner?->id,
                 'nome' => $compromisso->owner?->name,
-                'email' => $compromisso->owner?->email,
             ],
-            'compartilhado_com' => $compromisso->compartilhamentos
-                ->map(fn ($compartilhamento) => [
-                    'usuario_id' => $compartilhamento->usuario_id,
-                    'nome' => $compartilhamento->usuario?->name,
-                    'email' => $compartilhamento->usuario?->email,
-                    'permissao' => $compartilhamento->permissao,
-                ])
-                ->values()
-                ->all(),
+            'compartilhado_com' => $isOwner
+                ? $compromisso->compartilhamentos
+                    ->map(fn ($compartilhamento) => [
+                        'usuario_id' => $compartilhamento->usuario_id,
+                        'nome' => $compartilhamento->usuario?->name,
+                        'email_masked' => $this->maskEmail($compartilhamento->usuario?->email),
+                        'permissao' => $compartilhamento->permissao,
+                    ])
+                    ->values()
+                    ->all()
+                : [],
             'permissao' => $permissao,
             'pode_editar' => in_array($permissao, ['owner', 'editar'], true),
             'pode_compartilhar' => $permissao === 'owner',
         ];
+    }
+
+    private function maskEmail(?string $email): ?string
+    {
+        if (!$email || !str_contains($email, '@')) {
+            return null;
+        }
+
+        [$name, $domain] = explode('@', $email, 2);
+        $prefix = mb_substr($name, 0, 2);
+
+        return $prefix . str_repeat('*', max(mb_strlen($name) - 2, 1)) . '@' . $domain;
     }
 }
