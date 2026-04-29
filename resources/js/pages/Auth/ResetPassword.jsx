@@ -53,7 +53,7 @@ export default function ResetPassword({ mode = 'token', token, email = '', error
                   <label htmlFor="password_confirmation" className="text-sm font-medium text-zinc-900">Confirmar nova senha</label>
                   <Input id="password_confirmation" type="password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} required />
                 </div>
-                <Button type="submit" disabled={processing}>Salvar nova senha</Button>
+                <Button type="submit" disabled={processing} fullWidth>Salvar nova senha</Button>
                 <div className="text-center text-sm text-zinc-500">
                   <Link href="/login" className="underline underline-offset-4 text-zinc-900">Voltar para o login</Link>
                 </div>

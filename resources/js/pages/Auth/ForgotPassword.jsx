@@ -31,7 +31,7 @@ export default function ForgotPassword({ status = null, errors = {} }) {
                   <label htmlFor="email" className="text-sm font-medium text-zinc-900">Email</label>
                   <Input id="email" type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} required />
                 </div>
-                <Button type="submit" disabled={processing}>Enviar codigo</Button>
+                <Button type="submit" disabled={processing} fullWidth>Enviar codigo</Button>
                 <div className="text-center text-sm text-zinc-500">
                   <Link href="/login" className="underline underline-offset-4 text-zinc-900">Voltar para o login</Link>
                 </div>

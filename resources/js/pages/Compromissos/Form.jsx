@@ -2,8 +2,59 @@ import React from 'react'
 import { Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Alert, AlertDescription, AlertTitle, Badge, Button, Checkbox, Input, Label, Select, Textarea } from '@/components/ui'
-import { Share2 } from 'lucide-react'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Badge,
+  Button,
+  Calendar,
+  Checkbox,
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  Separator,
+  Textarea,
+} from '@/components/ui'
+import { CalendarDays, Share2 } from 'lucide-react'
+
+function parseDateValue(value) {
+  if (!value) return undefined
+
+  const [year, month, day] = String(value).split('-').map(Number)
+  if (!year || !month || !day) return undefined
+
+  return new Date(year, month - 1, day)
+}
+
+function formatDateValue(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return ''
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateLabel(value) {
+  const date = parseDateValue(value)
+  if (!date) return 'Selecione uma data'
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
 
 function formatPermissionLabel(permission) {
   return {
@@ -179,6 +230,10 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
     data_fim_recorrencia: compromisso?.data_fim_recorrencia || '',
     cancelar_lembrete: false,
   })
+  const categoriaOptions = React.useMemo(
+    () => categorias.map((categoria) => ({ label: categoria.nome, value: String(categoria.id) })),
+    [categorias]
+  )
 
   function submit(e) {
     e.preventDefault()
@@ -228,16 +283,28 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
             <div className="grid gap-2">
               <Label className="text-zinc-900">Categoria</Label>
-              <div className={shellClassName}>
-                <Select value={data.categoria_id} onChange={(e) => setData('categoria_id', e.target.value)} className={shellInputClassName}>
-                  <option value="">Sem categoria</option>
-                  {categorias.map((categoria) => (
-                    <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>
-                  ))}
-                </Select>
-              </div>
+              <Combobox
+                items={categoriaOptions}
+                value={categoriaOptions.find((item) => item.value === String(data.categoria_id)) ?? null}
+                itemToStringValue={(item) => item.label}
+                onValueChange={(item) => setData('categoria_id', item?.value ?? '')}
+              >
+                <ComboboxInput placeholder="Buscar categoria..." showClear />
+                <ComboboxContent>
+                  <ComboboxEmpty>Nenhuma categoria encontrada.</ComboboxEmpty>
+                  <ComboboxList>
+                    {(item) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
           </div>
+
+          <Separator />
 
           <div className={sectionClassName}>
             <div className="grid gap-2">
@@ -261,9 +328,32 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
             <div className="grid gap-2">
               <Label className="text-zinc-900">Repetir até</Label>
-              <div className={shellClassName}>
-                <Input type="date" value={data.data_fim_recorrencia} onChange={(e) => setData('data_fim_recorrencia', e.target.value)} className={shellInputClassName} />
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-sm hover:bg-zinc-50"
+                  >
+                    <span className={data.data_fim_recorrencia ? 'text-zinc-950' : 'text-zinc-500'}>
+                      {formatDateLabel(data.data_fim_recorrencia)}
+                    </span>
+                    <CalendarDays className="h-4 w-4 text-zinc-500" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-2">
+                  <Calendar
+                    mode="single"
+                    selected={parseDateValue(data.data_fim_recorrencia)}
+                    onSelect={(date) => setData('data_fim_recorrencia', formatDateValue(date))}
+                  />
+                  {data.data_fim_recorrencia ? (
+                    <Button type="button" variant="ghost" className="mt-2 w-full" onClick={() => setData('data_fim_recorrencia', '')}>
+                      Limpar data
+                    </Button>
+                  ) : null}
+                </PopoverContent>
+              </Popover>
               {errors.data_fim_recorrencia ? <p className="text-sm text-red-600">{errors.data_fim_recorrencia}</p> : null}
             </div>
           </div>
@@ -294,6 +384,8 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
               <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
             </div>
           </div>
+
+          <Separator />
 
           <div className="flex gap-3">
             <Button disabled={processing} className="w-auto">

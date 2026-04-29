@@ -35,6 +35,14 @@ export {
 } from "./dialog"
 export { HoverCard, HoverCardTrigger, HoverCardContent } from "./hover-card"
 export { Input } from "./input"
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupText,
+  InputGroupInput,
+  InputGroupTextarea,
+} from "./input-group"
 export { Label } from "./label"
 export {
   Popover,
@@ -46,7 +54,27 @@ export {
   PopoverTrigger,
 } from "./popover"
 export { RadioGroup, RadioGroupItem } from "./radio-group"
+export {
+  Combobox,
+  ComboboxValue,
+  ComboboxTrigger,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxList,
+  ComboboxItem,
+  ComboboxGroup,
+  ComboboxLabel,
+  ComboboxCollection,
+  ComboboxEmpty,
+  ComboboxSeparator,
+  ComboboxChips,
+  ComboboxChip,
+  ComboboxChipsInput,
+  useComboboxAnchor,
+} from "./combobox"
+export { Progress } from "./progress"
 export { Select } from "./select"
+export { Separator } from "./separator"
 export {
   Sheet,
   SheetTrigger,
@@ -70,4 +98,5 @@ export {
 } from "./table"
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./tabs"
 export { Textarea } from "./textarea"
+export { Skeleton } from "./skeleton"
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip"

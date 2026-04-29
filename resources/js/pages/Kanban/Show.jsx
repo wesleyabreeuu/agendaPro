@@ -402,6 +402,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                 <Button
                   type="submit"
                   onClick={() => taskForm.setData('list_key', list.key)}
+                  fullWidth
                   className={`mt-3 h-10 gap-2 rounded-xl px-4 text-sm ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
                 >
                   <Plus className="h-4 w-4" />

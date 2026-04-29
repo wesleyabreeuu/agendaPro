@@ -80,7 +80,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                   </div>
 
                   <div className="grid gap-3">
-                    <Button type="submit" disabled={processing}>Login</Button>
+                    <Button type="submit" disabled={processing} fullWidth>Login</Button>
                   </div>
                 </form>
               </CardContent>

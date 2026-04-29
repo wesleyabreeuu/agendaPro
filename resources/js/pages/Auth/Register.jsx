@@ -52,7 +52,7 @@ export default function Register({ errors = {} }) {
                     <Input id="password_confirmation" type="password" value={data.password_confirmation} onChange={(e) => setData('password_confirmation', e.target.value)} required />
                   </div>
 
-                  <Button type="submit" disabled={processing}>Create account</Button>
+                  <Button type="submit" disabled={processing} fullWidth>Create account</Button>
 
                   <div className="text-center text-sm text-zinc-500">
                     Already have an account? <Link href="/login" className="underline underline-offset-4">Login</Link>

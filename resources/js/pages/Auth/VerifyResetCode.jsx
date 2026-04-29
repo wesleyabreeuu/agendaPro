@@ -46,7 +46,7 @@ export default function VerifyResetCode({ email = '', status = null, errors = {}
                     required
                   />
                 </div>
-                <Button type="submit" disabled={processing}>Validar codigo</Button>
+                <Button type="submit" disabled={processing} fullWidth>Validar codigo</Button>
               </form>
               <div className="mt-4 flex flex-col gap-3 text-center text-sm text-zinc-500">
                 <Button type="button" onClick={resendCode} disabled={resendForm.processing} variant="link" className="h-auto p-0 text-zinc-900">

@@ -2,8 +2,59 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link, router } from '@inertiajs/react'
 import { useForm } from '@tanstack/react-form'
 import AppLayout from '../../layouts/AppLayout'
-import { Alert, AlertDescription, AlertTitle, Button, Checkbox, Input, Label, Select, Switch, Textarea } from '@/components/ui'
-import { BellRing } from 'lucide-react'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  Calendar,
+  Checkbox,
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  Separator,
+  Switch,
+  Textarea,
+} from '@/components/ui'
+import { BellRing, CalendarDays } from 'lucide-react'
+
+function parseDateValue(value) {
+  if (!value) return undefined
+
+  const [year, month, day] = String(value).split('-').map(Number)
+  if (!year || !month || !day) return undefined
+
+  return new Date(year, month - 1, day)
+}
+
+function formatDateValue(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return ''
+
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateLabel(value) {
+  const date = parseDateValue(value)
+  if (!date) return 'Selecione uma data'
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date)
+}
 
 function buildDefaultValues(lembrete) {
   return {
@@ -34,6 +85,10 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
   const editing = Boolean(lembrete?.id)
   const defaultValues = useMemo(() => buildDefaultValues(lembrete), [lembrete])
   const [serverErrors, setServerErrors] = useState(errors)
+  const compromissoOptions = useMemo(
+    () => compromissos.map((compromisso) => ({ label: compromisso.label, value: String(compromisso.id) })),
+    [compromissos]
+  )
 
   useEffect(() => {
     setServerErrors(errors)
@@ -138,25 +193,32 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                         return (
                           <div className="grid gap-2">
                             <Label className="text-zinc-900">Compromisso</Label>
-                            <div className={shellClassName}>
-                              <Select
-                                value={field.state.value}
+                            <Combobox
+                              items={compromissoOptions}
+                              value={compromissoOptions.find((item) => item.value === String(field.state.value)) ?? null}
+                              itemToStringValue={(item) => item.label}
+                              onValueChange={(item) => {
+                                clearServerError('compromisso_id')
+                                field.handleChange(item?.value ?? '')
+                              }}
+                            >
+                              <ComboboxInput
+                                placeholder="Buscar compromisso..."
                                 onBlur={field.handleBlur}
-                                onChange={(event) => {
-                                  clearServerError('compromisso_id')
-                                  field.handleChange(event.target.value)
-                                }}
-                                className={shellInputClassName}
+                                showClear
                                 aria-invalid={Boolean(error)}
-                              >
-                                <option value="">Selecione</option>
-                                {compromissos.map((compromisso) => (
-                                  <option key={compromisso.id} value={compromisso.id}>
-                                    {compromisso.label}
-                                  </option>
-                                ))}
-                              </Select>
-                            </div>
+                              />
+                              <ComboboxContent>
+                                <ComboboxEmpty>Nenhum compromisso encontrado.</ComboboxEmpty>
+                                <ComboboxList>
+                                  {(item) => (
+                                    <ComboboxItem key={item.value} value={item}>
+                                      {item.label}
+                                    </ComboboxItem>
+                                  )}
+                                </ComboboxList>
+                              </ComboboxContent>
+                            </Combobox>
                             {error ? <p className="text-sm text-red-600">{error}</p> : null}
                           </div>
                         )
@@ -356,6 +418,8 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                       </form.Field>
                     </div>
 
+                    <Separator className="my-1" />
+
                     <div className={sectionClassName}>
                       <form.Field
                         name="intervalo_recorrencia"
@@ -396,23 +460,52 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                       </form.Field>
 
                       <form.Field name="fim_recorrencia_em">
-                        {(field) => (
-                          <div className="grid gap-2">
-                            <Label className="text-zinc-900">Fim da recorrência</Label>
-                            <div className={shellClassName}>
-                              <Input
-                                type="date"
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(event) => {
-                                  clearServerError('fim_recorrencia_em')
-                                  field.handleChange(event.target.value)
-                                }}
-                                className={shellInputClassName}
-                              />
+                        {(field) => {
+                          const selectedDate = parseDateValue(field.state.value)
+
+                          return (
+                            <div className="grid gap-2">
+                              <Label className="text-zinc-900">Fim da recorrência</Label>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-sm hover:bg-zinc-50"
+                                  >
+                                    <span className={field.state.value ? 'text-zinc-950' : 'text-zinc-500'}>
+                                      {formatDateLabel(field.state.value)}
+                                    </span>
+                                    <CalendarDays className="h-4 w-4 text-zinc-500" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent align="start" className="w-auto p-2">
+                                  <Calendar
+                                    mode="single"
+                                    selected={selectedDate}
+                                    onSelect={(date) => {
+                                      clearServerError('fim_recorrencia_em')
+                                      field.handleChange(formatDateValue(date))
+                                    }}
+                                  />
+                                  {field.state.value ? (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      className="mt-2 w-full"
+                                      onClick={() => {
+                                        clearServerError('fim_recorrencia_em')
+                                        field.handleChange('')
+                                      }}
+                                    >
+                                      Limpar data
+                                    </Button>
+                                  ) : null}
+                                </PopoverContent>
+                              </Popover>
                             </div>
-                          </div>
-                        )}
+                          )
+                        }}
                       </form.Field>
                     </div>
 
@@ -494,6 +587,8 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                     </div>
                   )}
                 </form.Field>
+
+                <Separator />
 
                 <div className="flex gap-3">
                   <Button disabled={isSubmitting} className="w-auto">

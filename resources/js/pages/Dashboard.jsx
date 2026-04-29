@@ -1,31 +1,27 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { router } from '@inertiajs/react'
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import AppLayout from '../layouts/AppLayout'
-import { Button } from '@/components/ui'
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../components/chart'
-import { useTheme } from '../contexts/ThemeContext'
+import { Button, Skeleton } from '@/components/ui'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   AlertTriangle,
   ArrowRight,
-  BarChart3,
   CalendarClock,
   CheckSquare,
   Clock3,
   Flame,
   LineChart as LineChartIcon,
   ListChecks,
+  TrendingDown,
+  TrendingUp,
   Wallet,
 } from 'lucide-react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { useTheme } from '../contexts/ThemeContext'
 
 function formatDateTime(value) {
   if (!value) return '-'
@@ -41,129 +37,311 @@ function formatDateTime(value) {
   }).format(date)
 }
 
+function formatShortDate(value) {
+  if (!value) return '-'
+
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+  }).format(date)
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0))
 }
 
-function MetricCard({ label, value, helper, icon: Icon, tone = 'default', isDark = false }) {
-  const tones = {
-    default: isDark
-      ? 'border-zinc-700 bg-zinc-900'
-      : 'border-zinc-200 bg-white',
-    danger: isDark
-      ? 'border-red-500/30 bg-zinc-900'
-      : 'border-red-200 bg-white',
-    success: isDark
-      ? 'border-emerald-500/30 bg-zinc-900'
-      : 'border-emerald-200 bg-white',
-    focus: isDark
-      ? 'border-sky-500/30 bg-zinc-900'
-      : 'border-sky-200 bg-white',
+function getPercentageDelta(currentValue, previousValue) {
+  const current = Number(currentValue || 0)
+  const previous = Number(previousValue || 0)
+
+  if (!previous) {
+    if (!current) return 0
+    return 100
   }
 
-  return (
-    <section className={`rounded-[26px] border p-6 shadow-sm ${tones[tone] || tones.default}`}>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</p>
-          <p className={`mt-3 text-4xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
-          <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p>
-        </div>
-        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-      </div>
-    </section>
-  )
+  return ((current - previous) / Math.abs(previous)) * 100
 }
 
-function SectionCard({ title, subtitle, children, action = null, isDark = false }) {
-  return (
-    <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h2>
-          {subtitle ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{subtitle}</p> : null}
-        </div>
-        {action}
-      </div>
-      <div className="mt-5">{children}</div>
-    </section>
-  )
+function getMetricTone(delta, inverse = false) {
+  const value = inverse ? delta * -1 : delta
+  if (value > 0) return { badge: 'success', icon: TrendingUp }
+  if (value < 0) return { badge: 'danger', icon: TrendingDown }
+  return { badge: 'outline', icon: TrendingUp }
 }
 
-function PeriodFilter({ value, onChange, isDark = false }) {
-  const options = [
-    { value: 7, label: '7 dias' },
-    { value: 15, label: '15 dias' },
-    { value: 30, label: '30 dias' },
+function buildMetricCards(dashboard) {
+  const compromissosHoje = Number(dashboard.compromissos?.hoje?.total || 0)
+  const compromissosProximos = Number(dashboard.compromissos?.proximos?.total || 0)
+  const tarefasAtrasadas = Number(dashboard.tarefas?.atrasadas?.total || 0)
+  const tarefasPendentes = Number(dashboard.tarefas?.pendentes?.total || 0)
+  const rotinasPendentes = Number(dashboard.rotina?.rotinas_do_dia?.pendentes || 0)
+  const rotinasConcluidas = Number(dashboard.rotina?.rotinas_do_dia?.concluidos || 0)
+  const fluxoMes = Number(dashboard.financeiro?.resultado_mes || 0)
+  const pendenciasFinanceiras = Number(dashboard.financeiro?.pendencias || 0)
+  const lembretesAtivos = Number(dashboard.lembretes?.ativos?.total || 0)
+  const lembretesProximos = Number(dashboard.lembretes?.proximos?.total || 0)
+
+  const compromissoDelta = getPercentageDelta(compromissosHoje, compromissosProximos)
+  const tarefaDelta = getPercentageDelta(tarefasAtrasadas, tarefasPendentes)
+  const rotinaDelta = getPercentageDelta(rotinasConcluidas, rotinasPendentes || 1)
+  const financeiroDelta = getPercentageDelta(fluxoMes, pendenciasFinanceiras || 1)
+  const lembreteDelta = getPercentageDelta(lembretesAtivos, lembretesProximos)
+
+  const cards = [
+    {
+      key: 'compromissos',
+      label: 'Compromissos de hoje',
+      value: compromissosHoje,
+      helper: `${compromissosProximos} na fila dos próximos horários`,
+      delta: compromissoDelta,
+      inverse: false,
+      icon: CalendarClock,
+      footer: 'Ritmo do dia e próximos encaixes',
+    },
+    {
+      key: 'tarefas',
+      label: 'Tarefas atrasadas',
+      value: tarefasAtrasadas,
+      helper: `${tarefasPendentes} pendentes no total`,
+      delta: tarefaDelta,
+      inverse: true,
+      icon: AlertTriangle,
+      footer: 'Quanto menor, melhor para o fluxo',
+    },
+    {
+      key: 'rotinas',
+      label: 'Rotinas pendentes',
+      value: rotinasPendentes,
+      helper: `${rotinasConcluidas} concluídas hoje`,
+      delta: rotinaDelta,
+      inverse: true,
+      icon: ListChecks,
+      footer: 'Mostra a tração do hábito no dia',
+    },
   ]
 
+  if (dashboard.financeiro) {
+    cards.push({
+      key: 'financeiro',
+      label: 'Fluxo do mês',
+      value: formatCurrency(fluxoMes),
+      helper: `${formatCurrency(pendenciasFinanceiras)} em pendências`,
+      delta: financeiroDelta,
+      inverse: false,
+      icon: Wallet,
+      footer: 'Resultado líquido do mês corrente',
+    })
+  } else {
+    cards.push({
+      key: 'lembretes',
+      label: 'Lembretes ativos',
+      value: lembretesAtivos,
+      helper: `${lembretesProximos} próximos lembretes`,
+      delta: lembreteDelta,
+      inverse: false,
+      icon: Clock3,
+      footer: 'Disparos previstos nos próximos minutos',
+    })
+  }
+
+  return cards
+}
+
+function buildRecentItems(dashboard) {
+  const compromissos = (dashboard.compromissos?.hoje?.items || []).slice(0, 3).map((item) => ({
+    id: `compromisso-${item.id}`,
+    item: item.titulo,
+    origem: 'Agenda',
+    quando: formatDateTime(item.data_inicio),
+    status: 'Hoje',
+    statusVariant: 'info',
+    contexto: item.categoria || 'Compromisso do dia',
+  }))
+
+  const tarefas = (dashboard.tarefas?.pendentes?.items || []).slice(0, 3).map((item) => ({
+    id: `tarefa-${item.id}`,
+    item: item.titulo,
+    origem: 'Kanban',
+    quando: item.data_limite || 'Sem prazo',
+    status: dashboard.tarefas?.atrasadas?.total ? 'Atenção' : 'Pendente',
+    statusVariant: dashboard.tarefas?.atrasadas?.total ? 'warning' : 'outline',
+    contexto: item.quadro || 'Sem quadro',
+  }))
+
+  const lembretes = (dashboard.lembretes?.proximos?.items || []).slice(0, 2).map((item) => ({
+    id: `lembrete-${item.id}`,
+    item: item.titulo,
+    origem: 'Lembretes',
+    quando: formatDateTime(item.momento_disparo),
+    status: 'Próximo',
+    statusVariant: 'secondary',
+    contexto: item.tipo || 'Disparo automático',
+  }))
+
+  const transacoes = (dashboard.financeiro?.transacoes_recentes || []).slice(0, 2).map((item) => ({
+    id: `transacao-${item.id}`,
+    item: item.descricao,
+    origem: 'Financeiro',
+    quando: item.data || '-',
+    status: item.tipo === 'receita' ? 'Receita' : 'Despesa',
+    statusVariant: item.tipo === 'receita' ? 'success' : 'danger',
+    contexto: item.categoria || 'Sem categoria',
+  }))
+
+  return [...compromissos, ...tarefas, ...lembretes, ...transacoes].slice(0, 8)
+}
+
+function buildChartTabs(chartData) {
+  return {
+    fluxo: {
+      title: 'Fluxo de trabalho',
+      description: 'Criadas x concluídas para entender a semana',
+      data: chartData.tarefas_criadas_vs_concluidas || [],
+      config: {
+        criadas: { label: 'Criadas', color: '#94a3b8' },
+        concluidas: { label: 'Concluídas', color: '#111827' },
+      },
+      series: [
+        { key: 'criadas', gradientId: 'fill-criadas', stroke: 'var(--color-criadas)' },
+        { key: 'concluidas', gradientId: 'fill-concluidas', stroke: 'var(--color-concluidas)' },
+      ],
+    },
+    tarefas: {
+      title: 'Entrega da semana',
+      description: 'Tarefas concluídas no período selecionado',
+      data: chartData.tarefas_concluidas_por_dia || [],
+      config: {
+        concluidas: { label: 'Concluídas', color: '#0f172a' },
+      },
+      series: [
+        { key: 'concluidas', gradientId: 'fill-tarefas', stroke: 'var(--color-concluidas)' },
+      ],
+    },
+    rotinas: {
+      title: 'Tração da rotina',
+      description: 'Conclusões diárias para manter consistência',
+      data: chartData.rotinas_concluidas_por_dia || [],
+      config: {
+        concluidos: { label: 'Concluídos', color: '#18181b' },
+      },
+      series: [
+        { key: 'concluidos', gradientId: 'fill-rotinas', stroke: 'var(--color-concluidos)' },
+      ],
+    },
+  }
+}
+
+function DashboardSkeleton({ isDark = false }) {
   return (
-    <div className={`inline-flex items-center gap-1 rounded-full border p-1 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
-      {options.map((option) => (
-        <Button
-          key={option.value}
-          type="button"
-          onClick={() => onChange(option.value)}
-          variant="ghost"
-          className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-            value === option.value
-              ? isDark
-                ? 'bg-zinc-100 text-black shadow-sm'
-                : 'bg-white text-zinc-950 shadow-sm'
-              : isDark
-                ? 'text-zinc-400 hover:text-zinc-100'
-                : 'text-zinc-500 hover:text-zinc-900'
-          }`}
-        >
-          {option.label}
-        </Button>
-      ))}
+    <div className="space-y-6">
+      <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+        <CardHeader className="gap-3">
+          <Skeleton className={`h-4 w-32 ${isDark ? 'bg-zinc-800' : ''}`} />
+          <Skeleton className={`h-10 w-80 ${isDark ? 'bg-zinc-800' : ''}`} />
+          <Skeleton className={`h-4 w-[32rem] max-w-full ${isDark ? 'bg-zinc-800' : ''}`} />
+        </CardHeader>
+      </Card>
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Card key={index} className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+            <CardHeader className="gap-3">
+              <Skeleton className={`h-4 w-28 ${isDark ? 'bg-zinc-800' : ''}`} />
+              <Skeleton className={`h-10 w-24 ${isDark ? 'bg-zinc-800' : ''}`} />
+            </CardHeader>
+            <CardFooter className={isDark ? 'border-zinc-800 bg-zinc-950/70' : ''}>
+              <Skeleton className={`h-4 w-full ${isDark ? 'bg-zinc-800' : ''}`} />
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
+        <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+          <CardHeader className="gap-3">
+            <Skeleton className={`h-5 w-48 ${isDark ? 'bg-zinc-800' : ''}`} />
+            <Skeleton className={`h-4 w-56 ${isDark ? 'bg-zinc-800' : ''}`} />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className={`h-[300px] w-full rounded-xl ${isDark ? 'bg-zinc-800' : ''}`} />
+          </CardContent>
+        </Card>
+        <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+          <CardHeader className="gap-3">
+            <Skeleton className={`h-5 w-40 ${isDark ? 'bg-zinc-800' : ''}`} />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className={`h-16 w-full rounded-xl ${isDark ? 'bg-zinc-800' : ''}`} />
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
 
-function EmptyState({ text, isDark = false }) {
-  return <div className={`rounded-2xl border border-dashed px-4 py-8 text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>{text}</div>
-}
+function MetricCard({ item, isDark = false }) {
+  const tone = getMetricTone(item.delta, item.inverse)
+  const TrendIcon = tone.icon
 
-function MiniList({ items, empty, renderItem, isDark = false }) {
-  if (!items?.length) {
-    return <EmptyState text={empty} isDark={isDark} />
-  }
-
-  return <div className="space-y-3">{items.map(renderItem)}</div>
-}
-
-function QuickLink({ label, helper, onClick, isDark = false }) {
   return (
-    <Button type="button" onClick={onClick} variant="outline" className={`h-auto w-full justify-start rounded-2xl px-4 py-4 text-left transition ${isDark ? 'border-zinc-700 bg-zinc-950 hover:bg-zinc-900' : 'border-zinc-200 bg-zinc-50/70 hover:bg-zinc-100'}`}>
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{label}</p>
-          <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p>
+    <Card
+      className={`@container/card border shadow-xs ${
+        isDark
+          ? 'border-zinc-700 bg-card'
+          : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'
+      }`}
+    >
+      <CardHeader>
+        <CardDescription>{item.label}</CardDescription>
+        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+          {item.value}
+        </CardTitle>
+        <CardAction>
+          <Badge variant={tone.badge}>
+            <TrendIcon className="h-3.5 w-3.5" />
+            {`${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}%`}
+          </Badge>
+        </CardAction>
+      </CardHeader>
+      <CardFooter className="flex-col items-start gap-1.5 text-sm">
+        <div className="flex items-center gap-2 font-medium">
+          <item.icon className="h-4 w-4" />
+          {item.helper}
         </div>
-        <ArrowRight className={`h-4 w-4 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`} />
+        <div className="text-muted-foreground">{item.footer}</div>
+      </CardFooter>
+    </Card>
+  )
+}
+
+function QuickAction({ label, helper, onClick }) {
+  return (
+    <Button type="button" variant="outline" onClick={onClick} className="h-auto justify-between rounded-xl px-4 py-3 text-left">
+      <div>
+        <div className="font-medium text-zinc-950 dark:text-zinc-50">{label}</div>
+        <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{helper}</div>
       </div>
+      <ArrowRight className="h-4 w-4" />
     </Button>
   )
 }
 
-function ChartCard({ title, subtitle, children, icon: Icon, isDark = false }) {
+function MiniEvent({ title, meta, badge, badgeVariant = 'outline' }) {
   return (
-    <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-      <div className="flex items-start justify-between gap-4">
+    <div className="rounded-xl border border-zinc-200/80 bg-background px-4 py-3 dark:border-zinc-800">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h3>
-          {subtitle ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{subtitle}</p> : null}
+          <p className="font-medium text-zinc-950 dark:text-zinc-50">{title}</p>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{meta}</p>
         </div>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
-          <Icon className="h-4 w-4" />
-        </div>
+        {badge ? <Badge variant={badgeVariant}>{badge}</Badge> : null}
       </div>
-      <div className="mt-5">{children}</div>
-    </section>
+    </div>
   )
 }
 
@@ -202,304 +380,259 @@ export default function Dashboard() {
     loadDashboard()
   }, [period])
 
+  const metricCards = useMemo(() => (dashboard ? buildMetricCards(dashboard) : []), [dashboard])
+  const recentItems = useMemo(() => (dashboard ? buildRecentItems(dashboard) : []), [dashboard])
+  const chartTabs = useMemo(() => buildChartTabs(dashboard?.graficos || {}), [dashboard])
+
   const openCompromissos = () => router.visit('/compromissos/calendario')
   const openKanban = () => router.visit('/kanban')
   const openRotinas = () => router.visit('/rotinas/hoje')
   const openFinanceiro = () => router.visit('/financeiro')
 
-  const heroMetrics = useMemo(() => {
-    if (!dashboard) return []
-
-    const metrics = [
-      {
-        label: 'Compromissos de hoje',
-        value: dashboard.compromissos?.hoje?.total || 0,
-        helper: `${dashboard.compromissos?.proximos?.total || 0} próximos na fila`,
-        icon: CalendarClock,
-        tone: 'focus',
-      },
-      {
-        label: 'Tarefas atrasadas',
-        value: dashboard.tarefas?.atrasadas?.total || 0,
-        helper: `${dashboard.tarefas?.pendentes?.total || 0} pendentes no total`,
-        icon: AlertTriangle,
-        tone: (dashboard.tarefas?.atrasadas?.total || 0) > 0 ? 'danger' : 'default',
-      },
-      {
-        label: 'Rotinas pendentes',
-        value: dashboard.rotina?.rotinas_do_dia?.pendentes || 0,
-        helper: `${dashboard.rotina?.rotinas_do_dia?.concluidos || 0} concluídas hoje`,
-        icon: ListChecks,
-        tone: (dashboard.rotina?.rotinas_do_dia?.pendentes || 0) > 0 ? 'focus' : 'success',
-      },
-    ]
-
-    if (dashboard.financeiro) {
-      metrics.push({
-        label: 'Fluxo do mês',
-        value: formatCurrency(dashboard.financeiro.resultado_mes || 0),
-        helper: `${formatCurrency(dashboard.financeiro.pendencias || 0)} em pendências`,
-        icon: Wallet,
-        tone: Number(dashboard.financeiro.resultado_mes || 0) >= 0 ? 'success' : 'danger',
-      })
-    } else {
-      metrics.push({
-        label: 'Lembretes ativos',
-        value: dashboard.lembretes?.ativos?.total || 0,
-        helper: `${dashboard.lembretes?.proximos?.total || 0} próximos lembretes`,
-        icon: Clock3,
-        tone: 'default',
-      })
-    }
-
-    return metrics
-  }, [dashboard])
-
-  const chartData = dashboard?.graficos || {}
-  const periodLabel = `${period} dias`
-
   if (loading && !dashboard) {
     return (
       <AppLayout title="Dashboard" chrome="dashboard">
-        <div className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}>
-          Carregando dashboard...
-        </div>
+        <DashboardSkeleton isDark={isDark} />
       </AppLayout>
     )
   }
 
   return (
     <AppLayout title="Dashboard" chrome="dashboard">
-      <div className="space-y-6">
-        <section className={`rounded-[30px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-          <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="@container/main flex flex-col gap-4 md:gap-6">
+        <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+          <CardHeader className="gap-3 lg:flex lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Visão geral</p>
-              <h1 className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>O que importa agora</h1>
-              <p className={`mt-2 max-w-3xl text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{dashboard?.insights?.mensagem_automatica || 'Acompanhe seus módulos com foco no que exige atenção hoje.'}</p>
+              <CardDescription>Visão geral</CardDescription>
+              <CardTitle className="mt-1 text-3xl font-semibold tracking-tight">O que importa agora</CardTitle>
+              <p className="mt-2 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
+                {dashboard?.insights?.mensagem_automatica || 'Acompanhe seus módulos com foco no que exige atenção hoje.'}
+              </p>
             </div>
-            <PeriodFilter value={period} onChange={setPeriod} isDark={isDark} />
-          </div>
-        </section>
+            <div className="flex flex-wrap gap-2">
+              {[7, 15, 30].map((value) => (
+                <Button
+                  key={value}
+                  type="button"
+                  variant={period === value ? 'default' : 'outline'}
+                  onClick={() => setPeriod(value)}
+                  className="rounded-full px-4"
+                >
+                  {value} dias
+                </Button>
+              ))}
+            </div>
+          </CardHeader>
+        </Card>
 
         {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          <Card className="border-red-200 bg-red-50 text-red-700">
+            <CardContent className="py-4 text-sm">{error}</CardContent>
+          </Card>
         ) : null}
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {heroMetrics.map((metric) => (
-            <MetricCard key={metric.label} {...metric} isDark={isDark} />
+        <div className="grid grid-cols-1 gap-4 px-0 md:grid-cols-2 xl:grid-cols-4">
+          {metricCards.map((item) => (
+            <MetricCard key={item.key} item={item} isDark={isDark} />
           ))}
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <SectionCard
-            title="Seu dia"
-            subtitle="Agenda, rotinas e tarefas que precisam entrar em execução."
-            action={<Button type="button" onClick={openCompromissos} variant="outline" className={`h-auto gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>Abrir calendário <ArrowRight className="h-3.5 w-3.5" /></Button>}
-            isDark={isDark}
-          >
-            <div className="grid gap-5 lg:grid-cols-3">
-              <div>
-                <p className={`mb-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Agenda de hoje</p>
-                <MiniList
-                  items={dashboard?.compromissos?.hoje?.items || []}
-                  empty="Nenhum compromisso para hoje."
-                  isDark={isDark}
-                  renderItem={(item) => (
-                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                      <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
-                      <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatDateTime(item.data_inicio)}</p>
-                    </div>
-                  )}
-                />
-              </div>
+        <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
+          <Tabs defaultValue="fluxo" className="gap-4">
+            <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+              <CardHeader>
+                <div>
+                  <CardTitle>Panorama operacional</CardTitle>
+                  <CardDescription>Estrutura visual inspirada no bloco oficial `dashboard-01`, adaptada aos seus dados.</CardDescription>
+                </div>
+                <CardAction>
+                  <TabsList variant="line" className="flex-wrap justify-start">
+                    <TabsTrigger value="fluxo">Fluxo</TabsTrigger>
+                    <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
+                    <TabsTrigger value="rotinas">Rotinas</TabsTrigger>
+                  </TabsList>
+                </CardAction>
+              </CardHeader>
 
-              <div>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Rotinas de hoje</p>
-                  <Button type="button" onClick={openRotinas} variant="link" className={`h-auto p-0 text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>abrir</Button>
-                </div>
-                <div className={`mb-3 rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                  <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Progresso do dia</p>
-                  <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{dashboard?.rotina?.rotinas_do_dia?.concluidos || 0} de {dashboard?.rotina?.rotinas_do_dia?.total || 0}</p>
-                  <div className={`mt-3 h-2 overflow-hidden rounded-full ${isDark ? 'bg-zinc-800' : 'bg-zinc-100'}`}>
-                    <div className="h-2 rounded-full bg-zinc-950" style={{ width: `${Math.min(Number(dashboard?.rotina?.taxa_conclusao_hoje || 0), 100)}%` }} />
-                  </div>
-                </div>
-                <MiniList
-                  items={dashboard?.rotina?.rotinas_do_dia?.items || []}
-                  empty="Nenhuma rotina prevista hoje."
-                  isDark={isDark}
-                  renderItem={(item) => (
-                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
-                          <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.categoria || 'rotina'}{item.horario ? ` • ${item.horario}` : ''}</p>
-                        </div>
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${item.status === 'concluida' ? 'bg-emerald-100 text-emerald-700' : item.status === 'pulada' ? 'bg-amber-100 text-amber-700' : isDark ? 'bg-zinc-100 text-black' : 'bg-zinc-200 text-zinc-600'}`}>
-                          {item.status === 'concluida' ? (item.modo_usado === 'minimo' ? 'mínimo' : 'feito') : item.status === 'pulada' ? 'pulada' : 'pendente'}
-                        </span>
+              {Object.entries(chartTabs).map(([key, tab]) => (
+                <TabsContent key={key} value={key}>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">{tab.title}</h3>
+                        <p className="text-sm text-zinc-500 dark:text-zinc-400">{tab.description}</p>
                       </div>
+                      <Badge variant="outline">{period} dias</Badge>
                     </div>
-                  )}
-                />
-              </div>
 
-              <div>
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Tarefas prioritárias</p>
-                  <Button type="button" onClick={openKanban} variant="link" className={`h-auto p-0 text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>abrir</Button>
-                </div>
-                <MiniList
-                  items={dashboard?.tarefas?.pendentes?.items || []}
-                  empty="Nenhuma tarefa pendente."
-                  isDark={isDark}
-                  renderItem={(item) => (
-                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                      <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
-                      <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.quadro || 'Sem quadro'} • prazo {item.data_limite || 'livre'}</p>
-                    </div>
-                  )}
-                />
-              </div>
-            </div>
-          </SectionCard>
+                    <ChartContainer config={tab.config} className="h-[320px] w-full">
+                      <AreaChart data={tab.data}>
+                        <defs>
+                          {tab.series.map((series) => (
+                            <linearGradient key={series.gradientId} id={series.gradientId} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor={series.stroke} stopOpacity={0.35} />
+                              <stop offset="95%" stopColor={series.stroke} stopOpacity={0.05} />
+                            </linearGradient>
+                          ))}
+                        </defs>
+                        <CartesianGrid vertical={false} />
+                        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
+                        <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
+                        {tab.series.map((series) => (
+                          <Area
+                            key={series.key}
+                            type="natural"
+                            dataKey={series.key}
+                            fill={`url(#${series.gradientId})`}
+                            stroke={series.stroke}
+                            strokeWidth={2}
+                          />
+                        ))}
+                      </AreaChart>
+                    </ChartContainer>
+                  </CardContent>
+                </TabsContent>
+              ))}
+            </Card>
+          </Tabs>
 
-          <SectionCard title="Atenção agora" subtitle="O que saiu do trilho ou merece acompanhamento de perto." isDark={isDark}>
-            <div className="space-y-4">
-              <div className="grid gap-3">
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-red-500/30 bg-zinc-950' : 'border-red-200 bg-red-50/70'}`}>
-                  <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Backlog em risco</p>
-                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{dashboard?.tarefas?.atrasadas?.total || 0} tarefas atrasadas e {dashboard?.compromissos?.atrasados?.total || 0} compromissos vencidos.</p>
-                </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                  <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Consistência</p>
-                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>Streak atual de {dashboard?.rotina?.streak_atual || 0} dias com taxa semanal de {Math.round(Number(dashboard?.rotina?.taxa_semanal || 0))}%.</p>
-                </div>
-                {dashboard?.financeiro ? (
-                  <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                    <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Financeiro</p>
-                    <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{formatCurrency(dashboard.financeiro.pendencias || 0)} em pendências e saldo total de {formatCurrency(dashboard.financeiro.saldo_total || 0)}.</p>
-                  </div>
-                ) : null}
-              </div>
-
-              <div>
-                <p className={`mb-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Próximos lembretes</p>
-                <MiniList
-                  items={dashboard?.lembretes?.proximos?.items || []}
-                  empty="Nenhum lembrete próximo."
-                  isDark={isDark}
-                  renderItem={(item) => (
-                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                      <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.titulo}</p>
-                      <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatDateTime(item.momento_disparo)}</p>
-                    </div>
-                  )}
-                />
-              </div>
-
-              <div>
-                <p className={`mb-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Atalhos</p>
-                <div className="space-y-3">
-                  <QuickLink label="Abrir calendário" helper="Ir direto para a agenda e compromissos" onClick={openCompromissos} isDark={isDark} />
-                  <QuickLink label="Abrir rotinas de hoje" helper="Fechar o dia com consistência" onClick={openRotinas} isDark={isDark} />
-                  <QuickLink label="Abrir kanban" helper="Ver e priorizar as tarefas em andamento" onClick={openKanban} isDark={isDark} />
-                  {dashboard?.financeiro ? <QuickLink label="Abrir financeiro" helper="Conferir lançamentos e pendências" onClick={openFinanceiro} isDark={isDark} /> : null}
-                </div>
-              </div>
-            </div>
-          </SectionCard>
+          <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+            <CardHeader>
+              <CardTitle>Seu dia</CardTitle>
+              <CardDescription>Agenda, hábitos e prioridades imediatas.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <MiniEvent
+                title={dashboard?.compromissos?.hoje?.items?.[0]?.titulo || 'Nenhum compromisso agora'}
+                meta={dashboard?.compromissos?.hoje?.items?.[0]?.data_inicio ? formatDateTime(dashboard.compromissos.hoje.items[0].data_inicio) : 'Sua agenda está livre neste momento.'}
+                badge={dashboard?.compromissos?.hoje?.total ? `${dashboard.compromissos.hoje.total} hoje` : null}
+                badgeVariant="info"
+              />
+              <MiniEvent
+                title={`${dashboard?.rotina?.rotinas_do_dia?.concluidos || 0} de ${dashboard?.rotina?.rotinas_do_dia?.total || 0} rotinas concluídas`}
+                meta={`Streak atual de ${dashboard?.rotina?.streak_atual || 0} dias • taxa semanal ${Math.round(Number(dashboard?.rotina?.taxa_semanal || 0))}%`}
+                badge={`${dashboard?.rotina?.rotinas_do_dia?.pendentes || 0} pendentes`}
+                badgeVariant="warning"
+              />
+              <MiniEvent
+                title={dashboard?.tarefas?.pendentes?.items?.[0]?.titulo || 'Nenhuma tarefa crítica'}
+                meta={dashboard?.tarefas?.pendentes?.items?.[0] ? `${dashboard.tarefas.pendentes.items[0].quadro || 'Sem quadro'} • prazo ${dashboard.tarefas.pendentes.items[0].data_limite || 'livre'}` : 'Seu quadro está em dia por enquanto.'}
+                badge={dashboard?.tarefas?.atrasadas?.total ? `${dashboard.tarefas.atrasadas.total} atrasadas` : 'Em dia'}
+                badgeVariant={dashboard?.tarefas?.atrasadas?.total ? 'danger' : 'success'}
+              />
+            </CardContent>
+            <CardFooter className="flex-col gap-3">
+              <QuickAction label="Abrir calendário" helper="Compromissos e visão da agenda" onClick={openCompromissos} />
+              <QuickAction label="Abrir rotinas de hoje" helper="Fechar o dia com consistência" onClick={openRotinas} />
+              <QuickAction label="Abrir kanban" helper="Priorizar entregas e tarefas" onClick={openKanban} />
+              {dashboard?.financeiro ? (
+                <QuickAction label="Abrir financeiro" helper="Lançamentos, metas e pendências" onClick={openFinanceiro} />
+              ) : null}
+            </CardFooter>
+          </Card>
         </div>
+
+        <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+          <CardHeader>
+            <CardTitle>Itens em movimento</CardTitle>
+            <CardDescription>Uma leitura rápida do que está entrando em execução nos módulos principais.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Origem</TableHead>
+                  <TableHead>Quando</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Contexto</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentItems.length ? recentItems.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="font-medium text-zinc-950 dark:text-zinc-50">{row.item}</TableCell>
+                    <TableCell>{row.origem}</TableCell>
+                    <TableCell>{row.quando}</TableCell>
+                    <TableCell>
+                      <Badge variant={row.statusVariant}>{row.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-zinc-500 dark:text-zinc-400">{row.contexto}</TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-10 text-center text-zinc-500 dark:text-zinc-400">
+                      Nenhum item relevante para mostrar agora.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+          <CardFooter className="justify-between">
+            <div className="text-sm text-zinc-500 dark:text-zinc-400">
+              Atualizado para a janela dos últimos {period} dias.
+            </div>
+            <Button type="button" variant="outline" onClick={openKanban} className="gap-2">
+              Ver fluxo completo
+              <LineChartIcon className="h-4 w-4" />
+            </Button>
+          </CardFooter>
+        </Card>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <ChartCard title="Entrega da semana" subtitle={`Tarefas concluídas nos últimos ${periodLabel}.`} icon={BarChart3} isDark={isDark}>
-            <ChartContainer className={isDark ? 'border-zinc-700 bg-zinc-950' : ''} config={{ concluidas: { label: 'Concluídas', color: '#111827' } }}>
-              <BarChart data={chartData.tarefas_concluidas_por_dia || []}>
-                <CartesianGrid vertical={false} stroke="#e4e4e7" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="concluidas" name="Concluídas" radius={[10, 10, 0, 0]} fill="var(--color-concluidas)" />
-              </BarChart>
-            </ChartContainer>
-          </ChartCard>
-
-          <ChartCard title="Tração da rotina" subtitle={`Conclusões diárias de rotinas em ${periodLabel}.`} icon={Flame} isDark={isDark}>
-            <ChartContainer className={isDark ? 'border-zinc-700 bg-zinc-950' : ''} config={{ concluidos: { label: 'Concluídos', color: '#18181b' } }}>
-              <BarChart data={chartData.rotinas_concluidas_por_dia || []}>
-                <CartesianGrid vertical={false} stroke="#e4e4e7" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar dataKey="concluidos" name="Concluídos" radius={[10, 10, 0, 0]} fill="var(--color-concluidos)" />
-              </BarChart>
-            </ChartContainer>
-          </ChartCard>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-          <ChartCard title="Fluxo de trabalho" subtitle="Criadas x concluídas para entender a semana." icon={LineChartIcon} isDark={isDark}>
-            <ChartContainer
-              className={isDark ? 'border-zinc-700 bg-zinc-950' : ''}
-              config={{
-                criadas: { label: 'Criadas', color: '#94a3b8' },
-                concluidas: { label: 'Concluídas', color: '#18181b' },
-              }}
-            >
-              <LineChart data={chartData.tarefas_criadas_vs_concluidas || []}>
-                <CartesianGrid vertical={false} stroke="#e4e4e7" />
-                <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={12} stroke="#71717a" />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} stroke="#71717a" />
-                <ChartTooltip content={<ChartTooltipContent indicator="line" />} />
-                <Legend />
-                <Line type="monotone" dataKey="criadas" name="Criadas" stroke="var(--color-criadas)" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="concluidas" name="Concluídas" stroke="var(--color-concluidas)" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ChartContainer>
-          </ChartCard>
-
-          <SectionCard title="Financeiro e próximos passos" subtitle="Resumo enxuto do caixa e últimas movimentações." isDark={isDark}>
-            {dashboard?.financeiro ? (
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                    <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Saldo total</p>
-                    <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{formatCurrency(dashboard.financeiro.saldo_total || 0)}</p>
-                  </div>
-                  <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                    <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Resultado do mês</p>
-                    <p className={`mt-2 text-2xl font-semibold tracking-tight ${Number(dashboard.financeiro.resultado_mes || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatCurrency(dashboard.financeiro.resultado_mes || 0)}</p>
-                  </div>
-                  <div className={`rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                    <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Pendências</p>
-                    <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{formatCurrency(dashboard.financeiro.pendencias || 0)}</p>
-                  </div>
-                </div>
-
-                <MiniList
-                  items={dashboard.financeiro.transacoes_recentes || []}
-                  empty="Sem movimentações recentes."
-                  isDark={isDark}
-                  renderItem={(item) => (
-                    <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.descricao}</p>
-                          <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.categoria || 'Sem categoria'} • {item.data || '-'}</p>
-                        </div>
-                        <span className={`text-sm font-medium ${item.tipo === 'receita' ? 'text-emerald-600' : 'text-red-600'}`}>{item.tipo === 'receita' ? '+' : '-'}{formatCurrency(item.valor)}</span>
-                      </div>
-                    </div>
-                  )}
+          <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+            <CardHeader>
+              <CardTitle>Atenção agora</CardTitle>
+              <CardDescription>O que merece acompanhamento mais próximo.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              <MiniEvent
+                title="Backlog em risco"
+                meta={`${dashboard?.tarefas?.atrasadas?.total || 0} tarefas atrasadas e ${dashboard?.compromissos?.atrasados?.total || 0} compromissos vencidos.`}
+                badge="Prioridade"
+                badgeVariant="danger"
+              />
+              <MiniEvent
+                title="Consistência"
+                meta={`Streak atual de ${dashboard?.rotina?.streak_atual || 0} dias com taxa semanal de ${Math.round(Number(dashboard?.rotina?.taxa_semanal || 0))}%.`}
+                badge="Rotina"
+                badgeVariant="warning"
+              />
+              {dashboard?.financeiro ? (
+                <MiniEvent
+                  title="Financeiro"
+                  meta={`${formatCurrency(dashboard.financeiro.pendencias || 0)} em pendências e saldo total de ${formatCurrency(dashboard.financeiro.saldo_total || 0)}.`}
+                  badge="Caixa"
+                  badgeVariant={Number(dashboard.financeiro.resultado_mes || 0) >= 0 ? 'success' : 'danger'}
                 />
-              </div>
-            ) : (
-              <EmptyState text="Resumo financeiro indisponível para esta conta." isDark={isDark} />
-            )}
-          </SectionCard>
+              ) : null}
+            </CardContent>
+          </Card>
+
+          <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+            <CardHeader>
+              <CardTitle>Próximos lembretes</CardTitle>
+              <CardDescription>Disparos que devem acontecer em seguida.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              {(dashboard?.lembretes?.proximos?.items || []).slice(0, 4).map((item) => (
+                <MiniEvent
+                  key={item.id}
+                  title={item.titulo}
+                  meta={`${formatDateTime(item.momento_disparo)} • ${item.tipo || 'lembrete'}`}
+                  badge={formatShortDate(item.momento_disparo)}
+                  badgeVariant="secondary"
+                />
+              ))}
+              {!dashboard?.lembretes?.proximos?.items?.length ? (
+                <div className="rounded-xl border border-dashed border-zinc-200 px-4 py-8 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+                  Nenhum lembrete próximo.
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </AppLayout>
