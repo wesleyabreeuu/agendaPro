@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../../layouts/AppLayout'
 import { CalendarDays, ChevronLeft, ChevronRight, List, ListChecks } from 'lucide-react'
+import { Calendar, Label, RadioGroup, RadioGroupItem } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
@@ -146,7 +147,50 @@ export default function CompromissosCalendario() {
 
   return (
     <AppLayout title="Calendário" chrome="dashboard">
-      <div className="space-y-6">
+      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="space-y-6">
+          <section className={`rounded-[28px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <div className="mb-4">
+              <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Navegação rápida</h3>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Selecione uma data para pular direto para o mês desejado.</p>
+            </div>
+            <div className={`overflow-hidden rounded-2xl border ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+              <Calendar
+                mode="single"
+                selected={currentDate}
+                onSelect={(date) => {
+                  if (date) setCurrentDate(startOfMonth(date))
+                }}
+                className="w-full"
+              />
+            </div>
+          </section>
+
+          <section className={`rounded-[28px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <div className="mb-4">
+              <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Modo de visualização</h3>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Troque entre a grade mensal e a lista da semana atual.</p>
+            </div>
+            <RadioGroup value={viewMode} onValueChange={setViewMode} className="gap-3">
+              <label className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${viewMode === 'month' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                <RadioGroupItem value="month" id="view-mode-month" className="mt-1" />
+                <div>
+                  <Label htmlFor="view-mode-month" className={`cursor-pointer text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>Calendário mensal</Label>
+                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Visão completa do mês com contagem e cartões por dia.</p>
+                </div>
+              </label>
+              <label className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${viewMode === 'week-list' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                <RadioGroupItem value="week-list" id="view-mode-week-list" className="mt-1" />
+                <div>
+                  <Label htmlFor="view-mode-week-list" className={`cursor-pointer text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>Lista semanal</Label>
+                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Agrupa os próximos itens por dia da semana atual.</p>
+                </div>
+              </label>
+            </RadioGroup>
+          </section>
+        </aside>
+
+        <div className="space-y-6">
         <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -155,35 +199,9 @@ export default function CompromissosCalendario() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className={`inline-flex rounded-xl border p-1 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('month')}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
-                    viewMode === 'month'
-                      ? 'bg-white text-black shadow-sm'
-                      : isDark
-                        ? 'text-zinc-300'
-                        : 'text-zinc-600'
-                  }`}
-                >
-                  <CalendarDays className="h-4 w-4" />
-                  Calendário
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('week-list')}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
-                    viewMode === 'week-list'
-                      ? 'bg-white text-black shadow-sm'
-                      : isDark
-                        ? 'text-zinc-300'
-                        : 'text-zinc-600'
-                  }`}
-                >
-                  <List className="h-4 w-4" />
-                  Lista semanal
-                </button>
+              <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
+                {viewMode === 'month' ? <CalendarDays className="h-3.5 w-3.5" /> : <List className="h-3.5 w-3.5" />}
+                {viewMode === 'month' ? 'Visualização mensal' : 'Visualização semanal'}
               </div>
 
               <div className={`inline-flex items-center gap-2 rounded-xl border p-1 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
@@ -326,6 +344,7 @@ export default function CompromissosCalendario() {
             Nenhum evento encontrado no período atual.
           </div>
         ) : null}
+        </div>
       </div>
     </AppLayout>
   )

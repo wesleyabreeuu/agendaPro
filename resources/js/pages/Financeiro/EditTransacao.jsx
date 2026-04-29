@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link, useForm } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
 import { Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
 

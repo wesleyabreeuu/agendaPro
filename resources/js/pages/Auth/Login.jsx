@@ -1,5 +1,6 @@
 import React from 'react'
-import { Head, Link, useForm } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 
 export default function Login({ errors = {}, canResetPassword = true, status = null }) {

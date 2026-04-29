@@ -1,5 +1,6 @@
 import React from 'react'
-import { Head, useForm } from '@inertiajs/react'
+import { Head } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { Droplets, Footprints, ShieldCheck, Sparkles, TimerReset } from 'lucide-react'
 

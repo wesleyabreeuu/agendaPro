@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link, router, useForm } from '@inertiajs/react'
+import { Link, router } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
 import { Badge, Button, Input, Select } from '@/components/ui'
 

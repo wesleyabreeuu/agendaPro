@@ -1,8 +1,40 @@
 import React, { useEffect, useState } from 'react'
-import { router, useForm } from '@inertiajs/react'
+import { router } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Check, ChevronDown, Clock3, MessageSquareText, MoreHorizontal, Plus, Save, Trash2, X } from 'lucide-react'
-import { Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '@/components/ui'
+import { ChevronDown, Clock3, MessageSquareText, MoreHorizontal, Plus, Save, Trash2, X } from 'lucide-react'
+import {
+  Alert,
+  AlertDescription,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 const statusOptions = [
@@ -24,10 +56,6 @@ function statusTone(status) {
 
 function statusMeta(status) {
   return statusOptions.find((item) => item.value === status) || statusOptions[0]
-}
-
-function urgencyLabel(value) {
-  return urgencyOptions.find((item) => item.value === value)?.label || value
 }
 
 function tableInputClassName(extra = '') {
@@ -153,27 +181,27 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
 
           <form onSubmit={submit} className="mt-6 grid gap-4 lg:grid-cols-[140px_minmax(0,1.5fr)_220px_180px_120px]">
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Hora</label>
+              <Label className="text-zinc-900">Hora</Label>
               <Input type="time" value={data.hora} onChange={(e) => setData('hora', e.target.value)} />
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Descrição</label>
+              <Label className="text-zinc-900">Descrição</Label>
               <Input value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} placeholder="Ex.: Revisar proposta do cliente" />
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Status</label>
+              <Label className="text-zinc-900">Status</Label>
               <Select value={data.status} onChange={(e) => setData('status', e.target.value)}>
                 {statusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </Select>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Urgência</label>
+              <Label className="text-zinc-900">Urgência</Label>
               <Select value={data.urgencia} onChange={(e) => setData('urgencia', e.target.value)}>
                 {urgencyOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
               </Select>
             </div>
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Concluída</label>
+              <Label className="text-zinc-900">Concluída</Label>
               <label className="flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-sm">
                 <Checkbox
                   checked={data.concluida}
@@ -188,11 +216,17 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
             </div>
 
             <div className="grid gap-2 lg:col-span-5">
-              <label className="text-sm font-medium text-zinc-900">Observação</label>
+              <Label className="text-zinc-900">Observação</Label>
               <Input value={data.observacao} onChange={(e) => setData('observacao', e.target.value)} placeholder="Detalhes rápidos da tarefa" />
             </div>
 
-            {Object.values(errors).length ? <div className="text-sm text-red-600 lg:col-span-5">{Object.values(errors)[0]}</div> : null}
+            {Object.values(errors).length ? (
+              <div className="lg:col-span-5">
+                <Alert variant="destructive">
+                  <AlertDescription>{Object.values(errors)[0]}</AlertDescription>
+                </Alert>
+              </div>
+            ) : null}
 
             <div className="lg:col-span-5 flex justify-end">
               <Button disabled={processing} className="w-auto gap-2 rounded-xl px-5">
@@ -247,13 +281,15 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                       />
                     </TableCell>
                     <TableCell className="py-4">
-                      <details className="relative inline-block">
-                        <summary className={`flex min-w-[132px] cursor-pointer list-none items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${statusTone(row.status)}`}>
-                          <span className={`h-2.5 w-2.5 rounded-full ${statusMeta(row.status).dot}`} />
-                          <span className="truncate">{statusMeta(row.status).label}</span>
-                          <ChevronDown className="ml-auto h-3.5 w-3.5 opacity-70" />
-                        </summary>
-                        <div className={`absolute left-0 top-[calc(100%+8px)] z-20 min-w-[172px] rounded-2xl border p-2 shadow-lg ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button type="button" className={`flex min-w-[132px] items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${statusTone(row.status)}`}>
+                            <span className={`h-2.5 w-2.5 rounded-full ${statusMeta(row.status).dot}`} />
+                            <span className="truncate">{statusMeta(row.status).label}</span>
+                            <ChevronDown className="ml-auto h-3.5 w-3.5 opacity-70" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
                           <div className="space-y-1">
                             {statusOptions.map((option) => (
                               <button
@@ -267,8 +303,8 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                               </button>
                             ))}
                           </div>
-                        </div>
-                      </details>
+                        </PopoverContent>
+                      </Popover>
                     </TableCell>
                     <TableCell className="py-4">
                       <select
@@ -299,25 +335,28 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                       </label>
                     </TableCell>
                     <TableCell className="py-4">
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          onClick={() => persistRow(row)}
-                          disabled={savingRowId === row.id}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-900 shadow-sm transition hover:bg-zinc-50"
-                          title={savingRowId === row.id ? 'Salvando' : 'Salvar'}
-                        >
-                          <Save className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => router.delete(`/todo/${row.id}`, { preserveScroll: true })}
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-white text-red-600 shadow-sm transition hover:bg-red-50"
-                          title="Excluir"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
+                      <DropdownMenu>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <DropdownMenuTrigger asChild>
+                              <Button type="button" variant="outline" size="icon" className="w-auto">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent>Ações da tarefa</TooltipContent>
+                        </Tooltip>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => persistRow(row)}>
+                            <Save className="mr-2 h-4 w-4" />
+                            {savingRowId === row.id ? 'Salvando...' : 'Salvar'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem variant="destructive" onClick={() => router.delete(`/todo/${row.id}`, { preserveScroll: true })}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 )) : (
@@ -356,7 +395,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
             </div>
 
             <div className="mt-5">
-              <label className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Observação</label>
+              <Label className={isDark ? 'text-zinc-100' : 'text-zinc-900'}>Observação</Label>
               <div className={`mt-2 rounded-2xl border shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                 <Textarea
                   className="min-h-44 resize-y border-0 shadow-none focus:ring-0"
@@ -368,21 +407,22 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
             </div>
 
             <DialogFooter className="mt-6">
-              <button
+              <Button
                 type="button"
                 onClick={closeObservationModal}
-                className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}
+                variant="outline"
+                className={`w-auto rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : ''}`}
               >
                 Cancelar
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={saveObservationModal}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm"
+                className="w-auto gap-2 rounded-xl"
               >
                 <Save className="h-4 w-4" />
                 Salvar observação
-              </button>
+              </Button>
             </DialogFooter>
           </DialogContent>
         ) : null}

@@ -1,5 +1,6 @@
 import React from 'react'
-import { Link, router, useForm } from '@inertiajs/react'
+import { Link, router } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import { Pencil, PauseCircle, PlayCircle, Trash2 } from 'lucide-react'
 import AppLayout from '../../layouts/AppLayout'
 import { Input, Select } from '@/components/ui'

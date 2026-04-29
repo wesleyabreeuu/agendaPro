@@ -17,6 +17,7 @@
     "dependencies": {
         "@fontsource-variable/geist": "^5.2.8",
         "@inertiajs/react": "^3.0.3",
+        "@tanstack/react-form": "^1.29.1",
         "@vitejs/plugin-react": "^4.4.1",
         "chart.js": "^4.5.1",
         "class-variance-authority": "^0.7.1",

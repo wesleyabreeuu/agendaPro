@@ -1,5 +1,5 @@
 import React from 'react'
-import { useForm } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
 import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 

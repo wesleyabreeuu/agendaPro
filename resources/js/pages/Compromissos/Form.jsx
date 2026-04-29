@@ -1,7 +1,9 @@
 import React from 'react'
-import { Link, useForm } from '@inertiajs/react'
+import { Link } from '@inertiajs/react'
+import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Badge, Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
+import { Alert, AlertDescription, AlertTitle, Badge, Button, Checkbox, Input, Label, Select, Textarea } from '@/components/ui'
+import { Share2 } from 'lucide-react'
 
 function formatPermissionLabel(permission) {
   return {
@@ -106,13 +108,11 @@ function ShareEditor({ compromisso, processing }) {
       </div>
 
       {feedback ? (
-        <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${
-          feedback.type === 'success'
-            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-            : 'border-red-200 bg-red-50 text-red-700'
-        }`}>
-          {feedback.message}
-        </div>
+        <Alert className="mb-4" variant={feedback.type === 'success' ? 'default' : 'destructive'}>
+          <Share2 className="h-4 w-4" />
+          <AlertTitle>{feedback.type === 'success' ? 'Compartilhamento atualizado' : 'Não foi possível compartilhar'}</AlertTitle>
+          <AlertDescription>{feedback.message}</AlertDescription>
+        </Alert>
       ) : null}
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_auto]">
@@ -202,7 +202,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           ) : null}
 
           <div className="grid gap-2 lg:col-span-2">
-            <label className="text-sm font-medium text-zinc-900">Título</label>
+            <Label className="text-zinc-900">Título</Label>
             <div className={shellClassName}>
               <Input value={data.titulo} onChange={(e) => setData('titulo', e.target.value)} className={shellInputClassName} />
             </div>
@@ -211,7 +211,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className={sectionClassName}>
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Data de início</label>
+              <Label className="text-zinc-900">Data de início</Label>
               <div className={shellClassName}>
                 <Input type="datetime-local" value={data.data_inicio} onChange={(e) => setData('data_inicio', e.target.value)} className={shellInputClassName} />
               </div>
@@ -219,7 +219,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Data final</label>
+              <Label className="text-zinc-900">Data final</Label>
               <div className={shellClassName}>
                 <Input type="datetime-local" value={data.data_fim} onChange={(e) => setData('data_fim', e.target.value)} className={shellInputClassName} />
               </div>
@@ -227,7 +227,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Categoria</label>
+              <Label className="text-zinc-900">Categoria</Label>
               <div className={shellClassName}>
                 <Select value={data.categoria_id} onChange={(e) => setData('categoria_id', e.target.value)} className={shellInputClassName}>
                   <option value="">Sem categoria</option>
@@ -241,7 +241,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className={sectionClassName}>
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Recorrência</label>
+              <Label className="text-zinc-900">Recorrência</Label>
               <div className={shellClassName}>
                 <Select value={data.recorrencia} onChange={(e) => setData('recorrencia', e.target.value)} className={shellInputClassName}>
                   <option value="">Não repetir</option>
@@ -253,14 +253,14 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Intervalo</label>
+              <Label className="text-zinc-900">Intervalo</Label>
               <div className={shellClassName}>
                 <Input type="number" min="1" value={data.recorrencia_intervalo} onChange={(e) => setData('recorrencia_intervalo', e.target.value)} className={shellInputClassName} />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-zinc-900">Repetir até</label>
+              <Label className="text-zinc-900">Repetir até</Label>
               <div className={shellClassName}>
                 <Input type="date" value={data.data_fim_recorrencia} onChange={(e) => setData('data_fim_recorrencia', e.target.value)} className={shellInputClassName} />
               </div>
@@ -289,7 +289,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           ) : null}
 
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Descrição</label>
+            <Label className="text-zinc-900">Descrição</Label>
             <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
               <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
             </div>

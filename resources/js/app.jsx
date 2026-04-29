@@ -4,6 +4,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { createInertiaApp } from '@inertiajs/react'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 createInertiaApp({
   resolve: async (name) => {
@@ -13,9 +14,11 @@ createInertiaApp({
   },
   setup({ el, App, props }) {
     createRoot(el).render(
-      <ThemeProvider>
-        <App {...props} />
-      </ThemeProvider>,
+      <TooltipProvider>
+        <ThemeProvider>
+          <App {...props} />
+        </ThemeProvider>
+      </TooltipProvider>,
     )
   },
   progress: {
