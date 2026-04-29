@@ -181,26 +181,41 @@ export default function MeuDia({ initialData = null }) {
                 )}
               </div>
 
-              <div className="grid gap-2 sm:grid-cols-4 xl:min-w-[560px]">
-                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Dia</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{resumo.total}</p>
+              <div className="space-y-3 xl:min-w-[560px]">
+                <div className="flex flex-col items-start gap-2 xl:items-end">
+                  <button
+                    type="button"
+                    onClick={() => router.visit('/meu-dia?visao=dia')}
+                    className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50"
+                  >
+                    Fazer leitura do dia
+                  </button>
+                  <p className="text-sm text-zinc-500 xl:max-w-[280px] xl:text-right">
+                    Abra a visao guiada com seus proximos passos, progresso e boas do dia sempre que quiser se reorganizar.
+                  </p>
                 </div>
-                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Feitos</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{resumo.concluidos}</p>
-                </div>
-                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Pendentes</p>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{pendingCount}</p>
-                </div>
-                <div className="rounded-2xl border border-zinc-950 bg-zinc-950 px-4 py-3 text-white">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">Ritmo</p>
-                      <p className="mt-2 text-2xl font-semibold tracking-tight">{resumo.percentual}%</p>
+
+                <div className="grid gap-2 sm:grid-cols-4">
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Dia</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{resumo.total}</p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Feitos</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{resumo.concluidos}</p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Pendentes</p>
+                    <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{pendingCount}</p>
+                  </div>
+                  <div className="rounded-2xl border border-zinc-950 bg-zinc-950 px-4 py-3 text-white">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">Ritmo</p>
+                        <p className="mt-2 text-2xl font-semibold tracking-tight">{resumo.percentual}%</p>
+                      </div>
+                      <TrendingUp className="h-4 w-4 text-zinc-300" />
                     </div>
-                    <TrendingUp className="h-4 w-4 text-zinc-300" />
                   </div>
                 </div>
               </div>

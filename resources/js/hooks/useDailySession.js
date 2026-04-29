@@ -5,6 +5,72 @@ function storageKey(userId, date) {
   return `agendapro.daily-session.hidden.${userId}.${date}`
 }
 
+function hasGuidedViewParam() {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  try {
+    const params = new window.URLSearchParams(window.location.search)
+    return params.get('visao') === 'dia' || params.get('ritual') === '1'
+  } catch (error) {
+    console.warn('Nao foi possivel ler os parametros da URL da sessao do dia.', error)
+    return false
+  }
+}
+
+function clearGuidedViewParam() {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    const url = new window.URL(window.location.href)
+    url.searchParams.delete('visao')
+    url.searchParams.delete('ritual')
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+  } catch (error) {
+    console.warn('Nao foi possivel limpar o parametro de preview da sessao do dia.', error)
+  }
+}
+
+function getHiddenFlag(key) {
+  if (!key || typeof window === 'undefined') {
+    return false
+  }
+
+  try {
+    return window.localStorage.getItem(key) === 'true'
+  } catch (error) {
+    console.warn('Nao foi possivel ler o estado local da sessao do dia.', error)
+    return false
+  }
+}
+
+function setHiddenFlag(key) {
+  if (!key || typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    window.localStorage.setItem(key, 'true')
+  } catch (error) {
+    console.warn('Nao foi possivel salvar o estado local da sessao do dia.', error)
+  }
+}
+
+function clearHiddenFlag(key) {
+  if (!key || typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    window.localStorage.removeItem(key)
+  } catch (error) {
+    console.warn('Nao foi possivel limpar o estado local da sessao do dia.', error)
+  }
+}
+
 export function useDailySession({ enabled = true, userId = null }) {
   const [loading, setLoading] = useState(enabled)
   const [open, setOpen] = useState(false)
@@ -27,6 +93,7 @@ export function useDailySession({ enabled = true, userId = null }) {
 
     async function load() {
       setLoading(true)
+      const forcePreview = hasGuidedViewParam()
 
       try {
         const response = await fetch('/api/daily-session/check', {
@@ -40,7 +107,7 @@ export function useDailySession({ enabled = true, userId = null }) {
 
         const payload = await response.json()
         const currentDate = payload?.date || ''
-        const isHidden = currentDate ? window.localStorage.getItem(storageKey(userId, currentDate)) === 'true' : false
+        const isHidden = currentDate ? getHiddenFlag(storageKey(userId, currentDate)) : false
 
         if (cancelled) {
           return
@@ -48,7 +115,7 @@ export function useDailySession({ enabled = true, userId = null }) {
 
         setDate(currentDate)
 
-        if (payload?.iniciado || isHidden) {
+        if (!forcePreview && (payload?.iniciado || isHidden)) {
           setOpen(false)
           setPreview(null)
           return
@@ -105,12 +172,18 @@ export function useDailySession({ enabled = true, userId = null }) {
         throw new Error('Falha ao iniciar o dia.')
       }
 
-      if (hiddenKey) {
-        window.localStorage.removeItem(hiddenKey)
-      }
-
       setOpen(false)
+      clearHiddenFlag(hiddenKey)
       router.visit('/meu-dia')
+      clearGuidedViewParam()
+
+      if (typeof window !== 'undefined') {
+        window.setTimeout(() => {
+          if (window.location.pathname !== '/meu-dia') {
+            window.location.assign('/meu-dia')
+          }
+        }, 250)
+      }
     } catch (error) {
       console.error(error)
     } finally {
@@ -119,11 +192,9 @@ export function useDailySession({ enabled = true, userId = null }) {
   }
 
   function skipForToday() {
-    if (hiddenKey) {
-      window.localStorage.setItem(hiddenKey, 'true')
-    }
-
     setOpen(false)
+    setHiddenFlag(hiddenKey)
+    clearGuidedViewParam()
   }
 
   return {
