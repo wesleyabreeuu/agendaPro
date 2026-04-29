@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select, Textarea } from '@/components/ui'
+import { Badge, Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
 
 function formatPermissionLabel(permission) {
   return {
@@ -116,29 +116,26 @@ function ShareEditor({ compromisso, processing }) {
       ) : null}
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_auto]">
-        <input
-          type="email"
+        <Input
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="usuario@exemplo.com"
-          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
         />
-        <select
+        <Select
           value={permission}
           onChange={(e) => setPermission(e.target.value)}
-          className="h-11 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100"
         >
           <option value="visualizar">Pode visualizar</option>
           <option value="editar">Pode editar</option>
-        </select>
-        <button
+        </Select>
+        <Button
           type="button"
           onClick={addShare}
           disabled={saving || processing || !email.trim()}
-          className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white disabled:opacity-60"
+          className="w-auto disabled:opacity-60"
         >
           Compartilhar
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 space-y-3">
@@ -148,14 +145,15 @@ function ShareEditor({ compromisso, processing }) {
               <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
               <p className="text-sm text-zinc-500">{item.email_masked || item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
             </div>
-            <button
+            <Button
               type="button"
               onClick={() => removeShare(item.usuario_id)}
               disabled={saving || processing}
-              className="inline-flex h-10 items-center justify-center rounded-md border border-red-200 bg-white px-4 text-sm font-medium text-red-600 disabled:opacity-60"
+              variant="destructive"
+              className="w-auto disabled:opacity-60"
             >
               Remover
-            </button>
+            </Button>
           </div>
         )) : (
           <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-5 text-sm text-zinc-500">
@@ -199,7 +197,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           {editing && compromisso?.owner?.nome ? (
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
               Dono: <span className="font-medium text-zinc-900">{compromisso.owner.nome}</span>
-              {compromisso.permissao ? <span className="ml-2 rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs">{formatPermissionLabel(compromisso.permissao)}</span> : null}
+              {compromisso.permissao ? <span className="ml-2"><Badge variant="outline">{formatPermissionLabel(compromisso.permissao)}</Badge></span> : null}
             </div>
           ) : null}
 
@@ -272,11 +270,9 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5">
             <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={data.dia_inteiro}
-                onChange={(e) => setData('dia_inteiro', e.target.checked)}
-                className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
+                onCheckedChange={(checked) => setData('dia_inteiro', Boolean(checked))}
               />
               <span>Evento de dia inteiro</span>
             </label>
@@ -284,11 +280,9 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           {editing ? (
             <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm lg:col-span-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={data.cancelar_lembrete}
-                onChange={(e) => setData('cancelar_lembrete', e.target.checked)}
-                className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
+                onCheckedChange={(checked) => setData('cancelar_lembrete', Boolean(checked))}
               />
               <span>Cancelar lembrete pendente deste compromisso</span>
             </label>
@@ -302,9 +296,9 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           </div>
 
           <div className="flex gap-3">
-            <button disabled={processing} className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">
+            <Button disabled={processing} className="w-auto">
               {editing ? 'Salvar alterações' : 'Criar compromisso'}
-            </button>
+            </Button>
             <Link href="/compromissos" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
               Cancelar
             </Link>

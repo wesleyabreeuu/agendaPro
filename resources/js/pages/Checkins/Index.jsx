@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Input, Textarea } from '@/components/ui'
+import { Badge, Button, Checkbox, Input, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '@/components/ui'
 import { Check, Flame, Pencil, Plus, Trash2 } from 'lucide-react'
 
 function getCsrfToken() {
@@ -75,9 +75,11 @@ function HabitCard({ habit, onComplete, onEdit, onDelete, busy }) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm ${habit.concluido_hoje ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
+        <div>
+          <Badge variant={habit.concluido_hoje ? 'success' : 'secondary'} className="gap-2 px-3 py-1.5 text-sm">
           <Flame className="h-4 w-4" />
           {habit.concluido_hoje ? 'Concluido hoje' : 'Pendente hoje'}
+          </Badge>
         </div>
 
         <Button
@@ -241,7 +243,7 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
                 <Textarea value={form.descricao} onChange={(event) => setForm((current) => ({ ...current, descricao: event.target.value }))} className="min-h-28" placeholder="Opcional" />
               </div>
               <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-700">
-                <input type="checkbox" checked={form.ativo} onChange={(event) => setForm((current) => ({ ...current, ativo: event.target.checked }))} className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-200" />
+                <Checkbox checked={form.ativo} onCheckedChange={(checked) => setForm((current) => ({ ...current, ativo: Boolean(checked) }))} />
                 Habito ativo
               </label>
               <div className="flex gap-3">
@@ -274,28 +276,28 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Historico recente</h2>
             <p className="mt-1 text-sm text-zinc-500">Ultimos registros de conclusao dos seus habitos.</p>
           </div>
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50">
-              <tr>
-                <th className="px-6 py-3 text-left font-medium text-zinc-500">Habito</th>
-                <th className="px-6 py-3 text-left font-medium text-zinc-500">Data</th>
-                <th className="px-6 py-3 text-left font-medium text-zinc-500">Hora</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader className="bg-zinc-50">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-6">Habito</TableHead>
+                <TableHead className="px-6">Data</TableHead>
+                <TableHead className="px-6">Hora</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {activityLog.length ? activityLog.map((item) => (
-                <tr key={item.id} className="border-t border-zinc-200">
-                  <td className="px-6 py-3 text-zinc-950">{item.habito}</td>
-                  <td className="px-6 py-3 text-zinc-600">{item.data}</td>
-                  <td className="px-6 py-3 text-zinc-600">{item.concluido_em || '-'}</td>
-                </tr>
+                <TableRow key={item.id}>
+                  <TableCell className="px-6 text-zinc-950">{item.habito}</TableCell>
+                  <TableCell className="px-6 text-zinc-600">{item.data}</TableCell>
+                  <TableCell className="px-6 text-zinc-600">{item.concluido_em || '-'}</TableCell>
+                </TableRow>
               )) : (
-                <tr>
-                  <td colSpan="3" className="px-6 py-10 text-center text-zinc-500">Nenhuma conclusão registrada ainda.</td>
-                </tr>
+                <TableRow>
+                  <TableCell colSpan="3" className="px-6 py-10 text-center text-zinc-500">Nenhuma conclusão registrada ainda.</TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </AppLayout>

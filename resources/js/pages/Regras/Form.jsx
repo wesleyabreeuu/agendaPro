@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '@/components/ui'
+import { Button, Checkbox, Input, Textarea } from '@/components/ui'
 
 export default function RegrasForm({ regra, errors = {} }) {
   const editing = Boolean(regra?.id)
@@ -46,18 +46,18 @@ export default function RegrasForm({ regra, errors = {} }) {
           </div>
           <div className="grid gap-2 lg:col-span-2">
             <label className="text-sm font-medium text-zinc-900">Descrição</label>
-            <textarea className="min-h-28 rounded-md border border-zinc-200 px-3 py-2 text-sm" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
+            <Textarea className="min-h-28" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
           </div>
           <div className="grid gap-3 lg:col-span-2">
             {checks.map(([key, label]) => (
               <label key={key} className="inline-flex items-center gap-3 text-sm text-zinc-700">
-                <input type="checkbox" checked={data[key]} onChange={(e) => setData(key, e.target.checked)} />
+                <Checkbox checked={data[key]} onCheckedChange={(checked) => setData(key, Boolean(checked))} />
                 <span>{label}</span>
               </label>
             ))}
           </div>
           <div className="flex gap-3 lg:col-span-2">
-            <button disabled={processing} className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar</button>
+            <Button disabled={processing} className="w-auto">Salvar</Button>
             <Link href="/regras" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
           </div>
         </form>

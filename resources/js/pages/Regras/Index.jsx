@@ -1,40 +1,43 @@
 import React from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
 export default function RegrasIndex({ regras }) {
   return (
     <AppLayout title="Regras">
       <div className="space-y-4">
         <div className="flex justify-end">
-          <Link href="/regras/create" className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Nova regra</Link>
+          <Button asChild className="w-auto">
+            <Link href="/regras/create">Nova regra</Link>
+          </Button>
         </div>
         <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50">
-              <tr>
-                <th className="px-4 py-3 text-left">Nome</th>
-                <th className="px-4 py-3 text-left">Slug</th>
-                <th className="px-4 py-3 text-left">Descrição</th>
-                <th className="px-4 py-3 text-right">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader className="bg-zinc-50">
+              <TableRow className="hover:bg-transparent">
+                <TableHead>Nome</TableHead>
+                <TableHead>Slug</TableHead>
+                <TableHead>Descrição</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {regras.map((regra) => (
-                <tr key={regra.id} className="border-t border-zinc-200">
-                  <td className="px-4 py-3">{regra.nome}</td>
-                  <td className="px-4 py-3">{regra.slug}</td>
-                  <td className="px-4 py-3">{regra.descricao || '-'}</td>
-                  <td className="px-4 py-3 text-right">
+                <TableRow key={regra.id}>
+                  <TableCell>{regra.nome}</TableCell>
+                  <TableCell>{regra.slug}</TableCell>
+                  <TableCell>{regra.descricao || '-'}</TableCell>
+                  <TableCell className="text-right">
                     <div className="inline-flex gap-2">
                       <Link href={`/regras/${regra.id}/edit`} className="rounded-md border border-zinc-200 px-3 py-2">Editar</Link>
-                      <button onClick={() => router.delete(`/regras/${regra.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-red-600">Excluir</button>
+                      <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/regras/${regra.id}`)}>Excluir</Button>
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </div>
     </AppLayout>

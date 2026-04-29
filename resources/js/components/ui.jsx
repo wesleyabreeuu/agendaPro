@@ -1,6 +1,8 @@
 import * as React from 'react'
 
 import { Button as ShadcnButton } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Calendar, CalendarDayButton } from '@/components/ui/calendar'
 import {
   Card,
   CardHeader,
@@ -20,8 +22,21 @@ import {
   DialogDescription,
   DialogClose,
 } from '@/components/ui/dialog'
+import { HoverCard, HoverCardTrigger, HoverCardContent } from '@/components/ui/hover-card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select } from '@/components/ui/select'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 
@@ -38,6 +53,9 @@ function Button({ variant = 'default', className = '', size = 'lg', ...props }) 
 
 export {
   Button,
+  Badge,
+  Calendar,
+  CalendarDayButton,
   Card,
   CardHeader,
   CardTitle,
@@ -53,7 +71,21 @@ export {
   DialogTitle,
   DialogDescription,
   DialogClose,
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+  Checkbox,
   Input,
+  RadioGroup,
+  RadioGroupItem,
   Select,
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
   Textarea,
 }

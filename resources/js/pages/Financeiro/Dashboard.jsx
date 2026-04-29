@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '@/components/ui'
+import { Badge, Button, Input, Select } from '@/components/ui'
 
 function moeda(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0))
@@ -106,7 +106,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
             <Input type="date" value={filterForm.data.data_fim} onChange={(e) => filterForm.setData('data_fim', e.target.value)} />
           </div>
           <div className="flex items-end gap-3">
-            <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Atualizar visão</button>
+            <Button className="w-auto">Atualizar visão</Button>
             <Link href="/financeiro/transacoes" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Lançamentos</Link>
           </div>
         </form>
@@ -121,15 +121,15 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
         <Panel title="Cadastrar receita ou gasto" action={<Link href="/financeiro/transacoes" className="text-sm text-zinc-600 hover:text-zinc-900">Abrir tela completa</Link>}>
           <form onSubmit={submitTransacao} className="grid gap-4">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <select className={`h-10 rounded-md border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 ${quickFieldClassName}`} value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
+              <Select className={quickFieldClassName} value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
                 <option value="despesa">Despesa</option>
                 <option value="receita">Receita</option>
-              </select>
+              </Select>
               {financeiroAvancado ? (
-                <select className={`h-10 rounded-md border bg-white px-3 text-sm text-zinc-950 outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 ${quickFieldClassName}`} value={transacaoForm.data.status} onChange={(e) => transacaoForm.setData('status', e.target.value)}>
+                <Select className={quickFieldClassName} value={transacaoForm.data.status} onChange={(e) => transacaoForm.setData('status', e.target.value)}>
                   <option value={transacaoForm.data.tipo === 'receita' ? 'recebido' : 'pago'}>{transacaoForm.data.tipo === 'receita' ? 'Recebido agora' : 'Pago agora'}</option>
                   <option value="pendente">Deixar pendente</option>
-                </select>
+                </Select>
               ) : null}
               <Input className={quickFieldClassName} type="number" step="0.01" min="0.01" placeholder="Valor" value={transacaoForm.data.valor} onChange={(e) => transacaoForm.setData('valor', e.target.value)} />
               <Input className={quickFieldClassName} type="date" value={transacaoForm.data.data} onChange={(e) => transacaoForm.setData('data', e.target.value)} />
@@ -141,22 +141,22 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.categoria_financeira_id} onChange={(e) => transacaoForm.setData('categoria_financeira_id', e.target.value)}>
+              <Select value={transacaoForm.data.categoria_financeira_id} onChange={(e) => transacaoForm.setData('categoria_financeira_id', e.target.value)}>
                 <option value="">Selecione a categoria</option>
                 {categoriasTransacao.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
-              </select>
-              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.conta_bancaria_id} onChange={(e) => transacaoForm.setData('conta_bancaria_id', e.target.value)}>
+              </Select>
+              <Select value={transacaoForm.data.conta_bancaria_id} onChange={(e) => transacaoForm.setData('conta_bancaria_id', e.target.value)}>
                 <option value="">Selecione a conta</option>
                 {contas.map((conta) => <option key={conta.id} value={conta.id}>{conta.nome}</option>)}
-              </select>
+              </Select>
               {financeiroAvancado ? (
-                <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={transacaoForm.data.forma_pagamento} onChange={(e) => transacaoForm.setData('forma_pagamento', e.target.value)}>
+                <Select value={transacaoForm.data.forma_pagamento} onChange={(e) => transacaoForm.setData('forma_pagamento', e.target.value)}>
                   <option value="conta">Saldo da conta</option>
                   <option value="pix">Pix</option>
                   <option value="dinheiro">Dinheiro</option>
-                </select>
+                </Select>
               ) : null}
-              <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar lancamento</button>
+              <Button className="w-auto">Salvar lancamento</Button>
             </div>
 
             {Object.keys(transacaoForm.errors).length ? (
@@ -176,7 +176,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
                     <p className="font-medium text-zinc-950">{item.descricao}</p>
                     <p className="mt-1 text-sm text-zinc-500">{item.categoria?.nome || 'Sem categoria'} • {item.data}</p>
                   </div>
-                  <p className={`font-semibold ${item.tipo === 'receita' ? 'text-green-600' : 'text-red-600'}`}>{item.tipo === 'receita' ? '+' : '-'}{moeda(item.valor)}</p>
+                  <Badge variant={item.tipo === 'receita' ? 'success' : 'danger'}>{item.tipo === 'receita' ? '+' : '-'}{moeda(item.valor)}</Badge>
                 </div>
               ))}
               {pendentes.length === 0 ? <p className="text-sm text-zinc-500">Nenhuma pendência no momento.</p> : null}
@@ -224,7 +224,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
                     <p className="font-medium text-zinc-950">{item.descricao}</p>
                     <p className="mt-1 text-sm text-zinc-500">{item.data}{item.status ? ` • ${item.status}` : ''}</p>
                   </div>
-                  <p className={`font-semibold ${item.tipo === 'receita' ? 'text-green-600' : 'text-red-600'}`}>{item.tipo === 'receita' ? '+' : '-'}{moeda(item.valor)}</p>
+                  <Badge variant={item.tipo === 'receita' ? 'success' : 'danger'}>{item.tipo === 'receita' ? '+' : '-'}{moeda(item.valor)}</Badge>
                 </div>
               ))}
             </div>
@@ -257,7 +257,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
                       <p className="font-medium text-zinc-950">{item.meta.titulo}</p>
                       <p className="mt-1 text-sm text-zinc-500">{item.meta.descricao || 'Sem descrição'} • {metaPrazoLabel(item)} • até {item.meta.prazo_final}</p>
                     </div>
-                    <button type="button" onClick={() => router.delete(`/financeiro/metas-economia/${item.meta.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-xs text-red-600">Excluir</button>
+                    <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/financeiro/metas-economia/${item.meta.id}`)}>Excluir</Button>
                   </div>
                   <p className="mt-3 text-sm text-zinc-600">Progresso: {item.analise.progresso.toFixed(1)}% • Falta {moeda(item.analise.faltante)} • Precisa guardar {moeda(item.analise.valor_mensal_planejado)}/mês no plano cadastrado</p>
                   <div className="mt-3 grid gap-2 md:grid-cols-3">
@@ -298,7 +298,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
                       <p className="font-medium text-zinc-950">{item.meta.nome_bem}</p>
                       <p className="mt-1 text-sm text-zinc-500">{item.meta.descricao || 'Sem descrição'} • {metaPrazoLabel(item)}</p>
                     </div>
-                    <button type="button" onClick={() => router.delete(`/financeiro/metas-bens/${item.meta.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-xs text-red-600">Excluir</button>
+                    <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/financeiro/metas-bens/${item.meta.id}`)}>Excluir</Button>
                   </div>
                   <p className="mt-3 text-sm text-zinc-600">Progresso: {item.analise.progresso.toFixed(1)}% • Falta {moeda(item.analise.faltante)} • Precisa guardar {moeda(item.analise.valor_mensal_planejado)}/mês no plano cadastrado</p>
                   <div className="mt-3 grid gap-2 md:grid-cols-3">

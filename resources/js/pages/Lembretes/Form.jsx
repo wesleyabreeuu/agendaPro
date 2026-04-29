@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select, Textarea } from '@/components/ui'
+import { Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
 
 export default function LembretesForm({ lembrete = null, compromissos = [], diasSemana = {}, errors = {} }) {
   const editing = Boolean(lembrete?.id)
@@ -134,11 +134,9 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                   <div className="flex flex-wrap gap-3">
                     {Object.entries(diasSemana).map(([value, label]) => (
                       <label key={value} className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={data.dias_semana.includes(Number(value))}
-                          onChange={() => toggleWeekday(Number(value))}
-                          className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
+                          onCheckedChange={() => toggleWeekday(Number(value))}
                         />
                         <span>{label}</span>
                       </label>
@@ -158,18 +156,16 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
 
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5">
             <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={data.ativo}
-                onChange={(e) => setData('ativo', e.target.checked)}
-                className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
+                onCheckedChange={(checked) => setData('ativo', Boolean(checked))}
               />
               <span>Manter lembrete ativo</span>
             </label>
           </div>
 
           <div className="flex gap-3">
-            <button disabled={processing} className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar</button>
+            <Button disabled={processing} className="w-auto">Salvar</Button>
             <Link href="/lembretes" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
           </div>
         </form>

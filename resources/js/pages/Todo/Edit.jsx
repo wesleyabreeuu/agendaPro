@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select, Textarea } from '@/components/ui'
+import { Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
 
 export default function TodoEdit({ tarefa, errors = {} }) {
   const { data, setData, put, processing } = useForm({
@@ -63,20 +63,19 @@ export default function TodoEdit({ tarefa, errors = {} }) {
             </Select>
           </div>
           <label className="inline-flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm lg:col-span-2">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={data.concluida}
-              onChange={(e) => {
-                setData('concluida', e.target.checked)
-                setData('status', e.target.checked ? 'finalizado' : 'aguardando')
+              onCheckedChange={(checked) => {
+                const next = Boolean(checked)
+                setData('concluida', next)
+                setData('status', next ? 'finalizado' : 'aguardando')
               }}
-              className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
             />
             <span>Marcar como concluída</span>
           </label>
           {Object.values(errors).length ? <div className="text-sm text-red-600 lg:col-span-2">{Object.values(errors)[0]}</div> : null}
           <div className="flex gap-3 lg:col-span-2">
-            <button disabled={processing} className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar</button>
+            <Button disabled={processing} className="w-auto">Salvar</Button>
             <Link href={`/todo?data=${tarefa.data}`} className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
           </div>
         </form>

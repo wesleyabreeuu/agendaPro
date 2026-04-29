@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Input, Select, Textarea } from '@/components/ui'
+import { Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
   CATEGORY_OPTIONS,
@@ -196,7 +196,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
 
             <div className={`mt-5 rounded-3xl border p-5 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
               <label className={`flex items-center gap-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
-                <input type="checkbox" checked={form.data.modo_minimo_ativo} onChange={(event) => form.setData('modo_minimo_ativo', event.target.checked)} className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-200" />
+                <Checkbox checked={form.data.modo_minimo_ativo} onCheckedChange={(checked) => form.setData('modo_minimo_ativo', Boolean(checked))} />
                 Ativar modo mínimo
               </label>
               <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Use uma versão reduzida da rotina para dias difíceis e ainda assim manter constância.</p>
@@ -210,7 +210,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
             </div>
 
             <label className={`mt-5 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
-              <input type="checkbox" checked={form.data.ativo} onChange={(event) => form.setData('ativo', event.target.checked)} className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-200" />
+              <Checkbox checked={form.data.ativo} onCheckedChange={(checked) => form.setData('ativo', Boolean(checked))} />
               Rotina ativa
             </label>
 

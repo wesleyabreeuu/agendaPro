@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '@/components/ui'
+import { Button, Select, Textarea, Input } from '@/components/ui'
 
 export default function SaudeAtividades({ atividades, categorias = [] }) {
   const categoriaForm = useForm({
@@ -38,28 +38,28 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
                 <Input type="number" step="0.01" min="0" value={categoriaForm.data.caloria_moderada} onChange={(e) => categoriaForm.setData('caloria_moderada', e.target.value)} />
                 <Input type="number" step="0.01" min="0" value={categoriaForm.data.caloria_intensa} onChange={(e) => categoriaForm.setData('caloria_intensa', e.target.value)} />
               </div>
-              <button className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Salvar tipo</button>
+              <Button variant="outline" className="w-auto">Salvar tipo</Button>
             </form>
           </div>
 
           <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Nova atividade</h2>
             <form onSubmit={(e) => { e.preventDefault(); atividadeForm.post('/saude/atividades') }} className="mt-5 grid gap-4">
-              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={atividadeForm.data.categoria_atividade_fisica_id} onChange={(e) => atividadeForm.setData('categoria_atividade_fisica_id', e.target.value)}>
+              <Select value={atividadeForm.data.categoria_atividade_fisica_id} onChange={(e) => atividadeForm.setData('categoria_atividade_fisica_id', e.target.value)}>
                 <option value="">Selecione a atividade</option>
                 {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
-              </select>
+              </Select>
               <Input placeholder="Descrição" value={atividadeForm.data.descricao} onChange={(e) => atividadeForm.setData('descricao', e.target.value)} />
               <Input type="date" value={atividadeForm.data.data} onChange={(e) => atividadeForm.setData('data', e.target.value)} />
               <Input type="time" value={atividadeForm.data.hora_inicio} onChange={(e) => atividadeForm.setData('hora_inicio', e.target.value)} />
               <Input type="number" min="1" placeholder="Duração em minutos" value={atividadeForm.data.duracao_minutos} onChange={(e) => atividadeForm.setData('duracao_minutos', e.target.value)} />
-              <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={atividadeForm.data.intensidade} onChange={(e) => atividadeForm.setData('intensidade', e.target.value)}>
+              <Select value={atividadeForm.data.intensidade} onChange={(e) => atividadeForm.setData('intensidade', e.target.value)}>
                 <option value="leve">Leve</option>
                 <option value="moderada">Moderada</option>
                 <option value="intensa">Intensa</option>
-              </select>
-              <textarea className="min-h-24 rounded-md border border-zinc-200 px-3 py-2 text-sm shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100" placeholder="Notas" value={atividadeForm.data.notas} onChange={(e) => atividadeForm.setData('notas', e.target.value)} />
-              <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar atividade</button>
+              </Select>
+              <Textarea className="min-h-24" placeholder="Notas" value={atividadeForm.data.notas} onChange={(e) => atividadeForm.setData('notas', e.target.value)} />
+              <Button className="w-auto">Salvar atividade</Button>
             </form>
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
                     <p className="font-semibold text-zinc-950">{atividade.calorias_queimadas} kcal</p>
                     <div className="mt-3 flex justify-end gap-2">
                       <Link href={`/saude/atividades/${atividade.id}/edit`} className="rounded-md border border-zinc-200 px-3 py-2 text-xs text-zinc-700">Editar</Link>
-                      <button type="button" onClick={() => router.delete(`/saude/atividades/${atividade.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-xs text-red-600">Excluir</button>
+                      <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/saude/atividades/${atividade.id}`)}>Excluir</Button>
                     </div>
                   </div>
                 </div>

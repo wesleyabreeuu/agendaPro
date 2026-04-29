@@ -15,7 +15,7 @@ import {
   SquarePen,
   X,
 } from 'lucide-react'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Textarea } from '@/components/ui'
+import { Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Textarea } from '@/components/ui'
 
 const boardBackgrounds = {
   violet: 'bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]',
@@ -575,7 +575,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     <div className="mt-3 space-y-3">
                       {(activeCard.checklist || []).map((item, index) => (
                         <label key={index} className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
-                          <input type="checkbox" checked={Boolean(item.done)} onChange={(e) => updateActiveCard({ checklist: activeCard.checklist.map((check, checkIndex) => checkIndex === index ? { ...check, done: e.target.checked } : check) })} className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100" />
+                          <Checkbox checked={Boolean(item.done)} onCheckedChange={(checked) => updateActiveCard({ checklist: activeCard.checklist.map((check, checkIndex) => checkIndex === index ? { ...check, done: Boolean(checked) } : check) })} />
                           <Input value={item.titulo} onChange={(e) => updateActiveCard({ checklist: activeCard.checklist.map((check, checkIndex) => checkIndex === index ? { ...check, titulo: e.target.value } : check) })} className="border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0" placeholder="Item do checklist" />
                         </label>
                       ))}

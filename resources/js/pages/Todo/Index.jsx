@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import { Check, ChevronDown, Clock3, MessageSquareText, MoreHorizontal, Plus, Save, Trash2, X } from 'lucide-react'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Textarea } from '@/components/ui'
+import { Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Textarea } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 const statusOptions = [
@@ -175,14 +175,13 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
             <div className="grid gap-2">
               <label className="text-sm font-medium text-zinc-900">Concluída</label>
               <label className="flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-sm">
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={data.concluida}
-                  onChange={(e) => {
-                    setData('concluida', e.target.checked)
-                    setData('status', e.target.checked ? 'finalizado' : 'aguardando')
+                  onCheckedChange={(checked) => {
+                    const next = Boolean(checked)
+                    setData('concluida', next)
+                    setData('status', next ? 'finalizado' : 'aguardando')
                   }}
-                  className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
                 />
                 <span>Finalizar</span>
               </label>
@@ -196,10 +195,10 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
             {Object.values(errors).length ? <div className="text-sm text-red-600 lg:col-span-5">{Object.values(errors)[0]}</div> : null}
 
             <div className="lg:col-span-5 flex justify-end">
-              <button disabled={processing} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-5 text-sm font-medium text-white shadow-sm">
+              <Button disabled={processing} className="w-auto gap-2 rounded-xl px-5">
                 <Plus className="h-4 w-4" />
                 Salvar tarefa
-              </button>
+              </Button>
             </div>
           </form>
         </section>
@@ -217,37 +216,37 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="min-w-[980px] w-full">
-              <thead className={`text-left text-sm ${isDark ? 'bg-white text-black' : 'bg-zinc-50/80 text-zinc-500'}`}>
-                <tr>
-                  <th className="px-4 py-4 font-medium">Hora</th>
-                  <th className="px-4 py-4 font-medium">Descrição</th>
-                  <th className="px-4 py-4 font-medium">Status</th>
-                  <th className="px-4 py-4 font-medium">Urgência</th>
-                  <th className="px-4 py-4 font-medium">Observação</th>
-                  <th className="px-4 py-4 font-medium">Concluída</th>
-                  <th className="px-4 py-4 font-medium text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table className="min-w-[980px]">
+              <TableHeader className={isDark ? 'bg-white text-black' : 'bg-zinc-50/80 text-zinc-500'}>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="py-4 font-medium">Hora</TableHead>
+                  <TableHead className="py-4 font-medium">Descrição</TableHead>
+                  <TableHead className="py-4 font-medium">Status</TableHead>
+                  <TableHead className="py-4 font-medium">Urgência</TableHead>
+                  <TableHead className="py-4 font-medium">Observação</TableHead>
+                  <TableHead className="py-4 font-medium">Concluída</TableHead>
+                  <TableHead className="py-4 font-medium text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {rows.length ? rows.map((row) => (
-                  <tr key={row.id} className={`align-top ${isDark ? 'border-t border-zinc-700' : 'border-t border-zinc-200'}`}>
-                    <td className="px-4 py-4">
+                  <TableRow key={row.id} className={`align-top ${isDark ? 'border-zinc-700 hover:bg-zinc-900/70' : ''}`}>
+                    <TableCell className="py-4">
                       <input
                         type="time"
                         value={row.hora || ''}
                         onChange={(e) => updateRow(row.id, { hora: e.target.value })}
                         className={tableInputClassName()}
                       />
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <input
                         value={row.descricao || ''}
                         onChange={(e) => updateRow(row.id, { descricao: e.target.value })}
                         className={tableInputClassName('min-w-[240px]')}
                       />
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <details className="relative inline-block">
                         <summary className={`flex min-w-[132px] cursor-pointer list-none items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${statusTone(row.status)}`}>
                           <span className={`h-2.5 w-2.5 rounded-full ${statusMeta(row.status).dot}`} />
@@ -270,8 +269,8 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                           </div>
                         </div>
                       </details>
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <select
                         value={row.urgencia}
                         onChange={(e) => updateRow(row.id, { urgencia: e.target.value })}
@@ -279,8 +278,8 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                       >
                         {urgencyOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                       </select>
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <button
                         type="button"
                         onClick={() => openObservationModal(row)}
@@ -289,19 +288,17 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                         <MessageSquareText className="h-4 w-4" />
                         {row.observacao ? 'Ver nota' : 'Adicionar'}
                       </button>
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-sm">
-                        <input
-                          type="checkbox"
+                        <Checkbox
                           checked={Boolean(row.concluida)}
-                          onChange={(e) => handleConcludedToggle(row, e.target.checked)}
-                          className="h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-2 focus:ring-blue-100"
+                          onCheckedChange={(checked) => handleConcludedToggle(row, Boolean(checked))}
                         />
                         <span>{row.concluida ? 'Feita' : 'Pendente'}</span>
                       </label>
-                    </td>
-                    <td className="px-4 py-4">
+                    </TableCell>
+                    <TableCell className="py-4">
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
@@ -321,20 +318,20 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )) : (
-                  <tr>
-                    <td colSpan="7" className="px-6 py-14 text-center">
+                  <TableRow>
+                    <TableCell colSpan="7" className="px-6 py-14 text-center">
                       <div className="space-y-2">
                         <p className={`text-lg font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Nenhuma tarefa cadastrada para este dia</p>
                         <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie a primeira linha acima e acompanhe o dia nesse formato de tabela.</p>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </section>
       </div>

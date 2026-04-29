@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { Badge, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
 
 export default function LembretesIndex({ lembretes, proximos }) {
   return (
@@ -21,43 +22,47 @@ export default function LembretesIndex({ lembretes, proximos }) {
 
         <div className="space-y-4">
           <div className="flex justify-end">
-            <Link href="/lembretes/create" className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Novo lembrete</Link>
+            <Button asChild className="w-auto">
+              <Link href="/lembretes/create">Novo lembrete</Link>
+            </Button>
           </div>
           <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
-            <table className="w-full text-sm">
-              <thead className="bg-zinc-50">
-                <tr>
-                  <th className="px-4 py-3 text-left">Título</th>
-                  <th className="px-4 py-3 text-left">Origem</th>
-                  <th className="px-4 py-3 text-left">Antecedência</th>
-                  <th className="px-4 py-3 text-left">Recorrência</th>
-                  <th className="px-4 py-3 text-left">Próximo disparo</th>
-                  <th className="px-4 py-3 text-left">Status</th>
-                  <th className="px-4 py-3 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
+            <Table>
+              <TableHeader className="bg-zinc-50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead>Título</TableHead>
+                  <TableHead>Origem</TableHead>
+                  <TableHead>Antecedência</TableHead>
+                  <TableHead>Recorrência</TableHead>
+                  <TableHead>Próximo disparo</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {lembretes.map((lembrete) => (
-                  <tr key={lembrete.id} className="border-t border-zinc-200">
-                    <td className="px-4 py-3">
+                  <TableRow key={lembrete.id}>
+                    <TableCell>
                       <div className="font-medium text-zinc-950">{lembrete.titulo_exibicao}</div>
                       <div className="text-zinc-500">{lembrete.categoria || 'Sem categoria'}</div>
-                    </td>
-                    <td className="px-4 py-3">{lembrete.origem}</td>
-                    <td className="px-4 py-3">{lembrete.minutos_antes > 0 ? `${lembrete.minutos_antes} min antes` : 'No horário'}</td>
-                    <td className="px-4 py-3">{lembrete.recorrencia || 'Único'}</td>
-                    <td className="px-4 py-3">{lembrete.momento_disparo || '-'}</td>
-                    <td className="px-4 py-3">{lembrete.ativo ? 'Ativo' : 'Finalizado'}</td>
-                    <td className="px-4 py-3 text-right">
+                    </TableCell>
+                    <TableCell>{lembrete.origem}</TableCell>
+                    <TableCell>{lembrete.minutos_antes > 0 ? `${lembrete.minutos_antes} min antes` : 'No horário'}</TableCell>
+                    <TableCell>{lembrete.recorrencia || 'Único'}</TableCell>
+                    <TableCell>{lembrete.momento_disparo || '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant={lembrete.ativo ? 'success' : 'secondary'}>{lembrete.ativo ? 'Ativo' : 'Finalizado'}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
                       <div className="inline-flex gap-2">
                         <Link href={`/lembretes/${lembrete.id}/edit`} className="rounded-md border border-zinc-200 px-3 py-2">Editar</Link>
-                        <button onClick={() => router.delete(`/lembretes/${lembrete.id}`)} className="rounded-md border border-red-200 px-3 py-2 text-red-600">Excluir</button>
+                        <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/lembretes/${lembrete.id}`)}>Excluir</Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>
