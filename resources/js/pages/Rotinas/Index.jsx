@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, router, useForm } from '@inertiajs/react'
 import { Pencil, PauseCircle, PlayCircle, Trash2 } from 'lucide-react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select } from '../../components/ui'
+import { Input, Select } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
   CATEGORY_OPTIONS,

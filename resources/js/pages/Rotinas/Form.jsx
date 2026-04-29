@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Input, Select, Textarea } from '../../components/ui'
+import { Button, Input, Select, Textarea } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
   CATEGORY_OPTIONS,

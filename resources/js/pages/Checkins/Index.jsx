@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Input, Textarea } from '../../components/ui'
+import { Button, Input, Textarea } from '@/components/ui'
 import { Check, Flame, Pencil, Plus, Trash2 } from 'lucide-react'
 
 function getCsrfToken() {

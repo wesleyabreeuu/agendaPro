@@ -54,75 +54,75 @@ export default function DailyStartOverlay({
   const miniTimeline = (preview?.timeline || []).slice(0, 4)
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 py-5 backdrop-blur-sm">
-      <div className="w-full max-w-[980px] overflow-hidden rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_top,#fef3c7_0%,#fff7ed_26%,#ffffff_60%)] shadow-[0_34px_96px_rgba(0,0,0,0.32)]">
-        <div className="grid gap-0 lg:grid-cols-[1.08fr_0.92fr]">
-          <section className="p-5 sm:p-7 lg:p-8">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 py-4 backdrop-blur-sm">
+      <div className="w-full max-w-[860px] overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,#fef3c7_0%,#fff7ed_24%,#ffffff_58%)] shadow-[0_26px_72px_rgba(0,0,0,0.28)]">
+        <div className="grid gap-0 lg:grid-cols-[0.98fr_0.82fr]">
+          <section className="p-4 sm:p-5 lg:p-6">
             <span className="inline-flex items-center gap-2 rounded-full bg-zinc-950 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-200">
               <Sparkles className="h-3.5 w-3.5" />
               Ritual de início
             </span>
-            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-4xl">
+            <h2 className="mt-4 text-[36px] font-semibold tracking-tight text-zinc-950">
               Bom dia, {user?.name}
             </h2>
-            <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-600 sm:text-base">
+            <p className="mt-3 max-w-lg text-[15px] leading-7 text-zinc-600">
               Sua agenda já está organizada. Faça uma leitura rápida, entre no foco do dia e comece com clareza.
             </p>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-5 grid max-w-[470px] gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {summaryItems.map(({ key, label, icon: Icon }) => (
-                <div key={key} className="rounded-[22px] border border-zinc-200/90 bg-white/90 p-4 shadow-[0_10px_24px_rgba(24,24,27,0.05)]">
+                <div key={key} className="min-h-[102px] rounded-[20px] border border-zinc-200/90 bg-white/92 px-4 py-3.5 shadow-[0_8px_18px_rgba(24,24,27,0.04)]">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-medium text-zinc-600">{label}</p>
-                    <Icon className="h-4 w-4 text-zinc-500" />
+                    <p className="text-[13px] font-medium text-zinc-600">{label}</p>
+                    <Icon className="h-3.5 w-3.5 text-zinc-500" />
                   </div>
-                  <p className="mt-2.5 text-[32px] font-semibold tracking-tight text-zinc-950">{counts[key] || 0}</p>
+                  <p className="mt-3 text-[24px] font-semibold tracking-tight text-zinc-950">{counts[key] || 0}</p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={onStart}
                 disabled={starting}
-                className="inline-flex h-12 items-center justify-center rounded-2xl bg-zinc-950 px-6 text-sm font-semibold text-white shadow-lg shadow-zinc-950/15 disabled:opacity-70"
+                className="inline-flex h-11 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-semibold text-white shadow-lg shadow-zinc-950/15 disabled:opacity-70"
               >
                 {starting ? 'Iniciando...' : 'Começar meu dia'}
               </button>
               <button
                 type="button"
                 onClick={onSkip}
-                className="inline-flex h-12 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-6 text-sm font-semibold text-zinc-700"
+                className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-700"
               >
                 Pular por hoje
               </button>
             </div>
           </section>
 
-          <aside className="border-t border-zinc-200/80 bg-zinc-950 px-5 py-5 text-white lg:border-l lg:border-t-0 lg:px-6 lg:py-6">
+          <aside className="border-t border-zinc-200/80 bg-zinc-950 px-4 py-4 text-white lg:border-l lg:border-t-0 lg:px-5 lg:py-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Mini timeline</p>
-                <h3 className="mt-2 text-xl font-semibold">Seus próximos passos</h3>
+                <h3 className="mt-2 text-[18px] font-semibold">Seus próximos passos</h3>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-right">
+              <div className="rounded-[18px] border border-white/10 bg-white/[0.04] px-3 py-2 text-right">
                 <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Progresso</p>
-                <p className="mt-1 text-lg font-semibold text-white">{resumo?.percentual || 0}%</p>
+                <p className="mt-1 text-[16px] font-semibold text-white">{resumo?.percentual || 0}%</p>
               </div>
             </div>
 
-            <div className="mt-4 space-y-3">
+            <div className="mt-4 space-y-2.5">
               {miniTimeline.length ? miniTimeline.map((item) => (
                 <div
                   key={`${item.tipo}-${item.origem_id}`}
-                  className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
+                  className="rounded-[20px] border border-white/10 bg-white/[0.05] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-white">{item.titulo}</p>
-                    <span className="text-sm text-zinc-300">{item.hora_inicio || 'Sem hora'}</span>
+                    <p className="text-[14px] font-medium text-white">{item.titulo}</p>
+                    <span className="text-[13px] text-zinc-300">{item.hora_inicio || 'Sem hora'}</span>
                   </div>
-                  {item.descricao ? <p className="mt-1 text-sm text-zinc-400">{item.descricao}</p> : null}
+                  {item.descricao ? <p className="mt-1 text-[13px] leading-6 text-zinc-400">{item.descricao}</p> : null}
                 </div>
               )) : (
                 <div className="rounded-[24px] border border-dashed border-white/15 p-5 text-sm text-zinc-400">
@@ -131,27 +131,27 @@ export default function DailyStartOverlay({
               )}
             </div>
 
-            <div className="mt-5 rounded-[26px] border border-white/10 bg-gradient-to-b from-white/[0.04] to-white/[0.02] p-[18px]">
+            <div className="mt-4 rounded-[22px] border border-white/10 bg-gradient-to-b from-white/[0.04] to-white/[0.02] p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Boas do dia</p>
-                  <h4 className="mt-2 text-[15px] font-semibold text-white sm:text-lg">Pequenos ajustes, dia melhor</h4>
+                  <h4 className="mt-2 text-[14px] font-semibold text-white sm:text-[16px]">Pequenos ajustes, dia melhor</h4>
                 </div>
-                <div className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[11px] font-medium text-amber-200">
+                <div className="rounded-full border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-[10px] font-medium text-amber-200">
                   3 lembretes
                 </div>
               </div>
 
-              <div className="mt-3.5 space-y-2.5">
+              <div className="mt-3 space-y-2">
                 {dailyTips.map(({ title, description, icon: Icon }) => (
-                  <div key={title} className="rounded-[20px] border border-white/8 bg-black/10 px-4 py-3.5">
-                    <div className="flex items-start gap-3">
-                      <div className="rounded-[16px] border border-white/10 bg-white/[0.04] p-2.5">
-                        <Icon className="h-[15px] w-[15px] text-amber-300" />
+                  <div key={title} className="rounded-[18px] border border-white/8 bg-black/10 px-3 py-3">
+                    <div className="flex items-start gap-2.5">
+                      <div className="rounded-[14px] border border-white/10 bg-white/[0.04] p-2">
+                        <Icon className="h-[14px] w-[14px] text-amber-300" />
                       </div>
                       <div>
-                        <p className="text-[14px] font-semibold text-white sm:text-[15px]">{title}</p>
-                        <p className="mt-1 text-[14px] leading-7 text-zinc-400">{description}</p>
+                        <p className="text-[13px] font-semibold text-white sm:text-[14px]">{title}</p>
+                        <p className="mt-1 text-[13px] leading-6 text-zinc-400">{description}</p>
                       </div>
                     </div>
                   </div>

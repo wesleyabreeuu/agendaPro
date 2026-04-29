@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button } from '../../components/ui'
+import { Button } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import { Moon, Sun } from 'lucide-react'
 

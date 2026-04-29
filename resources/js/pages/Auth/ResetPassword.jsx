@@ -1,6 +1,6 @@
 import React from 'react'
 import { Head, Link, useForm } from '@inertiajs/react'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '../../components/ui'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 
 export default function ResetPassword({ mode = 'token', token, email = '', errors = {} }) {
   const { data, setData, post, processing } = useForm({

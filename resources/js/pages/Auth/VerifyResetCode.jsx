@@ -1,6 +1,6 @@
 import React from 'react'
 import { Head, Link, useForm } from '@inertiajs/react'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '../../components/ui'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 
 export default function VerifyResetCode({ email = '', status = null, errors = {} }) {
   const { data, setData, post, processing } = useForm({

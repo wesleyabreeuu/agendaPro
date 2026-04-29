@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import { Check, ChevronDown, Clock3, MessageSquareText, MoreHorizontal, Plus, Save, Trash2, X } from 'lucide-react'
-import { Input, Select, Textarea } from '../../components/ui'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Textarea } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 const statusOptions = [
@@ -339,14 +339,16 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
         </section>
       </div>
 
-      {observationModal ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/20 p-4 backdrop-blur-sm">
-          <div className={`w-full max-w-2xl rounded-[28px] border p-6 shadow-xl ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+      <Dialog open={Boolean(observationModal)} onOpenChange={(open) => {
+        if (!open) closeObservationModal()
+      }}>
+        {observationModal ? (
+          <DialogContent className={`max-w-2xl rounded-[28px] p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white'}`}>
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Observação da tarefa</p>
-                <h3 className={`mt-1 text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{observationModal.descricao}</h3>
-              </div>
+              <DialogHeader>
+                <DialogDescription className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Observação da tarefa</DialogDescription>
+                <DialogTitle className={`mt-1 text-xl ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{observationModal.descricao}</DialogTitle>
+              </DialogHeader>
               <button
                 type="button"
                 onClick={closeObservationModal}
@@ -368,7 +370,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-3">
+            <DialogFooter className="mt-6">
               <button
                 type="button"
                 onClick={closeObservationModal}
@@ -384,10 +386,10 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                 <Save className="h-4 w-4" />
                 Salvar observação
               </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+            </DialogFooter>
+          </DialogContent>
+        ) : null}
+      </Dialog>
     </AppLayout>
   )
 }

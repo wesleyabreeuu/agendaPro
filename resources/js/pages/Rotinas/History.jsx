@@ -1,7 +1,7 @@
 import React from 'react'
 import { router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select } from '../../components/ui'
+import { Input, Select } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import { CATEGORY_OPTIONS, categoryBadgeStyle, categoryLabel, statusBadgeClass, statusLabel } from './support'
 

@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import { LayoutTemplate, Plus } from 'lucide-react'
-import { Input, Select, Textarea } from '../../components/ui'
+import { Input, Select, Textarea } from '@/components/ui'
 
 const boardBackgrounds = {
   violet: 'bg-[radial-gradient(circle_at_top_left,#a78bfa_0%,#818cf8_40%,#e5e7eb_100%)]',

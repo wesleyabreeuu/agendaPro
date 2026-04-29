@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select, Textarea } from '../../components/ui'
+import { Input, Select, Textarea } from '@/components/ui'
 
 function formatPermissionLabel(permission) {
   return {

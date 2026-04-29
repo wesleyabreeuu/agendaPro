@@ -1,7 +1,7 @@
 import React from 'react'
 import { useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '../../components/ui'
+import { Input } from '@/components/ui'
 
 function moeda(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0))

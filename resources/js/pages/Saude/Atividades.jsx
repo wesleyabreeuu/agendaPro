@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, router, useForm } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '../../components/ui'
+import { Input } from '@/components/ui'
 
 export default function SaudeAtividades({ atividades, categorias = [] }) {
   const categoriaForm = useForm({
