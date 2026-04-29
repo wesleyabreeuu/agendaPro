@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { router } from '@inertiajs/react'
+import { Button, Textarea } from '@/components/ui'
 import { Bot, CalendarDays, CheckSquare, LoaderCircle, SendHorizontal, Sparkles, Wallet, X } from 'lucide-react'
 
 function messageId() {
@@ -249,14 +250,15 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
 
   return (
     <>
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className={`fixed right-4 bottom-4 z-[70] inline-flex h-14 w-14 items-center justify-center rounded-2xl border shadow-2xl transition hover:-translate-y-0.5 lg:right-6 lg:bottom-6 ${isDark ? 'border-zinc-700 bg-white text-black' : 'border-zinc-200 bg-zinc-950 text-white'}`}
+        size="icon-lg"
+        className={`fixed right-4 bottom-4 z-[70] h-14 w-14 rounded-2xl border shadow-2xl transition hover:-translate-y-0.5 lg:right-6 lg:bottom-6 ${isDark ? 'border-zinc-700 bg-white text-black' : 'border-zinc-200 bg-zinc-950 text-white'}`}
         aria-label={open ? 'Fechar assistente' : 'Abrir assistente'}
       >
         {open ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
-      </button>
+      </Button>
 
       {open ? (
         <section className={`fixed right-4 bottom-20 z-[69] flex h-[min(78vh,680px)] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-[30px] border shadow-2xl lg:right-6 lg:bottom-24 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
@@ -273,14 +275,16 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                   </p>
                 </div>
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => setOpen(false)}
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-2xl border ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}
+                variant="outline"
+                size="icon-lg"
+                className={`rounded-2xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}
                 aria-label="Fechar assistente"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -294,14 +298,15 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
 
                 <div className="mt-4 flex flex-wrap gap-2">
                   {suggestions.map((suggestion) => (
-                    <button
+                    <Button
                       key={suggestion}
                       type="button"
                       onClick={() => setCommand(suggestion)}
-                      className={`rounded-full border px-3 py-2 text-left text-xs transition ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100'}`}
+                      variant="outline"
+                      className={`h-auto rounded-full px-3 py-2 text-left text-xs transition ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100'}`}
                     >
                       {suggestion}
-                    </button>
+                    </Button>
                   ))}
                 </div>
 
@@ -350,7 +355,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
             ) : null}
 
             <div className={`rounded-[26px] border p-3 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-              <textarea
+              <Textarea
                 value={command}
                 onChange={(event) => setCommand(event.target.value)}
                 onKeyDown={(event) => {
@@ -361,21 +366,21 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                 }}
                 rows={3}
                 placeholder="Digite algo como: cria um compromisso amanhã às 14h com João"
-                className={`w-full resize-none border-0 bg-transparent text-sm outline-none ${isDark ? 'text-zinc-100 placeholder:text-zinc-500' : 'text-zinc-950 placeholder:text-zinc-400'}`}
+                className={`w-full resize-none border-0 bg-transparent text-sm outline-none shadow-none focus-visible:border-0 focus-visible:ring-0 ${isDark ? 'text-zinc-100 placeholder:text-zinc-500' : 'text-zinc-950 placeholder:text-zinc-400'}`}
               />
               <div className="mt-3 flex items-center justify-between gap-3">
                 <p className={`text-[11px] ${isDark ? 'text-zinc-500' : 'text-zinc-400'}`}>
                   Enter envia. Shift + Enter quebra linha.
                 </p>
-                <button
+                <Button
                   type="button"
                   onClick={() => submitCommand(command)}
                   disabled={!command.trim() || sending || !available}
-                  className={`inline-flex h-11 items-center justify-center gap-2 rounded-2xl px-4 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
+                  className={`h-11 w-auto gap-2 rounded-2xl px-4 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
                 >
                   {sending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <SendHorizontal className="h-4 w-4" />}
                   Enviar
-                </button>
+                </Button>
               </div>
             </div>
           </div>

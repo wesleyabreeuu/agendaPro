@@ -42,20 +42,12 @@ function HabitCard({ habit, onComplete, onEdit, onDelete, busy }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => onEdit(habit)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 transition hover:bg-zinc-50"
-          >
+          <Button type="button" onClick={() => onEdit(habit)} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50">
             <Pencil className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(habit.id)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-200 bg-white text-red-600 transition hover:bg-red-50"
-          >
+          </Button>
+          <Button type="button" onClick={() => onDelete(habit.id)} variant="outline" size="icon-lg" className="rounded-xl border-red-200 bg-white text-red-600 hover:bg-red-50">
             <Trash2 className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -235,11 +227,11 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
             </div>
             <form onSubmit={submitForm} className="mt-5 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-900">Nome</label>
+                <Label className="text-zinc-900">Nome</Label>
                 <Input value={form.nome} onChange={(event) => setForm((current) => ({ ...current, nome: event.target.value }))} placeholder="Ex.: Leitura" required />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-900">Descricao</label>
+                <Label className="text-zinc-900">Descricao</Label>
                 <Textarea value={form.descricao} onChange={(event) => setForm((current) => ({ ...current, descricao: event.target.value }))} className="min-h-28" placeholder="Opcional" />
               </div>
               <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-700">

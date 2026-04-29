@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { router } from '@inertiajs/react'
 import AppLayout from '../layouts/AppLayout'
+import { Button } from '@/components/ui'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../components/chart'
 import { useTheme } from '../contexts/ThemeContext'
 import {
@@ -101,10 +102,11 @@ function PeriodFilter({ value, onChange, isDark = false }) {
   return (
     <div className={`inline-flex items-center gap-1 rounded-full border p-1 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
       {options.map((option) => (
-        <button
+        <Button
           key={option.value}
           type="button"
           onClick={() => onChange(option.value)}
+          variant="ghost"
           className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
             value === option.value
               ? isDark
@@ -116,7 +118,7 @@ function PeriodFilter({ value, onChange, isDark = false }) {
           }`}
         >
           {option.label}
-        </button>
+        </Button>
       ))}
     </div>
   )
@@ -136,11 +138,7 @@ function MiniList({ items, empty, renderItem, isDark = false }) {
 
 function QuickLink({ label, helper, onClick, isDark = false }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full rounded-2xl border px-4 py-4 text-left transition ${isDark ? 'border-zinc-700 bg-zinc-950 hover:bg-zinc-900' : 'border-zinc-200 bg-zinc-50/70 hover:bg-zinc-100'}`}
-    >
+    <Button type="button" onClick={onClick} variant="outline" className={`h-auto w-full justify-start rounded-2xl px-4 py-4 text-left transition ${isDark ? 'border-zinc-700 bg-zinc-950 hover:bg-zinc-900' : 'border-zinc-200 bg-zinc-50/70 hover:bg-zinc-100'}`}>
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{label}</p>
@@ -148,7 +146,7 @@ function QuickLink({ label, helper, onClick, isDark = false }) {
         </div>
         <ArrowRight className={`h-4 w-4 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`} />
       </div>
-    </button>
+    </Button>
   )
 }
 
@@ -298,7 +296,7 @@ export default function Dashboard() {
           <SectionCard
             title="Seu dia"
             subtitle="Agenda, rotinas e tarefas que precisam entrar em execução."
-            action={<button type="button" onClick={openCompromissos} className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>Abrir calendário <ArrowRight className="h-3.5 w-3.5" /></button>}
+            action={<Button type="button" onClick={openCompromissos} variant="outline" className={`h-auto gap-2 rounded-full px-3 py-1.5 text-xs font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>Abrir calendário <ArrowRight className="h-3.5 w-3.5" /></Button>}
             isDark={isDark}
           >
             <div className="grid gap-5 lg:grid-cols-3">
@@ -320,7 +318,7 @@ export default function Dashboard() {
               <div>
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Rotinas de hoje</p>
-                  <button type="button" onClick={openRotinas} className={`text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>abrir</button>
+                  <Button type="button" onClick={openRotinas} variant="link" className={`h-auto p-0 text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>abrir</Button>
                 </div>
                 <div className={`mb-3 rounded-2xl border p-4 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Progresso do dia</p>
@@ -352,7 +350,7 @@ export default function Dashboard() {
               <div>
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <p className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Tarefas prioritárias</p>
-                  <button type="button" onClick={openKanban} className={`text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>abrir</button>
+                  <Button type="button" onClick={openKanban} variant="link" className={`h-auto p-0 text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>abrir</Button>
                 </div>
                 <MiniList
                   items={dashboard?.tarefas?.pendentes?.items || []}

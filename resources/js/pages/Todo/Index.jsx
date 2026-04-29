@@ -266,64 +266,42 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                 {rows.length ? rows.map((row) => (
                   <TableRow key={row.id} className={`align-top ${isDark ? 'border-zinc-700 hover:bg-zinc-900/70' : ''}`}>
                     <TableCell className="py-4">
-                      <input
-                        type="time"
-                        value={row.hora || ''}
-                        onChange={(e) => updateRow(row.id, { hora: e.target.value })}
-                        className={tableInputClassName()}
-                      />
+                      <Input type="time" value={row.hora || ''} onChange={(e) => updateRow(row.id, { hora: e.target.value })} className={tableInputClassName()} />
                     </TableCell>
                     <TableCell className="py-4">
-                      <input
-                        value={row.descricao || ''}
-                        onChange={(e) => updateRow(row.id, { descricao: e.target.value })}
-                        className={tableInputClassName('min-w-[240px]')}
-                      />
+                      <Input value={row.descricao || ''} onChange={(e) => updateRow(row.id, { descricao: e.target.value })} className={tableInputClassName('min-w-[240px]')} />
                     </TableCell>
                     <TableCell className="py-4">
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button type="button" className={`flex min-w-[132px] items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium ${statusTone(row.status)}`}>
+                          <Button type="button" variant="outline" className={`min-w-[132px] rounded-full px-3 py-1.5 text-sm font-medium ${statusTone(row.status)}`}>
                             <span className={`h-2.5 w-2.5 rounded-full ${statusMeta(row.status).dot}`} />
                             <span className="truncate">{statusMeta(row.status).label}</span>
                             <ChevronDown className="ml-auto h-3.5 w-3.5 opacity-70" />
-                          </button>
+                          </Button>
                         </PopoverTrigger>
                         <PopoverContent align="start" className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
                           <div className="space-y-1">
                             {statusOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => handleStatusChange(row, option.value)}
-                                className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ${row.status === option.value ? option.tone : isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-700 hover:bg-zinc-50'}`}
-                              >
+                              <Button key={option.value} type="button" variant="ghost" onClick={() => handleStatusChange(row, option.value)} className={`h-auto w-full justify-start rounded-xl px-3 py-2 text-left text-sm ${row.status === option.value ? option.tone : isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-700 hover:bg-zinc-50'}`}>
                                 <span className={`h-2.5 w-2.5 rounded-full ${option.dot}`} />
                                 <span className="truncate">{option.label}</span>
-                              </button>
+                              </Button>
                             ))}
                           </div>
                         </PopoverContent>
                       </Popover>
                     </TableCell>
                     <TableCell className="py-4">
-                      <select
-                        value={row.urgencia}
-                        onChange={(e) => updateRow(row.id, { urgencia: e.target.value })}
-                        className={tableInputClassName('min-w-[130px]')}
-                      >
+                      <Select value={row.urgencia} onChange={(e) => updateRow(row.id, { urgencia: e.target.value })} className={tableInputClassName('min-w-[130px]')}>
                         {urgencyOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                      </select>
+                      </Select>
                     </TableCell>
                     <TableCell className="py-4">
-                      <button
-                        type="button"
-                        onClick={() => openObservationModal(row)}
-                        className="inline-flex h-10 min-w-[132px] items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-700 shadow-sm transition hover:bg-zinc-50"
-                      >
+                      <Button type="button" onClick={() => openObservationModal(row)} variant="outline" className="h-10 min-w-[132px] gap-2 rounded-xl border-zinc-200 bg-white px-3 text-sm text-zinc-700 shadow-sm hover:bg-zinc-50">
                         <MessageSquareText className="h-4 w-4" />
                         {row.observacao ? 'Ver nota' : 'Adicionar'}
-                      </button>
+                      </Button>
                     </TableCell>
                     <TableCell className="py-4">
                       <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-sm">
@@ -385,13 +363,9 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                 <DialogDescription className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Observação da tarefa</DialogDescription>
                 <DialogTitle className={`mt-1 text-xl ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{observationModal.descricao}</DialogTitle>
               </DialogHeader>
-              <button
-                type="button"
-                onClick={closeObservationModal}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition ${isDark ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}
-              >
+              <Button type="button" onClick={closeObservationModal} variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50'}`}>
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="mt-5">

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '@/components/ui'
+import { Button, Input, Select } from '@/components/ui'
 
 function moeda(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0))
@@ -28,13 +28,13 @@ export default function FinanceiroContas({ contas = [] }) {
           <form onSubmit={submitConta} className="mt-5 grid gap-4">
             <Input placeholder="Nome" value={contaForm.data.nome} onChange={(e) => contaForm.setData('nome', e.target.value)} />
             <Input placeholder="Banco / instituição" value={contaForm.data.instituicao} onChange={(e) => contaForm.setData('instituicao', e.target.value)} />
-            <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={contaForm.data.tipo} onChange={(e) => contaForm.setData('tipo', e.target.value)}>
+            <Select value={contaForm.data.tipo} onChange={(e) => contaForm.setData('tipo', e.target.value)}>
               <option value="bancaria">Conta bancária</option>
               <option value="cartao">Cartão</option>
               <option value="dinheiro">Carteira / Dinheiro</option>
-            </select>
+            </Select>
             <Input type="number" step="0.01" value={contaForm.data.saldo_inicial} onChange={(e) => contaForm.setData('saldo_inicial', e.target.value)} />
-            <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar conta</button>
+            <Button className="h-10 rounded-md px-4">Salvar conta</Button>
           </form>
         </div>
 
@@ -74,7 +74,7 @@ function ContaCard({ conta }) {
         className="mt-5 grid gap-3"
       >
         <Input type="number" step="0.01" min="0.01" placeholder="Valor do depósito" value={depositoForm.data.valor} onChange={(e) => depositoForm.setData('valor', e.target.value)} />
-        <button className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Registrar depósito</button>
+        <Button variant="outline" className="h-10 rounded-md px-4">Registrar depósito</Button>
       </form>
     </div>
   )

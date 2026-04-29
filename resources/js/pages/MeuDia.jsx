@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { router } from '@inertiajs/react'
 import { Flame, ListTodo, LoaderCircle, TrendingUp, Clock3, CheckCircle2, CircleDashed, ArrowUpRight } from 'lucide-react'
 import AppLayout from '../layouts/AppLayout'
+import { Button } from '@/components/ui'
 import TimelineItem from '../components/TimelineItem'
 
 function summaryMessage(percentual) {
@@ -183,13 +184,9 @@ export default function MeuDia({ initialData = null }) {
 
               <div className="space-y-3 xl:min-w-[560px]">
                 <div className="flex flex-col items-start gap-2 xl:items-end">
-                  <button
-                    type="button"
-                    onClick={() => router.visit('/meu-dia?visao=dia')}
-                    className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50"
-                  >
+                  <Button type="button" onClick={() => router.visit('/meu-dia?visao=dia')} variant="outline" className="h-11 w-auto rounded-2xl border-zinc-200 bg-white px-4 text-sm text-zinc-700 shadow-sm hover:bg-zinc-50">
                     Fazer leitura do dia
-                  </button>
+                  </Button>
                   <p className="text-sm text-zinc-500 xl:max-w-[280px] xl:text-right">
                     Abra a visao guiada com seus proximos passos, progresso e boas do dia sempre que quiser se reorganizar.
                   </p>

@@ -49,14 +49,9 @@ export default function VerifyResetCode({ email = '', status = null, errors = {}
                 <Button type="submit" disabled={processing}>Validar codigo</Button>
               </form>
               <div className="mt-4 flex flex-col gap-3 text-center text-sm text-zinc-500">
-                <button
-                  type="button"
-                  onClick={resendCode}
-                  disabled={resendForm.processing}
-                  className="underline underline-offset-4 text-zinc-900"
-                >
+                <Button type="button" onClick={resendCode} disabled={resendForm.processing} variant="link" className="h-auto p-0 text-zinc-900">
                   Reenviar codigo
-                </button>
+                </Button>
                 <Link href="/login" className="underline underline-offset-4 text-zinc-900">Voltar para o login</Link>
               </div>
             </CardContent>

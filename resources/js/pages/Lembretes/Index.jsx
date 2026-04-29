@@ -63,11 +63,12 @@ export default function LembretesIndex({ lembretes, proximos }) {
               <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Próximos disparos</h3>
               <div className="mt-5 space-y-4">
                 {proximos.length ? proximos.map((item) => (
-                  <button
+                  <Button
                     key={item.id}
                     type="button"
                     onClick={() => setSelectedUpcoming(item)}
-                    className="block w-full rounded-2xl border border-zinc-200 p-4 text-left transition hover:bg-zinc-50"
+                    variant="outline"
+                    className="h-auto w-full justify-start rounded-2xl p-4 text-left transition hover:bg-zinc-50"
                   >
                     <p className="font-medium text-zinc-950">{item.titulo_exibicao}</p>
                     <p className="mt-1 text-sm text-zinc-500">{item.descricao_exibicao || 'Sem descrição complementar.'}</p>
@@ -75,7 +76,7 @@ export default function LembretesIndex({ lembretes, proximos }) {
                       <Clock3 className="h-4 w-4" />
                       {item.momento_disparo || 'Sem horário'}
                     </p>
-                  </button>
+                  </Button>
                 )) : <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-500">Nenhum lembrete pendente no momento.</div>}
               </div>
             </div>
@@ -101,10 +102,10 @@ export default function LembretesIndex({ lembretes, proximos }) {
                     <TableCell>
                       <HoverCard openDelay={120}>
                         <HoverCardTrigger asChild>
-                          <button type="button" className="text-left">
+                          <Button type="button" variant="ghost" className="h-auto justify-start p-0 text-left hover:bg-transparent">
                             <div className="font-medium text-zinc-950">{lembrete.titulo_exibicao}</div>
                             <div className="text-zinc-500">{lembrete.categoria || 'Sem categoria'}</div>
-                          </button>
+                          </Button>
                         </HoverCardTrigger>
                         <HoverCardContent align="start" className="w-80 space-y-3">
                           <div>

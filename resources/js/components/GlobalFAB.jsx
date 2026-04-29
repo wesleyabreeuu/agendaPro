@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { router } from '@inertiajs/react'
+import { Button } from '@/components/ui'
 import { Activity, BellPlus, CalendarPlus2, CheckSquare2, FolderKanban, Plus, X } from 'lucide-react'
 
 export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
@@ -38,32 +39,34 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
         const Icon = item.icon
 
         return (
-          <button
+          <Button
             key={item.key}
             type="button"
             onClick={() => {
               setOpen(false)
               router.visit(item.href)
             }}
-            className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-lg transition hover:-translate-y-0.5"
+            variant="outline"
+            className="h-auto gap-3 rounded-2xl border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-lg transition hover:-translate-y-0.5"
             style={{ transitionDelay: `${index * 25}ms` }}
           >
             <span>{item.label}</span>
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 text-white">
               <Icon className="h-4 w-4" />
             </span>
-          </button>
+          </Button>
         )
       }) : null}
 
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-950 text-white shadow-[0_18px_38px_rgba(24,24,27,0.26)] transition hover:scale-[1.03]"
+        size="icon-lg"
+        className="h-14 w-14 rounded-full shadow-[0_18px_38px_rgba(24,24,27,0.26)] transition hover:scale-[1.03]"
         aria-label={open ? 'Fechar ações rápidas' : 'Abrir ações rápidas'}
       >
         {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-      </button>
+      </Button>
     </div>
   )
 }

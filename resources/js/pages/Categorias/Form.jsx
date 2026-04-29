@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Input } from '@/components/ui'
+import { Button, Input, Label } from '@/components/ui'
 
 export default function CategoriasForm({ categoria = null, errors = {} }) {
   const editing = Boolean(categoria?.id)
@@ -21,13 +21,15 @@ export default function CategoriasForm({ categoria = null, errors = {} }) {
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={submit} className="grid gap-6">
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Nome</label>
+            <Label className="text-zinc-900">Nome</Label>
             <Input value={data.nome} onChange={(e) => setData('nome', e.target.value)} />
             {errors.nome ? <p className="text-sm text-red-600">{errors.nome}</p> : null}
           </div>
           <div className="flex gap-3">
-            <button disabled={processing} className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar</button>
-            <Link href="/categorias" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
+            <Button disabled={processing} className="h-10 w-auto rounded-md px-4">Salvar</Button>
+            <Button asChild variant="outline" className="h-10 w-auto rounded-md px-4">
+              <Link href="/categorias">Cancelar</Link>
+            </Button>
           </div>
         </form>
       </div>

@@ -16,7 +16,7 @@ import {
   SquarePen,
   X,
 } from 'lucide-react'
-import { Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Select, Textarea } from '@/components/ui'
+import { Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Label, Select, Textarea } from '@/components/ui'
 
 const boardBackgrounds = {
   violet: 'bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]',
@@ -254,16 +254,16 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-semibold tracking-tight">{board.nome}</h2>
-              <button type="button" onClick={() => setEditingBoard(true)} className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'}`}>
+              <Button type="button" onClick={() => setEditingBoard(true)} variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'}`}>
                 <SquarePen className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
             <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{board.descricao || 'Organize listas e cartões como em um quadro de trabalho visual.'}</p>
           </div>
 
-          <Link href="/kanban" className={`inline-flex h-11 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
-            Voltar aos quadros
-          </Link>
+          <Button asChild variant="outline" className={`h-11 w-auto rounded-xl px-4 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
+            <Link href="/kanban">Voltar aos quadros</Link>
+          </Button>
         </div>
 
         <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
@@ -321,7 +321,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     className={`w-full rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${draggedTask?.id === task.id ? 'opacity-60' : ''} ${isDark ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <button type="button" onClick={() => openCard(task)} className="min-w-0 flex-1 text-left">
+                      <Button type="button" variant="ghost" onClick={() => openCard(task)} className="h-auto min-w-0 flex-1 justify-start p-0 text-left hover:bg-transparent">
                         <div className="flex flex-wrap gap-1.5">
                           {(task.etiquetas || []).slice(0, 3).map((etiqueta, index) => (
                             <span key={`${etiqueta.nome}-${index}`} className={`rounded-md px-2 py-1 text-[11px] font-medium ${isDark ? 'text-slate-950' : 'text-zinc-900'}`} style={{ backgroundColor: etiqueta.cor }}>
@@ -354,19 +354,21 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                           ) : null}
                           <span className={`rounded-md px-2 py-1 capitalize ${urgencyTone(task.urgencia)}`}>{task.urgencia}</span>
                         </div>
-                      </button>
+                      </Button>
 
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="icon"
                         onClick={(e) => {
                           e.stopPropagation()
                           deleteTask(task.id)
                         }}
-                        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400 hover:bg-zinc-800' : 'border-red-200 bg-white text-red-600 hover:bg-red-50'}`}
+                        className={`shrink-0 rounded-lg ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400 hover:bg-zinc-800' : 'border-red-200 bg-white text-red-600 hover:bg-red-50'}`}
                         title="Excluir cartão"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
 
                     <div className={`mt-4 border-t pt-3 ${isDark ? 'border-zinc-700' : 'border-zinc-100'}`}>
@@ -397,14 +399,14 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                   placeholder="Adicionar um cartão"
                   className={`border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0 ${isDark ? 'text-zinc-100 placeholder:text-zinc-400' : 'text-zinc-950 placeholder:text-zinc-500'}`}
                 />
-                <button
+                <Button
                   type="submit"
                   onClick={() => taskForm.setData('list_key', list.key)}
-                  className={`mt-3 inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
+                  className={`mt-3 h-10 gap-2 rounded-xl px-4 text-sm ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
                 >
                   <Plus className="h-4 w-4" />
                   Adicionar cartão
-                </button>
+                </Button>
               </form>
             </section>
           ))}
@@ -414,14 +416,14 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
             <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie colunas como no Trello para separar o fluxo do quadro.</p>
             <div className="mt-4 space-y-3">
               <Input value={newListTitle} onChange={(e) => setNewListTitle(e.target.value)} placeholder="Nome da lista" />
-              <button type="button" onClick={addList} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
+              <Button type="button" onClick={addList} className="h-10 w-auto gap-2 rounded-xl px-4 shadow-sm">
                 <Plus className="h-4 w-4" />
                 Criar lista
-              </button>
-              <button type="button" onClick={saveBoard} className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+              </Button>
+              <Button type="button" onClick={saveBoard} variant="outline" className={`h-10 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
                 <Save className="h-4 w-4" />
                 Salvar quadro
-              </button>
+              </Button>
             </div>
           </section>
         </div>
@@ -434,22 +436,22 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
               <DialogHeader>
                 <DialogTitle className="text-xl">Editar quadro</DialogTitle>
               </DialogHeader>
-              <button type="button" onClick={() => setEditingBoard(false)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-600">
+              <Button type="button" onClick={() => setEditingBoard(false)} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 text-zinc-600">
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="mt-5 grid gap-4">
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-zinc-900">Nome</label>
+                <Label className="text-zinc-900">Nome</Label>
                 <Input value={boardForm.data.nome} onChange={(e) => boardForm.setData('nome', e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-zinc-900">Descrição</label>
+                <Label className="text-zinc-900">Descrição</Label>
                 <Textarea className="min-h-24" value={boardForm.data.descricao} onChange={(e) => boardForm.setData('descricao', e.target.value)} />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium text-zinc-900">Fundo</label>
+                <Label className="text-zinc-900">Fundo</Label>
                 <Select value={boardForm.data.background_style} onChange={(e) => boardForm.setData('background_style', e.target.value)}>
                   {backgroundOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                 </Select>
@@ -457,13 +459,13 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
             </div>
 
             <DialogFooter className="mt-6">
-              <button type="button" onClick={() => setEditingBoard(false)} className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
+              <Button type="button" onClick={() => setEditingBoard(false)} variant="outline" className="h-10 w-auto rounded-xl border-zinc-200 bg-white px-4 text-zinc-900">
                 Cancelar
-              </button>
-              <button type="button" onClick={saveBoard} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white">
+              </Button>
+              <Button type="button" onClick={saveBoard} className="h-10 w-auto gap-2 rounded-xl px-4">
                 <Save className="h-4 w-4" />
                 Salvar
-              </button>
+              </Button>
             </DialogFooter>
           </DialogContent>
         ) : null}
@@ -504,22 +506,22 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     </div>
 
                     <div className="mt-5 flex flex-wrap gap-2">
-                      <button type="button" onClick={() => updateActiveCard({ etiquetas: ensureLabel(activeCard) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+                      <Button type="button" onClick={() => updateActiveCard({ etiquetas: ensureLabel(activeCard) })} variant="outline" className="h-10 w-auto gap-2 rounded-xl border-zinc-200 bg-white px-4 text-zinc-700 hover:bg-zinc-50">
                         <Plus className="h-4 w-4" />
                         Adicionar
-                      </button>
-                      <button type="button" onClick={() => updateActiveCard({ data_limite: activeCard.data_limite || new Date().toISOString().slice(0, 10) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+                      </Button>
+                      <Button type="button" onClick={() => updateActiveCard({ data_limite: activeCard.data_limite || new Date().toISOString().slice(0, 10) })} variant="outline" className="h-10 w-auto gap-2 rounded-xl border-zinc-200 bg-white px-4 text-zinc-700 hover:bg-zinc-50">
                         <CalendarDays className="h-4 w-4" />
                         Datas
-                      </button>
-                      <button type="button" onClick={() => updateActiveCard({ checklist: ensureChecklist(activeCard) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+                      </Button>
+                      <Button type="button" onClick={() => updateActiveCard({ checklist: ensureChecklist(activeCard) })} variant="outline" className="h-10 w-auto gap-2 rounded-xl border-zinc-200 bg-white px-4 text-zinc-700 hover:bg-zinc-50">
                         <CheckSquare className="h-4 w-4" />
                         Checklist
-                      </button>
-                      <button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+                      </Button>
+                      <Button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} variant="outline" className="h-10 w-auto gap-2 rounded-xl border-zinc-200 bg-white px-4 text-zinc-700 hover:bg-zinc-50">
                         <Paperclip className="h-4 w-4" />
                         Anexo
-                      </button>
+                      </Button>
                     </div>
 
                     <div className="mt-6">
@@ -530,9 +532,9 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                             <div className="flex items-center gap-2">
                               <input type="color" value={etiqueta.cor} onChange={(e) => updateActiveCard({ etiquetas: activeCard.etiquetas.map((item, itemIndex) => itemIndex === index ? { ...item, cor: e.target.value } : item) })} className="h-10 w-12 rounded-xl border border-zinc-200 bg-white p-1" />
                               <Input value={etiqueta.nome} onChange={(e) => updateActiveCard({ etiquetas: activeCard.etiquetas.map((item, itemIndex) => itemIndex === index ? { ...item, nome: e.target.value } : item) })} placeholder="Nome da etiqueta" className="min-w-[180px] rounded-xl" />
-                              <button type="button" onClick={() => updateActiveCard({ etiquetas: activeCard.etiquetas.filter((_, itemIndex) => itemIndex !== index) })} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-500 transition hover:bg-zinc-50">
+                              <Button type="button" onClick={() => updateActiveCard({ etiquetas: activeCard.etiquetas.filter((_, itemIndex) => itemIndex !== index) })} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 text-zinc-500 hover:bg-zinc-50">
                                 <X className="h-4 w-4" />
-                              </button>
+                              </Button>
                             </div>
                             {etiqueta.nome ? (
                               <div className="mt-3">
@@ -544,17 +546,17 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                           </div>
                         ))}
                         {!activeCard.etiquetas?.length ? (
-                          <button type="button" onClick={() => updateActiveCard({ etiquetas: ensureLabel(activeCard) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+                          <Button type="button" onClick={() => updateActiveCard({ etiquetas: ensureLabel(activeCard) })} variant="outline" className="h-10 w-auto gap-2 rounded-xl border-zinc-200 bg-white px-4 text-zinc-700 hover:bg-zinc-50">
                             <Plus className="h-4 w-4" />
                             Adicionar etiqueta
-                          </button>
+                          </Button>
                         ) : null}
                       </div>
                     </div>
                   </div>
-                  <button type="button" onClick={() => setActiveCard(null)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 text-zinc-600">
+                  <Button type="button" onClick={() => setActiveCard(null)} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 text-zinc-600">
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="mt-6 space-y-6">
@@ -580,10 +582,10 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                           <Input value={item.titulo} onChange={(e) => updateActiveCard({ checklist: activeCard.checklist.map((check, checkIndex) => checkIndex === index ? { ...check, titulo: e.target.value } : check) })} className="border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0" placeholder="Item do checklist" />
                         </label>
                       ))}
-                      <button type="button" onClick={() => updateActiveCard({ checklist: ensureChecklist(activeCard) })} className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50">
+                      <Button type="button" onClick={() => updateActiveCard({ checklist: ensureChecklist(activeCard) })} variant="outline" className="h-10 w-auto gap-2 rounded-xl border-zinc-200 bg-white px-4 text-zinc-700 hover:bg-zinc-50">
                         <Plus className="h-4 w-4" />
                         Adicionar checklist
-                      </button>
+                      </Button>
                     </div>
                   </section>
                 </div>
@@ -617,10 +619,10 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                         </div>
                       ))}
                       {!activeCard.anexos?.length ? (
-                        <button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+                        <Button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} variant="outline" className={`h-10 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
                           <Link2 className="h-4 w-4" />
                           Adicionar anexo
-                        </button>
+                        </Button>
                       ) : null}
                     </div>
                   </section>
@@ -633,14 +635,14 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                           {cardActionError}
                         </div>
                       ) : null}
-                      <button type="button" onClick={saveActiveCard} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
+                      <Button type="button" onClick={saveActiveCard} className="h-11 w-auto gap-2 rounded-xl px-4 shadow-sm">
                         <Save className="h-4 w-4" />
                         Salvar cartão
-                      </button>
-                      <button type="button" onClick={() => deleteTask(activeCard.id, { closeModal: true })} className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-950 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
+                      </Button>
+                      <Button type="button" onClick={() => deleteTask(activeCard.id, { closeModal: true })} variant="outline" className={`h-11 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-red-500/40 bg-zinc-950 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
                         <X className="h-4 w-4" />
                         Excluir cartão
-                      </button>
+                      </Button>
                     </div>
                   </section>
                 </div>

@@ -3,7 +3,7 @@ import { Link, router } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import { Pencil, PauseCircle, PlayCircle, Trash2 } from 'lucide-react'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select } from '@/components/ui'
+import { Button, Input, Select } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
   CATEGORY_OPTIONS,
@@ -75,12 +75,12 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
               <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Filtre suas rotinas por área da vida, dificuldade, frequência e status. O objetivo aqui é enxergar o sistema inteiro, não só o dia de hoje.</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link href="/rotinas/hoje" className={`inline-flex h-11 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
-                Ver rotinas de hoje
-              </Link>
-              <Link href="/rotinas/criar" className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
-                Nova rotina
-              </Link>
+              <Button asChild variant="outline" className={`h-11 w-auto rounded-xl px-4 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : ''}`}>
+                <Link href="/rotinas/hoje">Ver rotinas de hoje</Link>
+              </Button>
+              <Button asChild className="h-11 w-auto rounded-xl px-4 shadow-sm">
+                <Link href="/rotinas/criar">Nova rotina</Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -114,8 +114,8 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
             </Select>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
-            <button className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white">Aplicar filtros</button>
-            <button type="button" onClick={resetFilters} className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>Limpar</button>
+            <Button className="h-10 w-auto rounded-xl px-4">Aplicar filtros</Button>
+            <Button type="button" onClick={resetFilters} variant="outline" className={`h-10 w-auto rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : ''}`}>Limpar</Button>
           </div>
         </form>
 
@@ -135,15 +135,17 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Link href={`/rotinas/${rotina.id}/editar`} className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-700'}`}>
-                    <Pencil className="h-4 w-4" />
-                  </Link>
-                  <button type="button" onClick={() => toggleRotina(rotina.id)} className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border ${rotina.ativo ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
+                  <Button asChild variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-700'}`}>
+                    <Link href={`/rotinas/${rotina.id}/editar`}>
+                      <Pencil className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button type="button" onClick={() => toggleRotina(rotina.id)} variant="outline" size="icon-lg" className={`rounded-xl ${rotina.ativo ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
                     {rotina.ativo ? <PauseCircle className="h-4 w-4" /> : <PlayCircle className="h-4 w-4" />}
-                  </button>
-                  <button type="button" onClick={() => destroyRotina(rotina.id)} className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-red-200 bg-red-50 text-red-600">
+                  </Button>
+                  <Button type="button" onClick={() => destroyRotina(rotina.id)} variant="outline" size="icon-lg" className="rounded-xl border-red-200 bg-red-50 text-red-600">
                     <Trash2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               </div>
 

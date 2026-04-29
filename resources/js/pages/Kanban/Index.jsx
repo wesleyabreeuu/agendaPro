@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
 import { LayoutTemplate, Plus } from 'lucide-react'
-import { Input, Select, Textarea } from '@/components/ui'
+import { Button, Input, Label, Select, Textarea } from '@/components/ui'
 
 const boardBackgrounds = {
   violet: 'bg-[radial-gradient(circle_at_top_left,#a78bfa_0%,#818cf8_40%,#e5e7eb_100%)]',
@@ -60,27 +60,27 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-zinc-900">Nome</label>
+                  <Label className="text-zinc-900">Nome</Label>
                   <Input value={data.nome} onChange={(e) => setData('nome', e.target.value)} placeholder="Ex.: Roadmap de Produto" />
                   {errors.nome ? <p className="text-sm text-red-600">{errors.nome}</p> : null}
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-zinc-900">Descrição</label>
+                  <Label className="text-zinc-900">Descrição</Label>
                   <Textarea className="min-h-24" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} placeholder="Uma frase curta sobre o contexto do quadro" />
                 </div>
 
                 <div className="grid gap-2">
-                  <label className="text-sm font-medium text-zinc-900">Fundo</label>
+                  <Label className="text-zinc-900">Fundo</Label>
                   <Select value={data.background_style} onChange={(e) => setData('background_style', e.target.value)}>
                     {backgroundOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </Select>
                 </div>
 
-                <button disabled={processing} className="mt-auto inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
+                <Button disabled={processing} className="mt-auto h-11 gap-2 rounded-xl px-4 shadow-sm">
                   <Plus className="h-4 w-4" />
                   Criar quadro
-                </button>
+                </Button>
               </form>
             </div>
           </div>

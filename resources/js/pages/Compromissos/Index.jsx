@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { Button } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 function formatPermissionLabel(permission) {
@@ -73,18 +74,14 @@ function CompromissoCard({ compromisso }) {
 
       <div className="mt-5 flex flex-wrap gap-2">
         {compromisso.pode_editar ? (
-          <Link href={`/compromissos/${compromisso.id}/edit`} className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
-            Editar
-          </Link>
+          <Button asChild variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+            <Link href={`/compromissos/${compromisso.id}/edit`}>Editar</Link>
+          </Button>
         ) : null}
         {compromisso.pode_excluir ? (
-          <button
-            type="button"
-            onClick={() => router.delete(`/compromissos/${compromisso.id}`)}
-            className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}
-          >
+          <Button type="button" onClick={() => router.delete(`/compromissos/${compromisso.id}`)} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
             Excluir
-          </button>
+          </Button>
         ) : null}
       </div>
     </div>

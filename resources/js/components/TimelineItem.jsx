@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button } from '@/components/ui'
 import { CalendarDays, Check, Clock3, HeartPulse, ListChecks, BellRing, FolderKanban, ArrowRight, CheckSquare2 } from 'lucide-react'
 
 const typeStyles = {
@@ -83,35 +84,40 @@ export default function TimelineItem({
           </span>
 
           {canComplete ? (
-            <button
+            <Button
               type="button"
               onClick={onComplete}
-              className="inline-flex h-8 items-center justify-center rounded-lg bg-zinc-950 px-3 text-xs font-medium text-white"
+              size="sm"
+              className="h-8 w-auto rounded-lg px-3 text-xs"
             >
               <Check className="mr-1.5 h-3.5 w-3.5" />
               Concluir
-            </button>
+            </Button>
           ) : null}
 
           {canDelay ? (
-            <button
+            <Button
               type="button"
               onClick={onDelay}
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700"
+              variant="outline"
+              size="sm"
+              className="h-8 w-auto rounded-lg border-zinc-200 bg-white px-3 text-xs text-zinc-700"
             >
               Adiar
-            </button>
+            </Button>
           ) : null}
 
           {onOpen ? (
-            <button
+            <Button
               type="button"
               onClick={onOpen}
-              className="inline-flex h-8 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700"
+              variant="outline"
+              size="sm"
+              className="h-8 w-auto rounded-lg border-zinc-200 bg-white px-3 text-xs text-zinc-700"
             >
               Abrir
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-            </button>
+            </Button>
           ) : null}
         </div>
       </div>

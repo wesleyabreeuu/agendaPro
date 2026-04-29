@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
+import { Button } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria = [], metasProgresso = [], ultimasAtividades = [] }) {
@@ -28,11 +29,11 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
               </span>
               {strava.connected ? (
                 <>
-                  <button type="button" onClick={() => router.post('/integracoes/strava/sync')} className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>Sincronizar agora</button>
-                  <button type="button" onClick={() => router.post('/integracoes/strava/disconnect')} className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>Desconectar</button>
+                  <Button type="button" onClick={() => router.post('/integracoes/strava/sync')} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>Sincronizar agora</Button>
+                  <Button type="button" onClick={() => router.post('/integracoes/strava/disconnect')} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>Desconectar</Button>
                 </>
               ) : (
-                <a href="/integracoes/strava/connect" className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Conectar Strava</a>
+                <Button asChild className="h-10 w-auto rounded-md px-4"><a href="/integracoes/strava/connect">Conectar Strava</a></Button>
               )}
             </div>
           </div>

@@ -2,6 +2,7 @@ import React from 'react'
 import { router } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
+import { Button, Select } from '@/components/ui'
 
 function moeda(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor || 0))
@@ -25,32 +26,32 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
     <AppLayout title="Relatórios Financeiros">
       <div className="space-y-6">
         <form onSubmit={submit} className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-5">
-          <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={form.data.ano} onChange={(e) => form.setData('ano', e.target.value)}>
+          <Select value={form.data.ano} onChange={(e) => form.setData('ano', e.target.value)}>
             {Array.from({ length: 7 }, (_, i) => new Date().getFullYear() - 5 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
-          </select>
-          <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={form.data.mes} onChange={(e) => form.setData('mes', e.target.value)}>
+          </Select>
+          <Select value={form.data.mes} onChange={(e) => form.setData('mes', e.target.value)}>
             <option value="">Todos os meses</option>
             {Array.from({ length: 12 }, (_, i) => i + 1).map((mes) => <option key={mes} value={mes}>{mes}</option>)}
-          </select>
-          <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={form.data.tipo} onChange={(e) => form.setData('tipo', e.target.value)}>
+          </Select>
+          <Select value={form.data.tipo} onChange={(e) => form.setData('tipo', e.target.value)}>
             <option value="">Todos os tipos</option>
             <option value="receita">Receitas</option>
             <option value="despesa">Despesas</option>
-          </select>
+          </Select>
           {financeiroAvancado ? (
-            <select className="h-10 rounded-md border border-zinc-200 px-3 text-sm" value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+            <Select value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
               <option value="">Todos os status</option>
               <option value="pendente">Pendentes</option>
               <option value="pago">Pagos</option>
               <option value="recebido">Recebidos</option>
-            </select>
+            </Select>
           ) : <div />}
           <div className="flex gap-3">
-            <select className="h-10 flex-1 rounded-md border border-zinc-200 px-3 text-sm" value={form.data.categoria} onChange={(e) => form.setData('categoria', e.target.value)}>
+            <Select className="flex-1" value={form.data.categoria} onChange={(e) => form.setData('categoria', e.target.value)}>
               <option value="">Todas as categorias</option>
               {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
-            </select>
-            <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Filtrar</button>
+            </Select>
+            <Button className="h-10 w-auto rounded-md px-4">Filtrar</Button>
           </div>
         </form>
 

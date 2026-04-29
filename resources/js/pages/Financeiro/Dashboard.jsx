@@ -242,7 +242,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
                 <Input type="number" step="0.01" min="0" placeholder="Já guardado" value={metaEconomiaForm.data.valor_atual} onChange={(e) => metaEconomiaForm.setData('valor_atual', e.target.value)} />
                 <Input type="number" min="1" step="1" placeholder="Prazo em meses" value={metaEconomiaForm.data.meses_planejados} onChange={(e) => metaEconomiaForm.setData('meses_planejados', e.target.value)} />
               </div>
-              <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar meta</button>
+              <Button className="h-10 w-auto rounded-md px-4">Salvar meta</Button>
               {Object.keys(metaEconomiaForm.errors).length ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {Object.values(metaEconomiaForm.errors).join(' ')}
@@ -283,7 +283,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
                 <Input type="number" step="0.01" min="0" placeholder="Já guardado" value={metaBemForm.data.valor_ja_guardado} onChange={(e) => metaBemForm.setData('valor_ja_guardado', e.target.value)} />
                 <Input type="number" min="1" step="1" placeholder="Prazo em meses" value={metaBemForm.data.meses_planejados} onChange={(e) => metaBemForm.setData('meses_planejados', e.target.value)} />
               </div>
-              <button className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white">Salvar meta</button>
+              <Button className="h-10 w-auto rounded-md px-4">Salvar meta</Button>
               {Object.keys(metaBemForm.errors).length ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {Object.values(metaBemForm.errors).join(' ')}

@@ -2,7 +2,7 @@ import React from 'react'
 import { router } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Input, Select } from '@/components/ui'
+import { Button, Input, Select } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import { CATEGORY_OPTIONS, categoryBadgeStyle, categoryLabel, statusBadgeClass, statusLabel } from './support'
 
@@ -62,8 +62,8 @@ export default function RotinasHistory({ filters, summary, historico = [] }) {
             </Select>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
-            <button className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white">Aplicar filtros</button>
-            <button type="button" onClick={() => router.get('/rotinas/historico')} className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>Limpar</button>
+            <Button className="h-10 w-auto rounded-xl px-4">Aplicar filtros</Button>
+            <Button type="button" onClick={() => router.get('/rotinas/historico')} variant="outline" className={`h-10 w-auto rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : ''}`}>Limpar</Button>
           </div>
         </form>
 

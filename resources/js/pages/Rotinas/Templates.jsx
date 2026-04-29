@@ -2,6 +2,7 @@ import React from 'react'
 import { router } from '@inertiajs/react'
 import { Sparkles } from 'lucide-react'
 import AppLayout from '../../layouts/AppLayout'
+import { Button } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import { categoryBadgeStyle, categoryLabel } from './support'
 
@@ -36,10 +37,10 @@ export default function RotinasTemplates({ templates = [] }) {
                   </div>
                   <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{template.descricao}</p>
                 </div>
-                <button type="button" onClick={() => applyTemplate(template.id)} className="inline-flex h-11 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm">
+                <Button type="button" onClick={() => applyTemplate(template.id)} className="h-11 w-auto rounded-xl px-4 shadow-sm">
                   <Sparkles className="mr-2 h-4 w-4" />
                   Aplicar template
-                </button>
+                </Button>
               </div>
 
               <div className="mt-5 grid gap-3">

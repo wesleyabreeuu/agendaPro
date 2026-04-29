@@ -138,14 +138,15 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
                     {WEEKDAY_OPTIONS.map((day) => {
                       const active = form.data.dias_semana.includes(day.value)
                       return (
-                        <button
+                        <Button
                           key={day.value}
                           type="button"
                           onClick={() => toggleWeekday(day.value)}
-                          className={`rounded-full border px-3 py-2 text-sm font-medium transition ${active ? 'border-zinc-950 bg-zinc-950 text-white' : isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-700'}`}
+                          variant={active ? 'default' : 'outline'}
+                          className={`rounded-full px-3 py-2 text-sm transition ${!active && isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : !active ? 'border-zinc-200 bg-white text-zinc-700' : ''}`}
                         >
                           {day.label}
-                        </button>
+                        </Button>
                       )
                     })}
                   </div>

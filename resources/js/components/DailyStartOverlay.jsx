@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button } from '@/components/ui'
 import {
   CalendarDays,
   CheckSquare,
@@ -82,21 +83,22 @@ export default function DailyStartOverlay({
             </div>
 
             <div className="mt-5 flex flex-wrap gap-3">
-              <button
+              <Button
                 type="button"
                 onClick={onStart}
                 disabled={starting}
-                className="inline-flex h-11 items-center justify-center rounded-2xl bg-zinc-950 px-5 text-sm font-semibold text-white shadow-lg shadow-zinc-950/15 disabled:opacity-70"
+                className="h-11 w-auto rounded-2xl px-5 text-sm font-semibold shadow-lg shadow-zinc-950/15 disabled:opacity-70"
               >
                 {starting ? 'Iniciando...' : 'Começar meu dia'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={onSkip}
-                className="inline-flex h-11 items-center justify-center rounded-2xl border border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-700"
+                variant="outline"
+                className="h-11 w-auto rounded-2xl border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-700"
               >
                 Pular por hoje
-              </button>
+              </Button>
             </div>
           </section>
 

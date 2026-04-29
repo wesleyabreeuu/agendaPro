@@ -2,6 +2,7 @@ import React from 'react'
 import { router } from '@inertiajs/react'
 import { Check, CornerDownLeft, MinusCircle, Sparkles } from 'lucide-react'
 import AppLayout from '../../layouts/AppLayout'
+import { Button } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
   categoryBadgeStyle,
@@ -91,41 +92,25 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <button
-                    type="button"
-                    onClick={() => sendAction(rotina, 'concluida', 'normal')}
-                    className="inline-flex h-10 items-center justify-center rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white"
-                  >
+                  <Button type="button" onClick={() => sendAction(rotina, 'concluida', 'normal')} className="h-10 w-auto rounded-xl px-4">
                     <Check className="mr-2 h-4 w-4" />
                     Concluir
-                  </button>
+                  </Button>
                   {rotina.modo_minimo_ativo ? (
-                    <button
-                      type="button"
-                      onClick={() => sendAction(rotina, 'concluida', 'minimo')}
-                      className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}
-                    >
+                    <Button type="button" onClick={() => sendAction(rotina, 'concluida', 'minimo')} variant="outline" className={`h-10 w-auto rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : ''}`}>
                       <Sparkles className="mr-2 h-4 w-4" />
                       Modo mínimo
-                    </button>
+                    </Button>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => sendAction(rotina, 'pulada')}
-                    className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-amber-400/40 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}
-                  >
+                  <Button type="button" onClick={() => sendAction(rotina, 'pulada')} variant="outline" className={`h-10 w-auto rounded-xl px-4 ${isDark ? 'border-amber-400/40 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
                     <MinusCircle className="mr-2 h-4 w-4" />
                     Pular
-                  </button>
+                  </Button>
                   {rotina.status !== 'pendente' ? (
-                    <button
-                      type="button"
-                      onClick={() => sendAction(rotina, 'pendente')}
-                      className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}
-                    >
+                    <Button type="button" onClick={() => sendAction(rotina, 'pendente')} variant="outline" className={`h-10 w-auto rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : ''}`}>
                       <CornerDownLeft className="mr-2 h-4 w-4" />
                       Reabrir
-                    </button>
+                    </Button>
                   ) : null}
                 </div>
               </section>

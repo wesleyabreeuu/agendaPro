@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import AppLayout from '../../layouts/AppLayout'
 import { CalendarDays, ChevronLeft, ChevronRight, List, ListChecks } from 'lucide-react'
-import { Calendar, Label, RadioGroup, RadioGroupItem } from '@/components/ui'
+import { Button, Calendar, Label, RadioGroup, RadioGroupItem } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
 
 const weekdayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom']
@@ -205,13 +205,13 @@ export default function CompromissosCalendario() {
               </div>
 
               <div className={`inline-flex items-center gap-2 rounded-xl border p-1 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
-                <button type="button" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
+                <Button type="button" variant="ghost" size="icon-lg" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))} className={`rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
                   <ChevronLeft className="h-4 w-4" />
-                </button>
+                </Button>
                 <div className={`min-w-[170px] text-center text-sm font-medium capitalize ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{monthLabel(currentDate)}</div>
-                <button type="button" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
+                <Button type="button" variant="ghost" size="icon-lg" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))} className={`rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
                   <ChevronRight className="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
           </div>
