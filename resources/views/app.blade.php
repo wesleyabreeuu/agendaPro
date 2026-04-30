@@ -11,6 +11,42 @@
     <link rel="icon" type="image/svg+xml" href="/brand/agendapro-mark.svg">
     <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png">
     <link rel="manifest" href="/manifest.json">
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator) || !window.caches) {
+                return;
+            }
+
+            var cleanupKey = 'agendapro.service-worker-cleaned';
+
+            if (window.sessionStorage.getItem(cleanupKey) === 'true') {
+                return;
+            }
+
+            window.sessionStorage.setItem(cleanupKey, 'true');
+
+            window.addEventListener('load', function () {
+                Promise.all([
+                    navigator.serviceWorker.getRegistrations()
+                        .then(function (registrations) {
+                            return Promise.all(registrations.map(function (registration) {
+                                return registration.unregister();
+                            }));
+                        }),
+                    caches.keys()
+                        .then(function (keys) {
+                            return Promise.all(keys.map(function (key) {
+                                return key.indexOf('agenda-pro-') === 0 ? caches.delete(key) : Promise.resolve(false);
+                            }));
+                        }),
+                ]).then(function () {
+                    window.location.reload();
+                }).catch(function () {
+                    window.location.reload();
+                });
+            });
+        })();
+    </script>
     @viteReactRefresh
     @vite(['resources/css/app.css', 'resources/js/app.jsx'])
     @inertiaHead
