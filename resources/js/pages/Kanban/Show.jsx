@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, router } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input, Label, Select, Textarea } from '@/components/ui'
+import { Kanban, KanbanBoard, KanbanColumn, KanbanColumnHandle, KanbanItem } from '@/components/ui/kanban'
 
 const boardBackgrounds = {
   violet: 'bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)]',
@@ -72,23 +73,10 @@ function sanitizeTask(task) {
   }
 }
 
-function reorderLists(lists, draggedKey, targetKey) {
-  if (!draggedKey || !targetKey || draggedKey === targetKey) {
-    return lists
-  }
-
-  const draggedIndex = lists.findIndex((list) => list.key === draggedKey)
-  const targetIndex = lists.findIndex((list) => list.key === targetKey)
-
-  if (draggedIndex === -1 || targetIndex === -1) {
-    return lists
-  }
-
-  const nextLists = [...lists]
-  const [draggedList] = nextLists.splice(draggedIndex, 1)
-  nextLists.splice(targetIndex, 0, draggedList)
-
-  return nextLists
+function buildKanbanColumns(lists, tarefasByList) {
+  return Object.fromEntries(
+    lists.map((list) => [list.key, tarefasByList[list.key] || []])
+  )
 }
 
 export default function KanbanShow({ board, lists = [], tarefas = {}, backgroundOptions = [], errors = {} }) {
@@ -97,11 +85,8 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
   const [activeCard, setActiveCard] = useState(null)
   const [newListTitle, setNewListTitle] = useState('')
   const [editingBoard, setEditingBoard] = useState(false)
-  const [draggedListKey, setDraggedListKey] = useState(null)
-  const [dragOverListKey, setDragOverListKey] = useState(null)
-  const [draggedTask, setDraggedTask] = useState(null)
-  const [dragOverTaskListKey, setDragOverTaskListKey] = useState(null)
   const [cardActionError, setCardActionError] = useState('')
+  const [kanbanColumns, setKanbanColumns] = useState(() => buildKanbanColumns(lists, tarefas))
 
   const boardForm = useForm({
     nome: board.nome || '',
@@ -113,62 +98,23 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
   const taskForm = useForm(emptyTask(lists[0]?.key || ''))
 
   const boardLists = useMemo(() => boardForm.data.listas || lists, [boardForm.data.listas, lists])
+  const listMap = useMemo(() => Object.fromEntries(boardLists.map((list) => [list.key, list])), [boardLists])
+
+  useEffect(() => {
+    setKanbanColumns(buildKanbanColumns(boardLists, tarefas))
+  }, [boardLists, tarefas])
 
   function saveBoard() {
     boardForm.put(`/kanban/boards/${board.id}`, { preserveScroll: true, onSuccess: () => setEditingBoard(false) })
   }
 
-  function persistLists(nextLists) {
-    boardForm.transform((data) => ({ ...data, listas: nextLists }))
-    boardForm.put(`/kanban/boards/${board.id}`, {
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => setEditingBoard(false),
-      onFinish: () => {
-        boardForm.transform((data) => data)
-        setDraggedListKey(null)
-        setDragOverListKey(null)
-      },
-    })
-  }
-
   function addList() {
     if (!newListTitle.trim()) return
     const key = newListTitle.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^a-z0-9]+/g, '-')
-    boardForm.setData('listas', [...boardLists, { key: `${key || 'lista'}-${Date.now()}`, title: newListTitle.trim() }])
+    const nextKey = `${key || 'lista'}-${Date.now()}`
+    boardForm.setData('listas', [...boardLists, { key: nextKey, title: newListTitle.trim() }])
+    setKanbanColumns((current) => ({ ...current, [nextKey]: [] }))
     setNewListTitle('')
-  }
-
-  function handleListDragStart(listKey) {
-    setDraggedListKey(listKey)
-    setDragOverListKey(listKey)
-  }
-
-  function handleListDragEnter(targetKey) {
-    if (!draggedListKey || draggedListKey === targetKey) {
-      return
-    }
-
-    setDragOverListKey(targetKey)
-    boardForm.setData('listas', reorderLists(boardLists, draggedListKey, targetKey))
-  }
-
-  function handleListDrop(targetKey) {
-    const nextLists = reorderLists(boardLists, draggedListKey, targetKey)
-
-    if (!draggedListKey || draggedListKey === targetKey) {
-      setDraggedListKey(null)
-      setDragOverListKey(null)
-      return
-    }
-
-    boardForm.setData('listas', nextLists)
-    persistLists(nextLists)
-  }
-
-  function handleListDragEnd() {
-    setDraggedListKey(null)
-    setDragOverListKey(null)
   }
 
   function submitQuickTask(e) {
@@ -206,31 +152,6 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
     router.patch(`/kanban/tasks/${taskId}/status`, { list_key: listKey }, { preserveScroll: true, preserveState: true })
   }
 
-  function handleTaskDragStart(task) {
-    setDraggedTask(task)
-    setDragOverTaskListKey(task.list_key)
-  }
-
-  function handleTaskDragEnd() {
-    setDraggedTask(null)
-    setDragOverTaskListKey(null)
-  }
-
-  function handleTaskDrop(listKey) {
-    if (!draggedTask) {
-      return
-    }
-
-    const nextListKey = listKey || draggedTask.list_key
-
-    if (draggedTask.list_key !== nextListKey) {
-      moveTask(draggedTask.id, nextListKey)
-    }
-
-    setDraggedTask(null)
-    setDragOverTaskListKey(null)
-  }
-
   function deleteTask(taskId, { closeModal = false } = {}) {
     setCardActionError('')
     router.delete(`/kanban/tasks/${taskId}`, {
@@ -245,6 +166,44 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
         setCardActionError('Nao foi possivel excluir este cartao.')
       },
     })
+  }
+
+  function handleKanbanChange(nextColumns) {
+    setKanbanColumns(nextColumns)
+  }
+
+  function handleKanbanMove(event) {
+    const activeId = String(event.active.id)
+    const overId = String(event.over?.id || '')
+
+    const isColumnMove = Object.prototype.hasOwnProperty.call(kanbanColumns, activeId)
+
+    if (isColumnMove) {
+      const nextOrder = Object.keys(kanbanColumns)
+      const nextLists = nextOrder.map((key) => listMap[key]).filter(Boolean)
+
+      boardForm.setData('listas', nextLists)
+      boardForm.transform((data) => ({ ...data, listas: nextLists }))
+      boardForm.put(`/kanban/boards/${board.id}`, {
+        preserveScroll: true,
+        preserveState: true,
+        onFinish: () => {
+          boardForm.transform((data) => data)
+        },
+      })
+      return
+    }
+
+    const sourceListKey = Object.keys(kanbanColumns).find((columnKey) =>
+      (kanbanColumns[columnKey] || []).some((item) => String(item.id) === activeId)
+    )
+    const targetListKey = Object.keys(kanbanColumns).find((columnKey) =>
+      (kanbanColumns[columnKey] || []).some((item) => String(item.id) === overId)
+    ) || overId
+
+    if (sourceListKey && targetListKey && sourceListKey !== targetListKey) {
+      moveTask(activeId, targetListKey)
+    }
   }
 
   return (
@@ -266,168 +225,155 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
           </Button>
         </div>
 
-        <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
-          {boardLists.map((list) => (
-            <section
-              key={list.key}
-              onDragEnter={() => {
-                if (draggedTask) {
-                  setDragOverTaskListKey(list.key)
-                  return
-                }
+        <Kanban value={kanbanColumns} onValueChange={handleKanbanChange} onMove={handleKanbanMove}>
+          <KanbanBoard className="mt-6 gap-4 overflow-x-auto pb-4">
+            {Object.keys(kanbanColumns).map((columnKey) => {
+              const list = listMap[columnKey]
+              if (!list) return null
 
-                handleListDragEnter(list.key)
-              }}
-              onDragOver={(e) => {
-                if (draggedTask || draggedListKey) {
-                  e.preventDefault()
-                }
-              }}
-              onDrop={() => {
-                if (draggedTask) {
-                  handleTaskDrop(list.key)
-                  return
-                }
-
-                handleListDrop(list.key)
-              }}
-              className={`flex w-[320px] shrink-0 flex-col rounded-[22px] p-3 shadow-lg transition ${dragOverListKey === list.key || dragOverTaskListKey === list.key ? 'ring-2 ring-sky-300 ring-offset-2 ring-offset-transparent' : ''} ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'bg-zinc-100/90'}`}
-            >
-              <div
-                draggable
-                onDragStart={() => handleListDragStart(list.key)}
-                onDragEnd={handleListDragEnd}
-                className="mb-3 flex cursor-grab items-center justify-between gap-3 px-2 pt-1 active:cursor-grabbing"
-              >
-                <div className="flex min-w-0 items-center gap-2">
-                  <span
-                    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${isDark ? 'border-zinc-700 bg-zinc-800 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-400'}`}
-                    title="Arraste para mover a lista"
-                  >
-                    <GripVertical className="h-4 w-4" />
-                  </span>
-                  <h3 className={`truncate text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>{list.title}</h3>
-                </div>
-                <span className={`rounded-full px-2.5 py-1 text-xs shadow-sm ${isDark ? 'bg-zinc-800 text-zinc-100' : 'bg-white text-zinc-600'}`}>{(tarefas[list.key] || []).length}</span>
-              </div>
-
-              <div className="space-y-3">
-                {(tarefas[list.key] || []).map((task) => (
-                  <div
-                    key={task.id}
-                    draggable
-                    onDragStart={() => handleTaskDragStart(task)}
-                    onDragEnd={handleTaskDragEnd}
-                    className={`w-full rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${draggedTask?.id === task.id ? 'opacity-60' : ''} ${isDark ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <Button type="button" variant="ghost" onClick={() => openCard(task)} className="h-auto min-w-0 flex-1 justify-start p-0 text-left hover:bg-transparent">
-                        <div className="flex flex-wrap gap-1.5">
-                          {(task.etiquetas || []).slice(0, 3).map((etiqueta, index) => (
-                            <span key={`${etiqueta.nome}-${index}`} className={`rounded-md px-2 py-1 text-[11px] font-medium ${isDark ? 'text-slate-950' : 'text-zinc-900'}`} style={{ backgroundColor: etiqueta.cor }}>
-                              {etiqueta.nome}
-                            </span>
-                          ))}
-                        </div>
-
-                        <h4 className={`mt-3 text-[15px] font-medium leading-6 ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{task.titulo}</h4>
-                        {task.descricao ? <p className={`mt-2 line-clamp-3 text-sm leading-5 ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{task.descricao}</p> : null}
-
-                        <div className={`mt-3 flex flex-wrap items-center gap-2 text-xs ${isDark ? 'text-zinc-300' : 'text-zinc-500'}`}>
-                          {task.data_limite_label ? (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-red-600">
-                              <CalendarDays className="h-3.5 w-3.5" />
-                              {task.data_limite_label}
-                            </span>
-                          ) : null}
-                          {task.checklist_resumo?.total ? (
-                            <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
-                              <CheckSquare className="h-3.5 w-3.5" />
-                              {task.checklist_resumo.concluidos}/{task.checklist_resumo.total}
-                            </span>
-                          ) : null}
-                          {task.anexos?.length ? (
-                            <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
-                              <Paperclip className="h-3.5 w-3.5" />
-                              {task.anexos.length}
-                            </span>
-                          ) : null}
-                          <span className={`rounded-md px-2 py-1 capitalize ${urgencyTone(task.urgencia)}`}>{task.urgencia}</span>
-                        </div>
-                      </Button>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteTask(task.id)
-                        }}
-                        className={`shrink-0 rounded-lg ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400 hover:bg-zinc-800' : 'border-red-200 bg-white text-red-600 hover:bg-red-50'}`}
-                        title="Excluir cartão"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    <div className={`mt-4 border-t pt-3 ${isDark ? 'border-zinc-700' : 'border-zinc-100'}`}>
-                      <Select
-                        value={task.list_key}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => {
-                          e.stopPropagation()
-                          moveTask(task.id, e.target.value)
-                        }}
-                        className={`h-9 rounded-xl text-xs shadow-none ${isDark ? 'border-zinc-600 bg-zinc-700 text-zinc-100' : 'border-zinc-200 bg-zinc-50'}`}
-                      >
-                        {boardLists.map((option) => <option key={option.key} value={option.key}>{option.title}</option>)}
-                      </Select>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={submitQuickTask} className={`mt-3 rounded-2xl border p-3 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
-                <input type="hidden" value={list.key} onChange={() => {}} />
-                <Input
-                  value={taskForm.data.list_key === list.key ? taskForm.data.titulo : ''}
-                  onChange={(e) => {
-                    taskForm.setData('list_key', list.key)
-                    taskForm.setData('titulo', e.target.value)
-                  }}
-                  placeholder="Adicionar um cartão"
-                  className={`border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0 ${isDark ? 'text-zinc-100 placeholder:text-zinc-400' : 'text-zinc-950 placeholder:text-zinc-500'}`}
-                />
-                <Button
-                  type="submit"
-                  onClick={() => taskForm.setData('list_key', list.key)}
-                  fullWidth
-                  className={`mt-3 h-10 gap-2 rounded-xl px-4 text-sm ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
+              return (
+                <KanbanColumn
+                  key={list.key}
+                  value={list.key}
+                  className={`w-[320px] shrink-0 rounded-[22px] p-3 shadow-lg ${isDark ? 'border border-zinc-700 bg-zinc-900' : 'border border-zinc-200 bg-zinc-100/90'}`}
                 >
-                  <Plus className="h-4 w-4" />
-                  Adicionar cartão
-                </Button>
-              </form>
-            </section>
-          ))}
+                  <div className="mb-3 flex items-center justify-between gap-3 px-2 pt-1">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <KanbanColumnHandle
+                        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${isDark ? 'border-zinc-700 bg-zinc-800 text-zinc-400' : 'border-zinc-200 bg-white text-zinc-400'}`}
+                        title="Arraste para mover a lista"
+                      >
+                        <GripVertical className="h-4 w-4" />
+                      </KanbanColumnHandle>
+                      <h3 className={`truncate text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-900'}`}>{list.title}</h3>
+                    </div>
+                    <span className={`rounded-full px-2.5 py-1 text-xs shadow-sm ${isDark ? 'bg-zinc-800 text-zinc-100' : 'bg-white text-zinc-600'}`}>
+                      {(kanbanColumns[list.key] || []).length}
+                    </span>
+                  </div>
 
-          <section className={`w-[300px] shrink-0 rounded-[22px] border p-4 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-zinc-50 text-zinc-950'}`}>
-            <h3 className="text-base font-semibold">Nova lista</h3>
-            <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie colunas como no Trello para separar o fluxo do quadro.</p>
-            <div className="mt-4 space-y-3">
-              <Input value={newListTitle} onChange={(e) => setNewListTitle(e.target.value)} placeholder="Nome da lista" />
-              <Button type="button" onClick={addList} className="h-10 w-auto gap-2 rounded-xl px-4 shadow-sm">
-                <Plus className="h-4 w-4" />
-                Criar lista
-              </Button>
-              <Button type="button" onClick={saveBoard} variant="outline" className={`h-10 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
-                <Save className="h-4 w-4" />
-                Salvar quadro
-              </Button>
-            </div>
-          </section>
-        </div>
+                  <div className="space-y-3">
+                    {(kanbanColumns[list.key] || []).map((task) => (
+                      <KanbanItem
+                        key={task.id}
+                        value={String(task.id)}
+                        className={`w-full rounded-2xl border p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${isDark ? 'border-zinc-700 bg-zinc-800 hover:border-zinc-500' : 'border-zinc-200 bg-white hover:border-zinc-300'}`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => openCard(task)}
+                            className="flex h-auto min-w-0 flex-1 flex-col items-start justify-start p-0 text-left hover:bg-transparent"
+                          >
+                            <div className="flex flex-wrap gap-1.5">
+                              {(task.etiquetas || []).slice(0, 3).map((etiqueta, index) => (
+                                <span key={`${etiqueta.nome}-${index}`} className={`rounded-md px-2 py-1 text-[11px] font-medium ${isDark ? 'text-slate-950' : 'text-zinc-900'}`} style={{ backgroundColor: etiqueta.cor }}>
+                                  {etiqueta.nome}
+                                </span>
+                              ))}
+                            </div>
+
+                            <h4 className={`mt-3 text-[15px] font-medium leading-6 ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{task.titulo}</h4>
+                            {task.descricao ? <p className={`mt-2 line-clamp-3 text-sm leading-5 ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>{task.descricao}</p> : null}
+
+                            <div className={`mt-3 flex flex-wrap items-center gap-2 text-xs ${isDark ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                              {task.data_limite_label ? (
+                                <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-1 text-red-600">
+                                  <CalendarDays className="h-3.5 w-3.5" />
+                                  {task.data_limite_label}
+                                </span>
+                              ) : null}
+                              {task.checklist_resumo?.total ? (
+                                <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
+                                  <CheckSquare className="h-3.5 w-3.5" />
+                                  {task.checklist_resumo.concluidos}/{task.checklist_resumo.total}
+                                </span>
+                              ) : null}
+                              {task.anexos?.length ? (
+                                <span className={`inline-flex items-center gap-1 rounded-md px-2 py-1 ${isDark ? 'bg-zinc-700 text-zinc-100' : 'bg-zinc-100'}`}>
+                                  <Paperclip className="h-3.5 w-3.5" />
+                                  {task.anexos.length}
+                                </span>
+                              ) : null}
+                              <span className={`rounded-md px-2 py-1 capitalize ${urgencyTone(task.urgencia)}`}>{task.urgencia}</span>
+                            </div>
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteTask(task.id)
+                            }}
+                            className={`shrink-0 rounded-lg ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400 hover:bg-zinc-800' : 'border-red-200 bg-white text-red-600 hover:bg-red-50'}`}
+                            title="Excluir cartão"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className={`mt-4 border-t pt-3 ${isDark ? 'border-zinc-700' : 'border-zinc-100'}`}>
+                          <Select
+                            value={task.list_key}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => {
+                              e.stopPropagation()
+                              moveTask(task.id, e.target.value)
+                            }}
+                            className={`h-9 rounded-xl text-xs shadow-none ${isDark ? 'border-zinc-600 bg-zinc-700 text-zinc-100' : 'border-zinc-200 bg-zinc-50'}`}
+                          >
+                            {boardLists.map((option) => <option key={option.key} value={option.key}>{option.title}</option>)}
+                          </Select>
+                        </div>
+                      </KanbanItem>
+                    ))}
+                  </div>
+
+                  <form onSubmit={submitQuickTask} className={`mt-3 rounded-2xl border p-3 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                    <input type="hidden" value={list.key} onChange={() => {}} />
+                    <Input
+                      value={taskForm.data.list_key === list.key ? taskForm.data.titulo : ''}
+                      onChange={(e) => {
+                        taskForm.setData('list_key', list.key)
+                        taskForm.setData('titulo', e.target.value)
+                      }}
+                      placeholder="Adicionar um cartão"
+                      className={`border-0 bg-transparent px-0 shadow-none focus:border-0 focus:ring-0 ${isDark ? 'text-zinc-100 placeholder:text-zinc-400' : 'text-zinc-950 placeholder:text-zinc-500'}`}
+                    />
+                    <Button
+                      type="submit"
+                      onClick={() => taskForm.setData('list_key', list.key)}
+                      fullWidth
+                      className={`mt-3 h-10 gap-2 rounded-xl px-4 text-sm ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
+                    >
+                      <Plus className="h-4 w-4" />
+                      Adicionar cartão
+                    </Button>
+                  </form>
+                </KanbanColumn>
+              )
+            })}
+
+            <section className={`w-[300px] shrink-0 rounded-[22px] border p-4 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-zinc-50 text-zinc-950'}`}>
+              <h3 className="text-base font-semibold">Nova lista</h3>
+              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie colunas como no Trello para separar o fluxo do quadro.</p>
+              <div className="mt-4 space-y-3">
+                <Input value={newListTitle} onChange={(e) => setNewListTitle(e.target.value)} placeholder="Nome da lista" />
+                <Button type="button" onClick={addList} className="h-10 w-auto gap-2 rounded-xl px-4 shadow-sm">
+                  <Plus className="h-4 w-4" />
+                  Criar lista
+                </Button>
+                <Button type="button" onClick={saveBoard} variant="outline" className={`h-10 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+                  <Save className="h-4 w-4" />
+                  Salvar quadro
+                </Button>
+              </div>
+            </section>
+          </KanbanBoard>
+        </Kanban>
       </div>
 
       <Dialog open={editingBoard} onOpenChange={setEditingBoard}>
