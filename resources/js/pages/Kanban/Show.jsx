@@ -225,7 +225,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
           </Button>
         </div>
 
-        <Kanban value={kanbanColumns} onValueChange={handleKanbanChange} onMove={handleKanbanMove}>
+        <Kanban value={kanbanColumns} onValueChange={handleKanbanChange} onMove={handleKanbanMove} getItemValue={(task) => String(task.id)}>
           <KanbanBoard className="mt-6 gap-4 overflow-x-auto pb-4">
             {Object.keys(kanbanColumns).map((columnKey) => {
               const list = listMap[columnKey]
