@@ -62,7 +62,7 @@ export default function ConfirmPassword({ errors = {} }) {
                     </div>
                   ) : null}
 
-                  <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+                  <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
                     <label htmlFor="password" className="mb-2 block text-sm font-medium text-zinc-900">
                       Senha atual
                     </label>

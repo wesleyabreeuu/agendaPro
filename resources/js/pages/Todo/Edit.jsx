@@ -73,7 +73,7 @@ export default function TodoEdit({ tarefa, errors = {} }) {
             </Select>
           </div>
           </FieldGrid>
-          <label className="inline-flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm">
+          <label className="inline-flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-xs">
             <Checkbox
               checked={data.concluida}
               onCheckedChange={(checked) => {

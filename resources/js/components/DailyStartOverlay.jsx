@@ -56,7 +56,7 @@ export default function DailyStartOverlay({
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 py-4 backdrop-blur-sm">
-      <div className="w-full max-w-[860px] overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+      <div className="w-full max-w-[860px] overflow-hidden rounded-xl border border-zinc-200 bg-card shadow-xs">
         <div className="grid gap-0 lg:grid-cols-[0.98fr_0.82fr]">
           <section className="p-4 sm:p-5 lg:p-6">
             <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-700">
@@ -72,7 +72,7 @@ export default function DailyStartOverlay({
 
             <div className="mt-5 grid max-w-[470px] gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {summaryItems.map(({ key, label, icon: Icon }) => (
-                <div key={key} className="min-h-[102px] rounded-lg border border-zinc-200 bg-white px-4 py-3.5 shadow-sm">
+                <div key={key} className="min-h-[102px] rounded-lg border border-zinc-200 bg-white px-4 py-3.5 shadow-xs">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-[13px] font-medium text-zinc-600">{label}</p>
                     <Icon className="h-3.5 w-3.5 text-zinc-500" />

@@ -124,13 +124,13 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
     },
   })
 
-  const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
+  const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
   const shellInputClassName = 'h-full w-full !rounded-none !border-0 !bg-transparent !p-0 text-sm text-zinc-950 !shadow-none outline-none appearance-none focus:!border-0 focus:!ring-0'
   const sectionClassName = 'grid gap-5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
 
   return (
     <AppLayout title={editing ? 'Editar Lembrete' : 'Novo Lembrete'}>
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -471,7 +471,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                                   <Button
                                     type="button"
                                     variant="outline"
-                                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-sm hover:bg-zinc-50"
+                                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-xs hover:bg-zinc-50"
                                   >
                                     <span className={field.state.value ? 'text-zinc-950' : 'text-zinc-500'}>
                                       {formatDateLabel(field.state.value)}
@@ -532,7 +532,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                                   const selected = field.state.value.includes(day)
 
                                   return (
-                                    <label key={value} className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm shadow-sm">
+                                    <label key={value} className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm shadow-xs">
                                       <Checkbox
                                         checked={selected}
                                         onCheckedChange={() => {
@@ -560,7 +560,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                       {(field) => (
                         <div className="grid gap-2">
                           <Label className="text-zinc-900">Descrição</Label>
-                          <div className="rounded-lg border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+                          <div className="rounded-lg border border-zinc-200 bg-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
                             <Textarea
                               className="min-h-32 resize-y border-0 shadow-none focus:ring-0"
                               value={field.state.value}
@@ -577,7 +577,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                 <form.Field name="ativo">
                   {(field) => (
                     <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-5">
-                      <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+                      <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-xs">
                         <div>
                           <Label className="text-zinc-900">Manter lembrete ativo</Label>
                           <p className="mt-1 text-sm text-zinc-500">Desative para parar novos disparos sem apagar o histórico.</p>

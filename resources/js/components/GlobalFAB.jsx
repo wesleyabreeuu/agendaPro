@@ -47,7 +47,7 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
               router.visit(item.href)
             }}
             variant="outline"
-            className="h-auto gap-3 rounded-xl border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-sm"
+            className="h-auto gap-3 rounded-xl border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-xs"
             style={{ transitionDelay: `${index * 25}ms` }}
           >
             <span>{item.label}</span>
@@ -62,7 +62,7 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
         type="button"
         onClick={() => setOpen((value) => !value)}
         size="icon-lg"
-        className="h-14 w-14 rounded-xl shadow-sm"
+        className="h-14 w-14 rounded-xl shadow-xs"
         aria-label={open ? 'Fechar ações rápidas' : 'Abrir ações rápidas'}
       >
         {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}

@@ -97,7 +97,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
           </div>
         ) : null}
 
-        <form onSubmit={filtrar} className="grid gap-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-3">
+        <form onSubmit={filtrar} className="grid gap-4 rounded-xl border border-zinc-200 bg-card p-6 shadow-xs md:grid-cols-3">
           <div className="grid gap-2">
             <label className="text-sm font-medium text-zinc-900">Início</label>
             <Input type="date" value={filterForm.data.data_inicio} onChange={(e) => filterForm.setData('data_inicio', e.target.value)} />
@@ -324,7 +324,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
 
 function MetricCard({ title, value }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -333,7 +333,7 @@ function MetricCard({ title, value }) {
 
 function Panel({ title, action = null, children }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
         {action}

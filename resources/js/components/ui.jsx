@@ -117,7 +117,7 @@ function Button({ variant = 'default', className = '', size = 'lg', fullWidth = 
     <ShadcnButton
       variant={variant}
       size={size}
-      className={cn(fullWidth && 'w-full', 'rounded-md shadow-sm', className)}
+      className={cn(fullWidth && 'w-full', 'rounded-md shadow-xs', className)}
       {...props}
     />
   )

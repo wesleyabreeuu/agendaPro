@@ -43,7 +43,7 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
               <Link
                 key={board.id}
                 href={`/kanban/boards/${board.id}`}
-                className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300"
+                className="overflow-hidden rounded-xl border border-zinc-200 bg-card shadow-xs transition hover:border-zinc-300"
               >
                 <div className={`h-32 ${boardBackgrounds[board.background_style] || boardBackgrounds.violet}`} />
                 <div className="space-y-2 p-4">
@@ -54,7 +54,7 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
               </Link>
             ))}
 
-            <Card className="rounded-xl border-zinc-200 bg-zinc-50 shadow-sm">
+            <Card className="rounded-xl border-zinc-200 bg-zinc-50 shadow-xs">
               <CardContent className="p-4">
               <form onSubmit={submit} className="grid h-full gap-3">
                 <div>
@@ -80,7 +80,7 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
                   </Select>
                 </div>
 
-                <Button disabled={processing} className="mt-auto h-11 gap-2 rounded-xl px-4 shadow-sm">
+                <Button disabled={processing} className="mt-auto h-11 gap-2 rounded-xl px-4 shadow-xs">
                   <Plus className="h-4 w-4" />
                   Criar quadro
                 </Button>

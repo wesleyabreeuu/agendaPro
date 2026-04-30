@@ -44,7 +44,7 @@ function DashboardNavLink({ href, active, icon: Icon, children, collapsed = fals
         active && isDark
           ? 'bg-zinc-900 text-white'
           : active
-            ? 'bg-white text-zinc-950 shadow-sm'
+            ? 'bg-white text-zinc-950 shadow-xs'
             : isDark
           ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
           : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
@@ -66,7 +66,7 @@ function DashboardSubLink({ href, active, children, collapsed = false, onClick, 
         active && isDark
           ? 'bg-zinc-900 text-white'
           : active
-            ? 'bg-white text-zinc-950 shadow-sm'
+            ? 'bg-white text-zinc-950 shadow-xs'
             : isDark
           ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
           : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
@@ -136,7 +136,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
       <div className="flex h-full flex-col p-5">
         <div className={`relative flex items-center px-2 ${collapsed ? 'justify-center' : 'justify-between gap-3'}`}>
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className={`flex h-11 w-11 items-center justify-center rounded-lg border p-2 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <div className={`flex h-11 w-11 items-center justify-center rounded-lg border p-2 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
               <img src="/brand/agendapro-mark.svg" alt="AgendaPro" className="h-full w-full object-contain" />
             </div>
             {!collapsed ? (
@@ -155,7 +155,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               isDark
                 ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
                 : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
-            } ${collapsed ? 'absolute top-5 -right-4 shadow-sm' : ''}`}
+            } ${collapsed ? 'absolute top-5 -right-4 shadow-xs' : ''}`}
             title={mobile ? 'Fechar menu' : collapsed ? 'Expandir menu' : 'Recolher menu'}
           >
             {mobile ? <X className="h-4 w-4" /> : <ChevronLeft className={`h-4 w-4 transition ${collapsed ? 'rotate-180' : ''}`} />}
@@ -278,8 +278,8 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
           ) : null}
         </nav>
 
-        <div className={`mt-5 rounded-xl border p-3 shadow-sm ${
-          isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'
+        <div className={`mt-5 rounded-xl border p-3 shadow-xs ${
+          isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'
         } ${collapsed ? 'space-y-3' : 'flex items-center gap-3'}`}>
           {auth?.user?.profile_image_url ? (
             <img src={auth.user.profile_image_url} alt={userName} className={`h-11 w-11 rounded-xl object-cover ring-1 ${isDark ? 'ring-zinc-700' : 'ring-zinc-200'}`} />
@@ -383,7 +383,7 @@ function ReminderToasts({ items, onDismiss }) {
               window.location.assign(item.url)
             }
           }}
-          className="rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:bg-zinc-50"
+          className="rounded-xl border border-zinc-200 bg-card p-4 text-left shadow-xs transition hover:bg-zinc-50"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -401,7 +401,7 @@ function ReminderToasts({ items, onDismiss }) {
   )
 }
 
-export default function AppLayout({ title, children, chrome = 'default' }) {
+export default function AppLayout({ title, children, chrome = 'dashboard' }) {
   const { theme } = useTheme()
   const { auth, flash, webPush } = usePage().props
   const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
@@ -701,7 +701,7 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
           {isDashboardChrome ? (
             <DashboardHeader title={title} auth={auth} onOpenMenu={() => setMobileSidebarOpen(true)} isDark={isDark} />
           ) : (
-            <header className="border-b border-zinc-200 bg-white">
+            <header className="border-b border-zinc-200 bg-card">
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-8">
                 <div>
                   <div className="flex items-center gap-3">
@@ -719,7 +719,7 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
                   <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-950">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+                  <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-xs">
                     <img src={auth?.user?.profile_image_url} alt={auth?.user?.name} className="h-12 w-12 rounded-lg object-cover ring-1 ring-zinc-200" />
                     <div>
                       <div className="text-base font-semibold text-zinc-950">{auth?.user?.name}</div>

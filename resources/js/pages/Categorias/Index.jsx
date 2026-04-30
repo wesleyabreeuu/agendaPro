@@ -24,7 +24,7 @@ export default function CategoriasIndex({ categorias }) {
   return (
     <AppLayout title="Categorias">
       <div className="space-y-6">
-        <Card className="rounded-xl border-zinc-200 bg-white shadow-sm">
+        <Card className="rounded-xl border-zinc-200 bg-card shadow-xs">
           <PageCardHeader
             icon={Tags}
             title="Categorias"

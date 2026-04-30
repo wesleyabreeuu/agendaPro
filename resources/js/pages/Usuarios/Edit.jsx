@@ -22,7 +22,7 @@ export default function UsuariosEdit({ usuario, errors = {} }) {
 
   return (
     <AppLayout title="Editar Perfil">
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
         <form onSubmit={submit} className="grid gap-6 lg:grid-cols-2">
           <div className="lg:col-span-2">
             <Label className="text-zinc-900">Foto</Label>

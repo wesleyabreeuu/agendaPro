@@ -31,7 +31,7 @@ async function apiRequest(url, options = {}) {
 
 function HabitCard({ habit, onComplete, onEdit, onDelete, busy }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ function HabitCard({ habit, onComplete, onEdit, onDelete, busy }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button type="button" onClick={() => onEdit(habit)} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50">
+          <Button type="button" onClick={() => onEdit(habit)} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 bg-card text-zinc-700 hover:bg-zinc-50">
             <Pencil className="h-4 w-4" />
           </Button>
           <Button type="button" onClick={() => onDelete(habit.id)} variant="outline" size="icon-lg" className="rounded-xl border-red-200 bg-white text-red-600 hover:bg-red-50">
@@ -199,15 +199,15 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
     <AppLayout title="Habitos">
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
             <p className="text-sm text-zinc-500">Habitos ativos</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">{summary.total_habitos}</p>
           </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
             <p className="text-sm text-zinc-500">Concluidos hoje</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">{summary.concluidos_hoje}</p>
           </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
             <p className="text-sm text-zinc-500">Melhor streak atual</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">{summary.melhor_streak_atual}</p>
           </div>
@@ -220,7 +220,7 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
         ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
             <div className="flex items-center gap-2">
               <Plus className="h-4 w-4 text-zinc-500" />
               <h2 className="text-lg font-semibold tracking-tight text-zinc-950">{editingId ? 'Editar habito' : 'Novo habito'}</h2>
@@ -256,14 +256,14 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
                 busy={busyId === habit.id}
               />
             )) : (
-              <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-12 text-center text-sm text-zinc-500 shadow-sm">
+              <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-12 text-center text-sm text-zinc-500 shadow-xs">
                 Nenhum habito cadastrado ainda. Comece criando o primeiro na lateral.
               </div>
             )}
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-card shadow-xs">
           <div className="border-b border-zinc-200 px-6 py-4">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Historico recente</h2>
             <p className="mt-1 text-sm text-zinc-500">Ultimos registros de conclusao dos seus habitos.</p>

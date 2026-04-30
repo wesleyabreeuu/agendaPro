@@ -21,14 +21,14 @@ export default function RotinasTemplates({ templates = [] }) {
   return (
     <AppLayout title="Templates de Rotinas" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
           <h1 className={`text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Templates</h1>
           <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Escolha uma estrutura pronta e importe várias rotinas de uma vez. Depois você pode editar cada uma livremente.</p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
           {templates.map((template) => (
-            <section key={template.id} className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section key={template.id} className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -37,7 +37,7 @@ export default function RotinasTemplates({ templates = [] }) {
                   </div>
                   <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{template.descricao}</p>
                 </div>
-                <Button type="button" onClick={() => applyTemplate(template.id)} className="h-11 w-auto rounded-xl px-4 shadow-sm">
+                <Button type="button" onClick={() => applyTemplate(template.id)} className="h-11 w-auto rounded-xl px-4 shadow-xs">
                   <Sparkles className="mr-2 h-4 w-4" />
                   Aplicar template
                 </Button>
@@ -51,7 +51,7 @@ export default function RotinasTemplates({ templates = [] }) {
                         <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{rotina.nome}</p>
                         <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{categoryLabel(rotina.categoria)}</p>
                       </div>
-                      {rotina.modo_minimo_ativo ? <span className={`rounded-full border px-2.5 py-1 text-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-700'}`}>modo mínimo</span> : null}
+                      {rotina.modo_minimo_ativo ? <span className={`rounded-full border px-2.5 py-1 text-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-card text-zinc-700'}`}>modo mínimo</span> : null}
                     </div>
                   </div>
                 ))}

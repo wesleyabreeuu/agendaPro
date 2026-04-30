@@ -23,7 +23,7 @@ export default function FinanceiroContas({ contas = [] }) {
   return (
     <AppLayout title="Contas e Carteiras">
       <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
           <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Nova conta</h2>
           <form onSubmit={submitConta} className="mt-5 grid gap-4">
             <Input placeholder="Nome" value={contaForm.data.nome} onChange={(e) => contaForm.setData('nome', e.target.value)} />
@@ -52,7 +52,7 @@ function ContaCard({ conta }) {
   const depositoForm = useForm({ valor: '' })
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-zinc-950">{conta.nome}</h3>

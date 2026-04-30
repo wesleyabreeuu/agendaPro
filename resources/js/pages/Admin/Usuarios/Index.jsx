@@ -17,7 +17,7 @@ export default function AdminUsuariosIndex({ usuarios = [] }) {
           </Button>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white shadow-sm">
+        <div className="rounded-xl border border-zinc-200 bg-card shadow-xs">
           <Table>
             <TableHeader className="bg-zinc-50">
               <TableRow className="hover:bg-transparent">

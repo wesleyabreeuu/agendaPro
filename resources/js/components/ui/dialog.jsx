@@ -41,7 +41,7 @@ const DialogContent = React.forwardRef(function DialogContent({ className, child
         ref={ref}
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm duration-200",
+          "fixed top-1/2 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-xl border border-zinc-200 bg-card p-6 shadow-xs duration-200",
           className
         )}
         {...props}

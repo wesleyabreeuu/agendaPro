@@ -60,7 +60,7 @@ function statusMeta(status) {
 }
 
 function tableInputClassName(extra = '') {
-  return `h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-sm outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 ${extra}`.trim()
+  return `h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-950 shadow-xs outline-none transition focus:border-blue-300 focus:ring-2 focus:ring-blue-100 ${extra}`.trim()
 }
 
 export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
@@ -205,7 +205,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
             </div>
             <div className="grid gap-2">
               <Label className="text-zinc-900">Concluída</Label>
-              <label className="flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-sm">
+              <label className="flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-xs">
                 <Checkbox
                   checked={data.concluida}
                   onCheckedChange={(checked) => {
@@ -285,7 +285,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                             <ChevronDown className="ml-auto h-3.5 w-3.5 opacity-70" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent align="start" className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+                        <PopoverContent align="start" className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}>
                           <div className="space-y-1">
                             {statusOptions.map((option) => (
                               <Button key={option.value} type="button" variant="ghost" onClick={() => handleStatusChange(row, option.value)} className={`h-auto w-full justify-start rounded-xl px-3 py-2 text-left text-sm ${row.status === option.value ? option.tone : isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-700 hover:bg-zinc-50'}`}>
@@ -303,13 +303,13 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                       </Select>
                     </TableCell>
                     <TableCell className="py-4">
-                      <Button type="button" onClick={() => openObservationModal(row)} variant="outline" className="h-10 min-w-[132px] gap-2 rounded-xl border-zinc-200 bg-white px-3 text-sm text-zinc-700 shadow-sm hover:bg-zinc-50">
+                      <Button type="button" onClick={() => openObservationModal(row)} variant="outline" className="h-10 min-w-[132px] gap-2 rounded-xl border-zinc-200 bg-white px-3 text-sm text-zinc-700 shadow-xs hover:bg-zinc-50">
                         <MessageSquareText className="h-4 w-4" />
                         {row.observacao ? 'Ver nota' : 'Adicionar'}
                       </Button>
                     </TableCell>
                     <TableCell className="py-4">
-                      <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-sm">
+                      <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-3 text-sm text-zinc-700 shadow-xs">
                         <Checkbox
                           checked={Boolean(row.concluida)}
                           onCheckedChange={(checked) => handleConcludedToggle(row, Boolean(checked))}
@@ -362,7 +362,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
         if (!open) closeObservationModal()
       }}>
         {observationModal ? (
-          <DialogContent className={`max-w-2xl rounded-xl p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white'}`}>
+          <DialogContent className={`max-w-2xl rounded-xl p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card'}`}>
             <div className="flex items-start justify-between gap-4">
               <DialogHeader>
                 <DialogDescription className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Observação da tarefa</DialogDescription>
@@ -375,7 +375,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
 
             <div className="mt-5">
               <Label className={isDark ? 'text-zinc-100' : 'text-zinc-900'}>Observação</Label>
-              <div className={`mt-2 rounded-lg border shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+              <div className={`mt-2 rounded-lg border shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
                 <Textarea
                   className="min-h-44 resize-y border-0 shadow-none focus:ring-0"
                   value={observationModal.observacao}

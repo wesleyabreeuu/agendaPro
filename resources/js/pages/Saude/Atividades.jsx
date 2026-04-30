@@ -28,7 +28,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
     <AppLayout title="Atividades Físicas">
       <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-6">
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Novo tipo de atividade</h2>
             <form onSubmit={(e) => { e.preventDefault(); categoriaForm.post('/saude/categorias') }} className="mt-5 grid gap-4">
               <Input placeholder="Nome" value={categoriaForm.data.nome} onChange={(e) => categoriaForm.setData('nome', e.target.value)} />
@@ -43,7 +43,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
             </form>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Nova atividade</h2>
             <form onSubmit={(e) => { e.preventDefault(); atividadeForm.post('/saude/atividades') }} className="mt-5 grid gap-4">
               <Select value={atividadeForm.data.categoria_atividade_fisica_id} onChange={(e) => atividadeForm.setData('categoria_atividade_fisica_id', e.target.value)}>
@@ -65,7 +65,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
           <div className="mb-5 flex items-center justify-between gap-3">
             <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Atividades registradas</h3>
             <div className="flex gap-3">

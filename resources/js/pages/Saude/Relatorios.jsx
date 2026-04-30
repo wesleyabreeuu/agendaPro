@@ -13,7 +13,7 @@ export default function SaudeRelatorios({ resumo, topAtividades = [], periodo, a
   return (
     <AppLayout title="Relatórios de Saúde">
       <div className="space-y-6">
-        <form onSubmit={(e) => { e.preventDefault(); router.get('/saude/relatorios', form.data) }} className="flex gap-3 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <form onSubmit={(e) => { e.preventDefault(); router.get('/saude/relatorios', form.data) }} className="flex gap-3 rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
           <Select value={form.data.periodo} onChange={(e) => form.setData('periodo', e.target.value)}>
             <option value="mes">Este mês</option>
             <option value="trimestre">Este trimestre</option>
@@ -32,7 +32,7 @@ export default function SaudeRelatorios({ resumo, topAtividades = [], periodo, a
           <Metric title="Dias com atividade" value={String(resumo.dias_com_atividade)} />
         </div>
 
-        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
           <h3 className="mb-5 text-lg font-semibold tracking-tight text-zinc-950">Top atividades</h3>
           <div className="space-y-3">
             {topAtividades.map((atividade) => (
@@ -53,7 +53,7 @@ export default function SaudeRelatorios({ resumo, topAtividades = [], periodo, a
 
 function Metric({ title, value }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>

@@ -241,13 +241,13 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
     else post('/compromissos')
   }
 
-  const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
+  const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
   const shellInputClassName = 'h-full w-full !rounded-none !border-0 !bg-transparent !p-0 text-sm text-zinc-950 !shadow-none outline-none appearance-none focus:!border-0 focus:!ring-0'
   const sectionClassName = 'grid gap-5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
 
   return (
     <AppLayout title={editing ? 'Editar Compromisso' : 'Novo Compromisso'}>
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
         <form onSubmit={submit} className="space-y-6">
           {editing && compromisso?.owner?.nome ? (
             <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
@@ -333,7 +333,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-sm hover:bg-zinc-50"
+                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-xs hover:bg-zinc-50"
                   >
                     <span className={data.data_fim_recorrencia ? 'text-zinc-950' : 'text-zinc-500'}>
                       {formatDateLabel(data.data_fim_recorrencia)}
@@ -359,7 +359,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           </div>
 
           <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-5">
-            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-xs">
               <Checkbox
                 checked={data.dia_inteiro}
                 onCheckedChange={(checked) => setData('dia_inteiro', Boolean(checked))}
@@ -369,7 +369,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           </div>
 
           {editing ? (
-            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm lg:col-span-2">
+            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-xs lg:col-span-2">
               <Checkbox
                 checked={data.cancelar_lembrete}
                 onCheckedChange={(checked) => setData('cancelar_lembrete', Boolean(checked))}
@@ -380,7 +380,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className="grid gap-2">
             <Label className="text-zinc-900">Descrição</Label>
-            <div className="rounded-lg border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+            <div className="rounded-lg border border-zinc-200 bg-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
               <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
             </div>
           </div>
