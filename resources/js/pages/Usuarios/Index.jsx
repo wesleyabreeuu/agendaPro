@@ -12,7 +12,7 @@ export default function UsuariosIndex({ usuario }) {
   return (
     <AppLayout title="Meu Perfil">
       <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
-        <Card className="rounded-xl border-zinc-200 bg-card text-center shadow-xs">
+        <Card className="rounded-xl border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-center shadow-xs">
           <CardContent className="p-6">
           <div className="flex flex-col items-center gap-4">
             <img src={usuario.profile_image_url} alt={usuario.name} className="h-28 w-28 rounded-xl object-cover ring-1 ring-zinc-200" />

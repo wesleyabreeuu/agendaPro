@@ -130,7 +130,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
 
   return (
     <AppLayout title={editing ? 'Editar Lembrete' : 'Novo Lembrete'}>
-      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -560,7 +560,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                       {(field) => (
                         <div className="grid gap-2">
                           <Label className="text-zinc-900">Descrição</Label>
-                          <div className="rounded-lg border border-zinc-200 bg-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+                          <div className="rounded-lg border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
                             <Textarea
                               className="min-h-32 resize-y border-0 shadow-none focus:ring-0"
                               value={field.state.value}

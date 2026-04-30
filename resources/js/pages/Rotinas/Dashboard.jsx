@@ -16,7 +16,7 @@ import {
 
 function Panel({ title, subtitle, action = null, children, isDark = false }) {
   return (
-    <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h2>
@@ -31,7 +31,7 @@ function Panel({ title, subtitle, action = null, children, isDark = false }) {
 
 function MetricCard({ title, value, helper, icon: Icon, isDark = false }) {
   return (
-    <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
@@ -53,7 +53,7 @@ export default function RotinasDashboard({ summary, today, recentProgress = [], 
   return (
     <AppLayout title="Rotinas" chrome="dashboard">
       <div className="space-y-6">
-        <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className={`text-sm uppercase tracking-[0.22em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Módulo Rotinas</p>
@@ -91,7 +91,7 @@ export default function RotinasDashboard({ summary, today, recentProgress = [], 
                   <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{today.data_formatada}</p>
                   <p className={`mt-2 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{today.concluidas} de {today.total_previstas} concluídas</p>
                 </div>
-                <div className={`rounded-lg border px-4 py-3 text-right ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+                <div className={`rounded-lg border px-4 py-3 text-right ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Modo mínimo</p>
                   <p className={`mt-2 text-xl font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{today.modo_minimo}</p>
                 </div>
@@ -103,7 +103,7 @@ export default function RotinasDashboard({ summary, today, recentProgress = [], 
 
             <div className="mt-4 space-y-3">
               {(today.items || []).slice(0, 5).map((item) => (
-                <div key={item.id} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                <div key={item.id} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -126,7 +126,7 @@ export default function RotinasDashboard({ summary, today, recentProgress = [], 
           <Panel title="Progresso recente" subtitle="Leitura dos últimos dias para enxergar constância." isDark={isDark}>
             <div className="space-y-3">
               {recentProgress.map((day) => (
-                <div key={day.data} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                <div key={day.data} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{day.label}</p>
@@ -150,7 +150,7 @@ export default function RotinasDashboard({ summary, today, recentProgress = [], 
           <Panel title="Áreas da vida" subtitle="Distribuição das rotinas ativas e previstas hoje." isDark={isDark}>
             <div className="space-y-3">
               {categoryBreakdown.map((item) => (
-                <div key={item.categoria} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                <div key={item.categoria} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                   <div className="flex items-center justify-between gap-3">
                     <span className="rounded-full border px-2.5 py-1 text-xs font-medium" style={categoryBadgeStyle(item.categoria, isDark)}>{categoryLabel(item.categoria)}</span>
                     <p className={`text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{item.ativas} ativas</p>

@@ -4,7 +4,7 @@ import AppLayout from '../../layouts/AppLayout'
 export default function SaudeCalendario({ eventos = [], mes, ano }) {
   return (
     <AppLayout title="Calendário de Atividades">
-      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
         <div className="mb-5">
           <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Calendário de atividades</h2>
           <p className="text-sm text-zinc-500">Eventos encontrados em {String(mes).padStart(2, '0')}/{ano}.</p>

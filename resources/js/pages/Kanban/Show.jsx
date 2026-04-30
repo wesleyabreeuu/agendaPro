@@ -225,18 +225,18 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
   return (
     <AppLayout title={board.nome} chrome="dashboard">
       <div className={`min-h-[calc(100vh-11rem)] rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-950' : `${boardBackgrounds[board.background_style] || boardBackgrounds.paper} border-zinc-200`}`}>
-        <div className={`flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-4 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-50' : 'border-zinc-200 bg-card text-zinc-950'}`}>
+        <div className={`flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-4 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-50' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-950'}`}>
           <div>
             <div className="flex items-center gap-3">
               <h2 className="text-2xl font-semibold tracking-tight">{board.nome}</h2>
-              <Button type="button" onClick={() => setEditingBoard(true)} variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 bg-card text-zinc-700 hover:bg-zinc-50'}`}>
+              <Button type="button" onClick={() => setEditingBoard(true)} variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-700 hover:bg-zinc-50'}`}>
                 <SquarePen className="h-4 w-4" />
               </Button>
             </div>
             <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{board.descricao || 'Organize listas e cartões como em um quadro de trabalho visual.'}</p>
           </div>
 
-          <Button asChild variant="outline" className={`h-11 w-auto rounded-xl px-4 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-950'}`}>
+          <Button asChild variant="outline" className={`h-11 w-auto rounded-xl px-4 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-950'}`}>
             <Link href="/kanban">Voltar aos quadros</Link>
           </Button>
         </div>
@@ -256,7 +256,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                   <div className="flex items-center justify-between gap-3 px-1 py-1">
                     <div className="flex min-w-0 items-center gap-2">
                       <KanbanColumnHandle
-                        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-400' : 'border-zinc-200 bg-card text-zinc-500'}`}
+                        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-400' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-500'}`}
                         title="Arraste para mover a lista"
                       >
                         <GripVertical className="h-4 w-4" />
@@ -341,7 +341,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     ))}
                   </div>
 
-                  <form onSubmit={submitQuickTask} className={`rounded-lg border p-2 shadow-xs ${isDark ? 'border-zinc-800 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                  <form onSubmit={submitQuickTask} className={`rounded-lg border p-2 shadow-xs ${isDark ? 'border-zinc-800 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                     <input type="hidden" value={list.key} onChange={() => {}} />
                     <Input
                       value={taskForm.data.list_key === list.key ? taskForm.data.titulo : ''}
@@ -374,7 +374,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                   <Plus className="h-4 w-4" />
                   Criar lista
                 </Button>
-                <Button type="button" onClick={saveBoard} variant="outline" className={`h-8 w-full justify-start gap-2 rounded-md px-2 text-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-900'}`}>
+                <Button type="button" onClick={saveBoard} variant="outline" className={`h-8 w-full justify-start gap-2 rounded-md px-2 text-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'}`}>
                   <Save className="h-4 w-4" />
                   Salvar quadro
                 </Button>
@@ -387,7 +387,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
 
       <Dialog open={editingBoard} onOpenChange={setEditingBoard}>
         {editingBoard ? (
-          <DialogContent className="max-w-2xl rounded-xl border-zinc-200 bg-card p-6">
+          <DialogContent className="max-w-2xl rounded-xl border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6">
             <div className="flex items-center justify-between gap-4">
               <DialogHeader>
                 <DialogTitle className="text-xl">Editar quadro</DialogTitle>
@@ -431,7 +431,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
         if (!open) setActiveCard(null)
       }}>
         {activeCard ? (
-          <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto rounded-xl border-zinc-200 bg-card p-0">
+          <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto rounded-xl border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-0">
             <div className="grid lg:grid-cols-[minmax(0,1.1fr)_360px]">
               <div className="p-6">
                 <div className="flex items-start justify-between gap-4">
@@ -484,9 +484,9 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                       <h4 className="text-sm font-semibold text-zinc-700">Etiquetas</h4>
                       <div className="mt-3 flex flex-wrap items-start gap-3">
                         {(activeCard.etiquetas || []).map((etiqueta, index) => (
-                          <div key={index} className="rounded-lg border border-zinc-200 bg-card p-3 shadow-xs">
+                          <div key={index} className="rounded-lg border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-3 shadow-xs">
                             <div className="flex items-center gap-2">
-                              <input type="color" value={etiqueta.cor} onChange={(e) => updateActiveCard({ etiquetas: activeCard.etiquetas.map((item, itemIndex) => itemIndex === index ? { ...item, cor: e.target.value } : item) })} className="h-10 w-12 rounded-xl border border-zinc-200 bg-card p-1" />
+                              <input type="color" value={etiqueta.cor} onChange={(e) => updateActiveCard({ etiquetas: activeCard.etiquetas.map((item, itemIndex) => itemIndex === index ? { ...item, cor: e.target.value } : item) })} className="h-10 w-12 rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-1" />
                               <Input value={etiqueta.nome} onChange={(e) => updateActiveCard({ etiquetas: activeCard.etiquetas.map((item, itemIndex) => itemIndex === index ? { ...item, nome: e.target.value } : item) })} placeholder="Nome da etiqueta" className="min-w-[180px] rounded-xl" />
                               <Button type="button" onClick={() => updateActiveCard({ etiquetas: activeCard.etiquetas.filter((_, itemIndex) => itemIndex !== index) })} variant="outline" size="icon-lg" className="rounded-xl border-zinc-200 text-zinc-500 hover:bg-zinc-50">
                                 <X className="h-4 w-4" />
@@ -521,7 +521,7 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                       <ListTodo className="h-5 w-5 text-zinc-500" />
                       <h4 className="text-xl font-semibold text-zinc-800">Descrição</h4>
                     </div>
-                    <div className="mt-3 rounded-lg border border-zinc-200 bg-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+                    <div className="mt-3 rounded-lg border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
                       <Textarea className="min-h-32 resize-y border-0 shadow-none focus:ring-0" value={activeCard.descricao || ''} onChange={(e) => updateActiveCard({ descricao: e.target.value })} placeholder="Adicione uma descrição mais detalhada..." />
                     </div>
                   </section>
@@ -553,14 +553,14 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     <div className="flex items-center justify-between gap-3">
                       <h4 className={`text-xl font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-800'}`}>Comentários e atividade</h4>
                     </div>
-                    <div className={`mt-3 rounded-lg border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-400' : 'border-zinc-200 bg-card text-zinc-400'}`}>
+                    <div className={`mt-3 rounded-lg border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-400' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-400'}`}>
                       Escrever um comentário...
                     </div>
                   </section>
 
                   <section>
                     <h4 className={`text-sm font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-400'}`}>Observações</h4>
-                    <div className={`mt-3 rounded-lg border shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                    <div className={`mt-3 rounded-lg border shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                       <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={activeCard.observacoes || ''} onChange={(e) => updateActiveCard({ observacoes: e.target.value })} placeholder="Anote contexto, decisões e próximos passos" />
                     </div>
                   </section>
@@ -569,13 +569,13 @@ export default function KanbanShow({ board, lists = [], tarefas = {}, background
                     <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-400">Anexos</h4>
                     <div className="mt-3 space-y-3">
                       {(activeCard.anexos || []).map((anexo, index) => (
-                        <div key={index} className={`rounded-lg border p-3 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                        <div key={index} className={`rounded-lg border p-3 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                           <Input value={anexo.nome} onChange={(e) => updateActiveCard({ anexos: activeCard.anexos.map((item, itemIndex) => itemIndex === index ? { ...item, nome: e.target.value } : item) })} placeholder="Nome do anexo" />
                           <Input value={anexo.url} onChange={(e) => updateActiveCard({ anexos: activeCard.anexos.map((item, itemIndex) => itemIndex === index ? { ...item, url: e.target.value } : item) })} placeholder="https://..." className="mt-2" />
                         </div>
                       ))}
                       {!activeCard.anexos?.length ? (
-                        <Button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} variant="outline" className={`h-10 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-900'}`}>
+                        <Button type="button" onClick={() => updateActiveCard({ anexos: ensureAttachment(activeCard) })} variant="outline" className={`h-10 w-auto gap-2 rounded-xl px-4 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'}`}>
                           <Link2 className="h-4 w-4" />
                           Adicionar anexo
                         </Button>

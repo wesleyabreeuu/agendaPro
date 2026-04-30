@@ -25,7 +25,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
   return (
     <AppLayout title="Relatórios Financeiros">
       <div className="space-y-6">
-        <form onSubmit={submit} className="grid gap-4 rounded-xl border border-zinc-200 bg-card p-6 shadow-xs md:grid-cols-5">
+        <form onSubmit={submit} className="grid gap-4 rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs md:grid-cols-5">
           <Select value={form.data.ano} onChange={(e) => form.setData('ano', e.target.value)}>
             {Array.from({ length: 7 }, (_, i) => new Date().getFullYear() - 5 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
           </Select>
@@ -148,7 +148,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
 
 function Metric({ title, value }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-5 shadow-xs">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -157,7 +157,7 @@ function Metric({ title, value }) {
 
 function Box({ title, children }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
       <h3 className="mb-5 text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
       {children}
     </div>

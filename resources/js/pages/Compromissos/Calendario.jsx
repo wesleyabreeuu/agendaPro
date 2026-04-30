@@ -149,12 +149,12 @@ export default function CompromissosCalendario() {
     <AppLayout title="Calendário" chrome="dashboard">
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="space-y-6">
-          <section className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+          <section className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
             <div className="mb-4">
               <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Navegação rápida</h3>
               <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Selecione uma data para pular direto para o mês desejado.</p>
             </div>
-            <div className={`overflow-hidden rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+            <div className={`overflow-hidden rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <Calendar
                 mode="single"
                 selected={currentDate}
@@ -166,20 +166,20 @@ export default function CompromissosCalendario() {
             </div>
           </section>
 
-          <section className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+          <section className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
             <div className="mb-4">
               <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Modo de visualização</h3>
               <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Troque entre a grade mensal e a lista da semana atual.</p>
             </div>
             <RadioGroup value={viewMode} onValueChange={setViewMode} className="gap-3">
-              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewMode === 'month' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewMode === 'month' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                 <RadioGroupItem value="month" id="view-mode-month" className="mt-1" />
                 <div>
                   <Label htmlFor="view-mode-month" className={`cursor-pointer text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>Calendário mensal</Label>
                   <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Visão completa do mês com contagem e cartões por dia.</p>
                 </div>
               </label>
-              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewMode === 'week-list' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewMode === 'week-list' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                 <RadioGroupItem value="week-list" id="view-mode-week-list" className="mt-1" />
                 <div>
                   <Label htmlFor="view-mode-week-list" className={`cursor-pointer text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>Lista semanal</Label>
@@ -191,7 +191,7 @@ export default function CompromissosCalendario() {
         </aside>
 
         <div className="space-y-6">
-        <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className={`text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Calendário consolidado</h2>
@@ -204,7 +204,7 @@ export default function CompromissosCalendario() {
                 {viewMode === 'month' ? 'Visualização mensal' : 'Visualização semanal'}
               </div>
 
-              <div className={`inline-flex items-center gap-2 rounded-xl border p-1 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+              <div className={`inline-flex items-center gap-2 rounded-xl border p-1 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                 <Button type="button" variant="ghost" size="icon-lg" onClick={() => setCurrentDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))} className={`rounded-lg ${isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-600 hover:bg-zinc-100'}`}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -218,13 +218,13 @@ export default function CompromissosCalendario() {
         </section>
 
         {loading ? (
-          <div className={`rounded-xl border p-10 text-center text-sm shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-400' : 'border-zinc-200 bg-card text-zinc-500'}`}>
+          <div className={`rounded-xl border p-10 text-center text-sm shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-400' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-500'}`}>
             Carregando eventos...
           </div>
         ) : null}
 
         {!loading && viewMode === 'month' ? (
-          <section className={`overflow-hidden rounded-xl border shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+          <section className={`overflow-hidden rounded-xl border shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
             <div className={`grid grid-cols-7 border-b ${isDark ? 'border-zinc-700 bg-white' : 'border-zinc-200 bg-zinc-50/80'}`}>
               {weekdayLabels.map((day) => (
                 <div key={day} className={`px-4 py-3 text-sm font-medium ${isDark ? 'text-black' : 'text-zinc-500'}`}>{day}</div>
@@ -289,7 +289,7 @@ export default function CompromissosCalendario() {
         {!loading && viewMode === 'week-list' ? (
           <section className="space-y-4">
             {weeklyGroups.map((group) => (
-              <div key={group.label} className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+              <div key={group.label} className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{group.label}</h3>
@@ -322,7 +322,7 @@ export default function CompromissosCalendario() {
                             <a href={evento.extendedProps.editUrl}>Editar</a>
                           </Button>
                         ) : (
-                          <span className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-500' : 'border-zinc-200 bg-card text-zinc-400'}`}>
+                          <span className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-500' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-400'}`}>
                             Somente leitura
                           </span>
                         )}

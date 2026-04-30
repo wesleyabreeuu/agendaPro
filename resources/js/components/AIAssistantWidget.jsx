@@ -117,7 +117,7 @@ function ResultCard({ item, isDark = false }) {
         ? 'border-red-200 bg-red-50 text-red-700'
         : isDark
           ? 'border-zinc-700 bg-zinc-900 text-zinc-100'
-          : 'border-zinc-200 bg-card text-zinc-900'
+          : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'
       }`}>
         <div className="flex items-center gap-2">
           <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${isError
@@ -141,7 +141,7 @@ function ResultCard({ item, isDark = false }) {
             {events.length ? (
               <div className="mt-3 space-y-2">
                 {events.map((event) => (
-                  <div key={event.id} className={`rounded-xl border px-3 py-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+                  <div key={event.id} className={`rounded-xl border px-3 py-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                     <p className="font-medium">{event.title}</p>
                     <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                       {event.date}{event.time ? ` às ${event.time}` : ' • dia inteiro'}
@@ -261,7 +261,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
       </Button>
 
       {open ? (
-        <section className={`fixed right-4 bottom-20 z-[69] flex h-[min(78vh,680px)] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-xl border shadow-xs lg:right-6 lg:bottom-24 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-950'}`}>
+        <section className={`fixed right-4 bottom-20 z-[69] flex h-[min(78vh,680px)] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-xl border shadow-xs lg:right-6 lg:bottom-24 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-950'}`}>
           <div className={`border-b px-5 py-4 ${isDark ? 'border-zinc-800 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
@@ -280,7 +280,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                 onClick={() => setOpen(false)}
                 variant="outline"
                 size="icon-lg"
-                className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-card text-zinc-600'}`}
+                className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-600'}`}
                 aria-label="Fechar assistente"
               >
                 <X className="h-4 w-4" />
@@ -303,7 +303,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                       type="button"
                       onClick={() => setCommand(suggestion)}
                       variant="outline"
-                      className={`h-auto rounded-full px-3 py-2 text-left text-xs transition ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800' : 'border-zinc-200 bg-card text-zinc-700 hover:bg-zinc-100'}`}
+                      className={`h-auto rounded-full px-3 py-2 text-left text-xs transition ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-200 hover:bg-zinc-800' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-700 hover:bg-zinc-100'}`}
                     >
                       {suggestion}
                     </Button>
@@ -317,15 +317,15 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                 ) : null}
 
                 <div className={`mt-4 grid grid-cols-3 gap-2 text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                     <CalendarDays className="mb-2 h-4 w-4" />
                     Agenda
                   </div>
-                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                     <CheckSquare className="mb-2 h-4 w-4" />
                     Tarefas
                   </div>
-                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-card'}`}>
+                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                     <Wallet className="mb-2 h-4 w-4" />
                     Financeiro
                   </div>
@@ -354,7 +354,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
               </div>
             ) : null}
 
-            <div className={`rounded-xl border p-3 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+            <div className={`rounded-xl border p-3 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <Textarea
                 value={command}
                 onChange={(event) => setCommand(event.target.value)}

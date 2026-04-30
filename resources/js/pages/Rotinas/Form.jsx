@@ -62,7 +62,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
   return (
     <AppLayout title={mode === 'edit' ? 'Editar rotina' : 'Nova rotina'} chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Rotinas</p>
@@ -76,7 +76,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <form onSubmit={submit} className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+          <form onSubmit={submit} className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <label className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Nome</label>
@@ -143,7 +143,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
                           type="button"
                           onClick={() => toggleWeekday(day.value)}
                           variant={active ? 'default' : 'outline'}
-                          className={`rounded-full px-3 py-2 text-sm transition ${!active && isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : !active ? 'border-zinc-200 bg-card text-zinc-700' : ''}`}
+                          className={`rounded-full px-3 py-2 text-sm transition ${!active && isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : !active ? 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-700' : ''}`}
                         >
                           {day.label}
                         </Button>
@@ -225,7 +225,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
           </form>
 
           <aside className="space-y-6">
-            <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+            <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Prévia</p>
               <h2 className={`mt-3 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{form.data.nome || 'Sua nova rotina'}</h2>
               <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{form.data.descricao || 'Descreva brevemente o sentido dessa prática.'}</p>

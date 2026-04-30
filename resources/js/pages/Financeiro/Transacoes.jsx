@@ -192,7 +192,7 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
             </Box>
           </div>
 
-          <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+          <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
             <div className="mb-5 flex items-center justify-between gap-3">
               <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Entradas, saídas e pendências</h3>
               <Button asChild variant="outline" size="sm" className="w-auto">
@@ -244,7 +244,7 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
 
 function Metric({ title, value }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-5 shadow-xs">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -253,7 +253,7 @@ function Metric({ title, value }) {
 
 function Box({ title, children }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
       <h3 className="mb-5 text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
       {children}
     </div>

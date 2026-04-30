@@ -15,7 +15,7 @@ export default function SaudeMetas({ metas = [] }) {
   return (
     <AppLayout title="Metas de Saúde">
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-        <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+        <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
           <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Nova meta</h2>
           <form onSubmit={(e) => { e.preventDefault(); form.post('/saude/metas') }} className="mt-5 grid gap-4">
             <Input placeholder="Título da meta" value={form.data.titulo} onChange={(e) => form.setData('titulo', e.target.value)} />
@@ -36,7 +36,7 @@ export default function SaudeMetas({ metas = [] }) {
 
         <div className="grid gap-4 md:grid-cols-2">
           {metas.map((meta) => (
-            <div key={meta.id} className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
+            <div key={meta.id} className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-5 shadow-xs">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-base font-semibold text-zinc-950">{meta.titulo}</h3>

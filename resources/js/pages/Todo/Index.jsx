@@ -285,7 +285,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                             <ChevronDown className="ml-auto h-3.5 w-3.5 opacity-70" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent align="start" className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}>
+                        <PopoverContent align="start" className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}>
                           <div className="space-y-1">
                             {statusOptions.map((option) => (
                               <Button key={option.value} type="button" variant="ghost" onClick={() => handleStatusChange(row, option.value)} className={`h-auto w-full justify-start rounded-xl px-3 py-2 text-left text-sm ${row.status === option.value ? option.tone : isDark ? 'text-zinc-300 hover:bg-zinc-800' : 'text-zinc-700 hover:bg-zinc-50'}`}>
@@ -362,7 +362,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
         if (!open) closeObservationModal()
       }}>
         {observationModal ? (
-          <DialogContent className={`max-w-2xl rounded-xl p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card'}`}>
+          <DialogContent className={`max-w-2xl rounded-xl p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
             <div className="flex items-start justify-between gap-4">
               <DialogHeader>
                 <DialogDescription className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Observação da tarefa</DialogDescription>
@@ -375,7 +375,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
 
             <div className="mt-5">
               <Label className={isDark ? 'text-zinc-100' : 'text-zinc-900'}>Observação</Label>
-              <div className={`mt-2 rounded-lg border shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+              <div className={`mt-2 rounded-lg border shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                 <Textarea
                   className="min-h-44 resize-y border-0 shadow-none focus:ring-0"
                   value={observationModal.observacao}

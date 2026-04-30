@@ -43,7 +43,7 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
               <Link
                 key={board.id}
                 href={`/kanban/boards/${board.id}`}
-                className="overflow-hidden rounded-xl border border-zinc-200 bg-card shadow-xs transition hover:border-zinc-300"
+                className="overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs transition hover:border-zinc-300"
               >
                 <div className={`h-32 ${boardBackgrounds[board.background_style] || boardBackgrounds.violet}`} />
                 <div className="space-y-2 p-4">

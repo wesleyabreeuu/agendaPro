@@ -247,7 +247,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
   return (
     <AppLayout title={editing ? 'Editar Compromisso' : 'Novo Compromisso'}>
-      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
         <form onSubmit={submit} className="space-y-6">
           {editing && compromisso?.owner?.nome ? (
             <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
@@ -380,7 +380,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className="grid gap-2">
             <Label className="text-zinc-900">Descrição</Label>
-            <div className="rounded-lg border border-zinc-200 bg-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+            <div className="rounded-lg border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
               <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
             </div>
           </div>

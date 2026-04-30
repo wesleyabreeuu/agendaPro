@@ -29,7 +29,7 @@ export default function FinanceiroEditTransacao({ transacao, categorias = [], co
 
   return (
     <AppLayout title="Editar Lançamento">
-      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
         <form onSubmit={submit} className="grid gap-5">
           <div className="grid gap-5 md:grid-cols-3">
             <Select value={form.data.tipo} onChange={(e) => form.setData('tipo', e.target.value)}>

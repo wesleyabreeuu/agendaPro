@@ -13,7 +13,7 @@ function metaPrazoLabel(item) {
 }
 
 export default function FinanceiroDashboard({ filtros, resumo, contas = [], categorias = [], despesasPorCategoria = [], pendentes = [], ultimasTransacoes = [], metasEconomia = [], metasBens = [], financeiroAvancado }) {
-  const quickFieldClassName = 'border-zinc-300 shadow-none'
+  const quickFieldClassName = 'h-10 border-zinc-300 shadow-none'
 
   const filterForm = useForm({
     data_inicio: filtros.data_inicio || '',
@@ -97,7 +97,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
           </div>
         ) : null}
 
-        <form onSubmit={filtrar} className="grid gap-4 rounded-xl border border-zinc-200 bg-card p-6 shadow-xs md:grid-cols-3">
+        <form onSubmit={filtrar} className="grid gap-4 rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs md:grid-cols-3">
           <div className="grid gap-2">
             <label className="text-sm font-medium text-zinc-900">Início</label>
             <Input type="date" value={filterForm.data.data_inicio} onChange={(e) => filterForm.setData('data_inicio', e.target.value)} />
@@ -139,8 +139,8 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <Input placeholder="Descricao" value={transacaoForm.data.descricao} onChange={(e) => transacaoForm.setData('descricao', e.target.value)} />
-              <Input placeholder="Complemento" value={transacaoForm.data.complemento} onChange={(e) => transacaoForm.setData('complemento', e.target.value)} />
+              <Input className={quickFieldClassName} placeholder="Descricao" value={transacaoForm.data.descricao} onChange={(e) => transacaoForm.setData('descricao', e.target.value)} />
+              <Input className={quickFieldClassName} placeholder="Complemento" value={transacaoForm.data.complemento} onChange={(e) => transacaoForm.setData('complemento', e.target.value)} />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -324,7 +324,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
 
 function MetricCard({ title, value }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-card p-5 shadow-xs">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-5 shadow-xs">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -333,7 +333,7 @@ function MetricCard({ title, value }) {
 
 function Panel({ title, action = null, children }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+    <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
         {action}

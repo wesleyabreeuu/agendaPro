@@ -21,7 +21,7 @@ import {
 
 function SummaryCard({ title, value, helper, isDark = false }) {
   return (
-    <div className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <div className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
       {helper ? <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p> : null}
@@ -68,7 +68,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
   return (
     <AppLayout title="Minhas Rotinas" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className={`text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Minhas rotinas</h1>
@@ -92,7 +92,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
           <SummaryCard title="Com modo mínimo" value={summary.com_modo_minimo} helper="Prontas para dias mais difíceis" isDark={isDark} />
         </div>
 
-        <form onSubmit={submitFilters} className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <form onSubmit={submitFilters} className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <Input placeholder="Buscar por nome" value={filterForm.data.search} onChange={(event) => filterForm.setData('search', event.target.value)} />
             <Select value={filterForm.data.categoria} onChange={(event) => filterForm.setData('categoria', event.target.value)}>
@@ -121,7 +121,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
 
         <div className="space-y-4">
           {rotinas.map((rotina) => (
-            <section key={rotina.id} className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+            <section key={rotina.id} className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -135,7 +135,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button asChild variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-700'}`}>
+                  <Button asChild variant="outline" size="icon-lg" className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-700'}`}>
                     <Link href={`/rotinas/${rotina.id}/editar`}>
                       <Pencil className="h-4 w-4" />
                     </Link>

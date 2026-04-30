@@ -12,7 +12,7 @@ export function ChartContainer({ config = {}, className = '', children }) {
 
   return (
     <div
-      className={`rounded-xl border border-zinc-200 bg-card p-3 shadow-xs ${className}`.trim()}
+      className={`rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-3 shadow-xs ${className}`.trim()}
       style={style}
     >
       <div className="h-[220px] w-full md:h-[240px]">

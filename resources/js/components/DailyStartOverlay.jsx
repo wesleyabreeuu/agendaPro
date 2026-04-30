@@ -56,7 +56,7 @@ export default function DailyStartOverlay({
 
   return (
     <div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 py-4 backdrop-blur-sm">
-      <div className="w-full max-w-[860px] overflow-hidden rounded-xl border border-zinc-200 bg-card shadow-xs">
+      <div className="w-full max-w-[860px] overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs">
         <div className="grid gap-0 lg:grid-cols-[0.98fr_0.82fr]">
           <section className="p-4 sm:p-5 lg:p-6">
             <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-700">

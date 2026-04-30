@@ -136,7 +136,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
       <div className="flex h-full flex-col p-5">
         <div className={`relative flex items-center px-2 ${collapsed ? 'justify-center' : 'justify-between gap-3'}`}>
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className={`flex h-11 w-11 items-center justify-center rounded-lg border p-2 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+            <div className={`flex h-11 w-11 items-center justify-center rounded-lg border p-2 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <img src="/brand/agendapro-mark.svg" alt="AgendaPro" className="h-full w-full object-contain" />
             </div>
             {!collapsed ? (
@@ -279,7 +279,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
         </nav>
 
         <div className={`mt-5 rounded-xl border p-3 shadow-xs ${
-          isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'
+          isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'
         } ${collapsed ? 'space-y-3' : 'flex items-center gap-3'}`}>
           {auth?.user?.profile_image_url ? (
             <img src={auth.user.profile_image_url} alt={userName} className={`h-11 w-11 rounded-xl object-cover ring-1 ${isDark ? 'ring-zinc-700' : 'ring-zinc-200'}`} />
@@ -383,7 +383,7 @@ function ReminderToasts({ items, onDismiss }) {
               window.location.assign(item.url)
             }
           }}
-          className="rounded-xl border border-zinc-200 bg-card p-4 text-left shadow-xs transition hover:bg-zinc-50"
+          className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-4 text-left shadow-xs transition hover:bg-zinc-50"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -701,7 +701,7 @@ export default function AppLayout({ title, children, chrome = 'dashboard' }) {
           {isDashboardChrome ? (
             <DashboardHeader title={title} auth={auth} onOpenMenu={() => setMobileSidebarOpen(true)} isDark={isDark} />
           ) : (
-            <header className="border-b border-zinc-200 bg-card">
+            <header className="border-b border-zinc-200 bg-gradient-to-t from-primary/5 to-card">
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-8">
                 <div>
                   <div className="flex items-center gap-3">

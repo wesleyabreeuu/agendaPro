@@ -17,7 +17,7 @@ export default function SaudeEditAtividade({ atividade, categorias = [] }) {
 
   return (
     <AppLayout title="Editar Atividade">
-      <div className="rounded-xl border border-zinc-200 bg-card p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
         <form onSubmit={(e) => { e.preventDefault(); form.put(`/saude/atividades/${atividade.id}`) }} className="grid gap-5">
           <Select value={form.data.categoria_atividade_fisica_id} onChange={(e) => form.setData('categoria_atividade_fisica_id', e.target.value)}>
             {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}

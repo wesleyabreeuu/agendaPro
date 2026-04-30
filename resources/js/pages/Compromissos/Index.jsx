@@ -40,7 +40,7 @@ function CompromissoCard({ compromisso }) {
   const isDark = theme === 'dark'
 
   return (
-    <Card className={`rounded-xl shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <Card className={`rounded-xl shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <CardHeader className="gap-3">
         <div className="flex items-start gap-3">
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
@@ -54,7 +54,7 @@ function CompromissoCard({ compromisso }) {
         <CardAction>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="icon-sm" className={isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-700'}>
+              <Button type="button" variant="outline" size="icon-sm" className={isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-700'}>
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -121,7 +121,7 @@ function CompromissoCard({ compromisso }) {
 
       <CardFooter className={`gap-2 ${isDark ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-100 bg-zinc-50/80'}`}>
         {compromisso.pode_editar ? (
-          <Button asChild variant="outline" className={`h-9 w-auto gap-2 rounded-lg px-3 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-900'}`}>
+          <Button asChild variant="outline" className={`h-9 w-auto gap-2 rounded-lg px-3 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'}`}>
             <Link href={`/compromissos/${compromisso.id}/edit`}>
               <Pencil className="h-4 w-4" />
               Editar
@@ -154,7 +154,7 @@ export default function CompromissosIndex({ compromissos = [], compromissosCompa
             <p className={`${isDark ? 'text-zinc-400' : 'text-zinc-500'} text-sm`}>Gerencie agenda e recorrências do seu dia a dia.</p>
           </div>
           <div className="flex gap-3">
-            <Button asChild variant="outline" className={`w-auto rounded-lg px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-900'}`}>
+            <Button asChild variant="outline" className={`w-auto rounded-lg px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'}`}>
               <Link href="/compromissos/calendario">
                 <CalendarDays className="h-4 w-4" />
               Calendário

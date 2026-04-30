@@ -11,7 +11,7 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
   return (
     <AppLayout title="Saúde & Fitness" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Integração com Strava</h2>
@@ -29,7 +29,7 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
               </span>
               {strava.connected ? (
                 <>
-                  <Button type="button" onClick={() => router.post('/integracoes/strava/sync')} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-card text-zinc-900'}`}>Sincronizar agora</Button>
+                  <Button type="button" onClick={() => router.post('/integracoes/strava/sync')} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'}`}>Sincronizar agora</Button>
                   <Button type="button" onClick={() => router.post('/integracoes/strava/disconnect')} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>Desconectar</Button>
                 </>
               ) : (
@@ -114,7 +114,7 @@ function Metric({ title, value }) {
   const isDark = theme === 'dark'
 
   return (
-    <div className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <div className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-3 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
     </div>
@@ -126,7 +126,7 @@ function Panel({ title, action = null, children }) {
   const isDark = theme === 'dark'
 
   return (
-    <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <div className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h3>
         {action}

@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 function PageCard({ className = '', children, ...props }) {
   return (
     <Card
-      className={cn('border-zinc-200 bg-card shadow-xs dark:border-zinc-800', className)}
+      className={cn('border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs dark:border-zinc-800', className)}
       {...props}
     >
       {children}
@@ -38,7 +38,7 @@ function PageCardContent({ className = '', ...props }) {
 
 function PageEmptyState({ icon: Icon, title, description, action, className = '' }) {
   return (
-    <div className={cn('flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-card px-6 py-12 text-center dark:border-zinc-700', className)}>
+    <div className={cn('flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-300 bg-gradient-to-t from-primary/5 to-card px-6 py-12 text-center dark:border-zinc-700', className)}>
       {Icon ? (
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
           <Icon className="h-5 w-5" />

@@ -16,7 +16,7 @@ import {
 
 function Metric({ title, value, helper, isDark = false }) {
   return (
-    <div className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+    <div className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
       {helper ? <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p> : null}
@@ -44,7 +44,7 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
   return (
     <AppLayout title="Rotinas de Hoje" chrome="dashboard">
       <div className="space-y-6">
-        <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+        <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Execução diária</p>
@@ -73,7 +73,7 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-4">
             {(today.items || []).map((rotina) => (
-              <section key={rotina.id} className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+              <section key={rotina.id} className={`rounded-xl border p-5 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -124,7 +124,7 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
           </div>
 
           <aside className="space-y-6">
-            <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+            <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Leitura rápida</h2>
               <div className="mt-4 space-y-3">
                 {recentProgress.map((day) => (
@@ -139,7 +139,7 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
               </div>
             </section>
 
-            <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-card'}`}>
+            <section className={`rounded-xl border p-6 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
               <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Regra de streak</h2>
               <p className={`mt-3 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>O dia conta para a sequência quando pelo menos 60% das rotinas previstas são concluídas, seja no modo normal ou no modo mínimo.</p>
             </section>
