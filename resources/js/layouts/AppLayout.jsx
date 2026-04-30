@@ -452,11 +452,13 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
     }
 
     try {
-      return await navigator.serviceWorker.register('/service-worker.js')
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      await Promise.all(registrations.map((registration) => registration.unregister()))
     } catch (error) {
-      console.error('Falha ao registrar service worker para lembretes.', error)
-      return null
+      console.error('Falha ao desativar service worker.', error)
     }
+
+    return null
   }
 
   const requestNotificationPermission = async ({ force = false } = {}) => {
