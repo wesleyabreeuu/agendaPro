@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'agenda-pro-static-v4';
+const STATIC_CACHE = 'agenda-pro-static-v5';
 const APP_SHELL = [
   '/manifest.json',
   '/brand/agendapro-mark.svg',
@@ -43,14 +43,8 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(STATIC_CACHE).then((cache) => cache.put(request, copy));
-          return response;
-        })
         .catch(async () => {
-          const cachedResponse = await caches.match(request);
-          return cachedResponse || caches.match('/home') || Response.error();
+          return caches.match('/home') || Response.error();
         })
     );
 
