@@ -25,7 +25,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
   return (
     <AppLayout title="Relatórios Financeiros">
       <div className="space-y-6">
-        <form onSubmit={submit} className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-5">
+        <form onSubmit={submit} className="grid gap-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-5">
           <Select value={form.data.ano} onChange={(e) => form.setData('ano', e.target.value)}>
             {Array.from({ length: 7 }, (_, i) => new Date().getFullYear() - 5 + i).map((ano) => <option key={ano} value={ano}>{ano}</option>)}
           </Select>
@@ -66,7 +66,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
           <Box title="Resumo mensal">
             <div className="space-y-3">
               {dadosPorMes.map((item) => (
-                <div key={item.mes} className="grid grid-cols-4 gap-3 rounded-2xl border border-zinc-200 p-4 text-sm">
+                <div key={item.mes} className="grid grid-cols-4 gap-3 rounded-lg border border-zinc-200 p-4 text-sm">
                   <span className="font-medium text-zinc-900">{item.mes}</span>
                   <span className="text-green-600">{moeda(item.receita)}</span>
                   <span className="text-red-600">{moeda(item.despesa)}</span>
@@ -113,7 +113,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
           <Box title="Contas filtráveis">
             <div className="space-y-3">
               {contas.map((conta) => (
-                <div key={conta.id} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 p-4">
+                <div key={conta.id} className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4">
                   <div>
                     <p className="font-medium text-zinc-950">{conta.nome}</p>
                     <p className="mt-1 text-sm text-zinc-500">{conta.instituicao || 'Sem instituição'}</p>
@@ -128,7 +128,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
         <Box title="Relatório detalhado de lançamentos">
           <div className="space-y-3">
             {transacoes.map((tx) => (
-              <div key={tx.id} className="rounded-2xl border border-zinc-200 p-4">
+              <div key={tx.id} className="rounded-lg border border-zinc-200 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-medium text-zinc-950">{tx.descricao}</p>
@@ -148,7 +148,7 @@ export default function FinanceiroRelatorios({ transacoes = [], totais, filtros,
 
 function Metric({ title, value }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -157,7 +157,7 @@ function Metric({ title, value }) {
 
 function Box({ title, children }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <h3 className="mb-5 text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
       {children}
     </div>

@@ -22,6 +22,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import DailyStartOverlay from '../components/DailyStartOverlay'
 import GlobalFAB from '../components/GlobalFAB'
 import { useDailySession } from '../hooks/useDailySession'
+import { Button } from '@/components/ui'
 // import AIAssistantWidget from '../components/AIAssistantWidget'
 
 function getInitials(name = '') {
@@ -40,7 +41,11 @@ function DashboardNavLink({ href, active, icon: Icon, children, collapsed = fals
       onClick={onClick}
       title={collapsed ? children : undefined}
       className={`flex items-center rounded-xl px-3 py-2.5 text-sm transition ${collapsed ? 'justify-center' : 'gap-3'} ${
-        isDark
+        active && isDark
+          ? 'bg-zinc-900 text-white'
+          : active
+            ? 'bg-white text-zinc-950 shadow-sm'
+            : isDark
           ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
           : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
       }`}
@@ -58,7 +63,11 @@ function DashboardSubLink({ href, active, children, collapsed = false, onClick, 
       onClick={onClick}
       title={collapsed ? children : undefined}
       className={`block rounded-xl px-4 py-2.5 text-sm transition ${
-        isDark
+        active && isDark
+          ? 'bg-zinc-900 text-white'
+          : active
+            ? 'bg-white text-zinc-950 shadow-sm'
+            : isDark
           ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white'
           : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
       }`}
@@ -85,7 +94,7 @@ function DashboardNavGroup({ label, icon: Icon, open, children, collapsed = fals
   }
 
   return (
-    <details open={open} className="rounded-2xl">
+    <details open={open} className="rounded-xl">
       <summary
         className={`flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-2.5 text-sm transition ${
           isDark ? 'text-zinc-300 hover:bg-zinc-900 hover:text-white' : 'text-zinc-700 hover:bg-zinc-100 hover:text-zinc-700'
@@ -127,7 +136,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
       <div className="flex h-full flex-col p-5">
         <div className={`relative flex items-center px-2 ${collapsed ? 'justify-center' : 'justify-between gap-3'}`}>
           <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
-            <div className={`flex h-11 w-11 items-center justify-center rounded-2xl border p-2 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <div className={`flex h-11 w-11 items-center justify-center rounded-lg border p-2 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <img src="/brand/agendapro-mark.svg" alt="AgendaPro" className="h-full w-full object-contain" />
             </div>
             {!collapsed ? (
@@ -137,18 +146,20 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               </div>
             ) : null}
           </div>
-          <button
+          <Button
             type="button"
             onClick={mobile ? onClose : onToggle}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+            variant="outline"
+            size="icon-sm"
+            className={`${
               isDark
                 ? 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white'
-                : 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+                : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
             } ${collapsed ? 'absolute top-5 -right-4 shadow-sm' : ''}`}
             title={mobile ? 'Fechar menu' : collapsed ? 'Expandir menu' : 'Recolher menu'}
           >
             {mobile ? <X className="h-4 w-4" /> : <ChevronLeft className={`h-4 w-4 transition ${collapsed ? 'rotate-180' : ''}`} />}
-          </button>
+          </Button>
         </div>
 
         <nav className="mt-6 flex-1 space-y-1.5 overflow-y-auto">
@@ -267,7 +278,7 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
           ) : null}
         </nav>
 
-        <div className={`mt-5 rounded-2xl border p-3 shadow-sm ${
+        <div className={`mt-5 rounded-xl border p-3 shadow-sm ${
           isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'
         } ${collapsed ? 'space-y-3' : 'flex items-center gap-3'}`}>
           {auth?.user?.profile_image_url ? (
@@ -283,17 +294,19 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               <p className={`truncate text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{auth?.user?.email || auth?.user?.profile_role_label || 'Conta ativa'}</p>
             </div>
           ) : null}
-          <button
+          <Button
             type="button"
             onClick={() => router.post('/logout')}
-            className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border transition ${
+            variant="outline"
+            size="icon-sm"
+            className={`${
               isDark
                 ? 'border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white'
-                : 'border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
+                : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'
             }`}
           >
             <LogOut className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
     </aside>
@@ -308,13 +321,15 @@ function DashboardHeader({ title, auth, onOpenMenu, isDark = false }) {
       <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-5 lg:px-7">
         <div className="min-w-0">
           <div className={`flex items-center gap-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-            <button
+            <Button
               type="button"
               onClick={onOpenMenu}
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-xl border shadow-sm lg:hidden ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-200' : 'border-zinc-200 bg-white text-zinc-700'}`}
+              variant="outline"
+              size="icon-sm"
+              className={`lg:hidden ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-200' : 'text-zinc-700'}`}
             >
               <Menu className="h-4 w-4" />
-            </button>
+            </Button>
             <LayoutGrid className="h-4 w-4" />
             <span>Workspace</span>
             <ChevronRight className="h-4 w-4" />
@@ -325,9 +340,9 @@ function DashboardHeader({ title, auth, onOpenMenu, isDark = false }) {
         <div className="flex items-center gap-3">
           <div className={`hidden items-center gap-3 rounded-xl border px-3 py-2 sm:flex ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
             {auth?.user?.profile_image_url ? (
-              <img src={auth.user.profile_image_url} alt={userName} className="h-10 w-10 rounded-xl object-cover ring-1 ring-zinc-200" />
+              <img src={auth.user.profile_image_url} alt={userName} className="h-10 w-10 rounded-lg object-cover ring-1 ring-zinc-200" />
             ) : (
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-950 text-sm font-semibold text-white">
                 {getInitials(userName)}
               </div>
             )}
@@ -336,14 +351,15 @@ function DashboardHeader({ title, auth, onOpenMenu, isDark = false }) {
               <p className={`text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{userName}</p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
             onClick={() => router.post('/logout')}
-            className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}
+            variant="outline"
+            className={`w-auto gap-2 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800 hover:text-zinc-50' : ''}`}
           >
             <LogOut className="h-4 w-4" />
             Sair
-          </button>
+          </Button>
         </div>
       </div>
     </header>
@@ -367,7 +383,7 @@ function ReminderToasts({ items, onDismiss }) {
               window.location.assign(item.url)
             }
           }}
-          className="rounded-2xl border border-zinc-200 bg-white p-4 text-left shadow-xl transition hover:-translate-y-0.5 hover:shadow-2xl"
+          className="rounded-xl border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:bg-zinc-50"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -689,32 +705,30 @@ export default function AppLayout({ title, children, chrome = 'default' }) {
               <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-8">
                 <div>
                   <div className="flex items-center gap-3">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setMobileSidebarOpen(true)}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-700 shadow-sm lg:hidden"
+                      variant="outline"
+                      size="icon"
+                      className="lg:hidden"
                     >
                       <Menu className="h-4 w-4" />
-                    </button>
+                    </Button>
                     <p className="brand-agendapro text-xs uppercase tracking-[0.25em] text-zinc-400">AgendaPro</p>
                   </div>
                   <h1 className="mt-2 text-4xl font-semibold tracking-tight text-zinc-950">{title}</h1>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
-                    <img src={auth?.user?.profile_image_url} alt={auth?.user?.name} className="h-12 w-12 rounded-2xl object-cover ring-1 ring-zinc-200" />
+                  <div className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+                    <img src={auth?.user?.profile_image_url} alt={auth?.user?.name} className="h-12 w-12 rounded-lg object-cover ring-1 ring-zinc-200" />
                     <div>
                       <div className="text-base font-semibold text-zinc-950">{auth?.user?.name}</div>
                       <div className="text-sm text-zinc-500">{auth?.user?.profile_role_label}</div>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => router.post('/logout')}
-                    className="inline-flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900 shadow-sm"
-                  >
+                  <Button type="button" onClick={() => router.post('/logout')} variant="outline" className="w-auto">
                     Sair
-                  </button>
+                  </Button>
                 </div>
               </div>
             </header>

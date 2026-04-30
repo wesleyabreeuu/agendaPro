@@ -24,7 +24,7 @@ export default function AdminUsuariosForm({ usuario = null, mode = 'create', err
 
   return (
     <AppLayout title={isEdit ? 'Editar Usuário' : 'Novo Usuário'}>
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={submit} className="grid gap-6 lg:grid-cols-2">
           <div className="lg:col-span-2">
             <Label className="text-zinc-900">Foto</Label>

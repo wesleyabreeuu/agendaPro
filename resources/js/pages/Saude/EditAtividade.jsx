@@ -17,7 +17,7 @@ export default function SaudeEditAtividade({ atividade, categorias = [] }) {
 
   return (
     <AppLayout title="Editar Atividade">
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={(e) => { e.preventDefault(); form.put(`/saude/atividades/${atividade.id}`) }} className="grid gap-5">
           <Select value={form.data.categoria_atividade_fisica_id} onChange={(e) => form.setData('categoria_atividade_fisica_id', e.target.value)}>
             {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
@@ -38,7 +38,9 @@ export default function SaudeEditAtividade({ atividade, categorias = [] }) {
           <Textarea className="min-h-28" placeholder="Notas" value={form.data.notas} onChange={(e) => form.setData('notas', e.target.value)} />
           <div className="flex gap-3">
             <Button className="w-auto">Salvar alterações</Button>
-            <Link href="/saude/atividades" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
+            <Button asChild variant="outline" className="w-auto">
+              <Link href="/saude/atividades">Cancelar</Link>
+            </Button>
           </div>
         </form>
       </div>

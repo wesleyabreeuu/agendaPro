@@ -8,8 +8,10 @@ import {
   Card,
   CardHeader,
   CardTitle,
+  CardAction,
   CardDescription,
   CardContent,
+  CardFooter,
 } from '@/components/ui/card'
 import {
   Dialog,
@@ -133,8 +135,10 @@ export {
   Card,
   CardHeader,
   CardTitle,
+  CardAction,
   CardDescription,
   CardContent,
+  CardFooter,
   Dialog,
   DialogTrigger,
   DialogPortal,

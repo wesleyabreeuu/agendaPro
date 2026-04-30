@@ -3,7 +3,8 @@ import { Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
 import { LayoutTemplate, Plus } from 'lucide-react'
-import { Button, Input, Label, Select, Textarea } from '@/components/ui'
+import { Button, Card, CardContent, Input, Label, Select, Textarea } from '@/components/ui'
+import { PageCard, PageCardHeader } from '@/components/page'
 
 const boardBackgrounds = {
   violet: 'bg-[radial-gradient(circle_at_top_left,#a78bfa_0%,#818cf8_40%,#e5e7eb_100%)]',
@@ -30,18 +31,19 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
   return (
     <AppLayout title="Kanban">
       <div className="space-y-6">
-        <section className="rounded-[28px] border border-zinc-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-3">
-            <LayoutTemplate className="h-5 w-5 text-zinc-700" />
-            <h2 className="text-xl font-semibold tracking-tight text-zinc-950">Seus quadros</h2>
-          </div>
+        <PageCard>
+          <PageCardHeader
+            icon={LayoutTemplate}
+            title="Seus quadros"
+            description="Organize projetos e tarefas em listas visuais."
+          />
 
-          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <CardContent className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-4">
             {boards.map((board) => (
               <Link
                 key={board.id}
                 href={`/kanban/boards/${board.id}`}
-                className="overflow-hidden rounded-[22px] border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300"
               >
                 <div className={`h-32 ${boardBackgrounds[board.background_style] || boardBackgrounds.violet}`} />
                 <div className="space-y-2 p-4">
@@ -52,7 +54,8 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
               </Link>
             ))}
 
-            <div className="rounded-[22px] border border-zinc-200 bg-zinc-50 p-4 shadow-sm">
+            <Card className="rounded-xl border-zinc-200 bg-zinc-50 shadow-sm">
+              <CardContent className="p-4">
               <form onSubmit={submit} className="grid h-full gap-3">
                 <div>
                   <h3 className="text-lg font-medium text-zinc-950">Criar novo quadro</h3>
@@ -82,9 +85,10 @@ export default function KanbanIndex({ boards = [], backgroundOptions = [], error
                   Criar quadro
                 </Button>
               </form>
-            </div>
-          </div>
-        </section>
+              </CardContent>
+            </Card>
+          </CardContent>
+        </PageCard>
       </div>
     </AppLayout>
   )

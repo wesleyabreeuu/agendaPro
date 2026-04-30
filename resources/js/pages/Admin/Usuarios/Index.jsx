@@ -17,7 +17,7 @@ export default function AdminUsuariosIndex({ usuarios = [] }) {
           </Button>
         </div>
 
-        <div className="rounded-3xl border border-zinc-200 bg-white shadow-sm">
+        <div className="rounded-xl border border-zinc-200 bg-white shadow-sm">
           <Table>
             <TableHeader className="bg-zinc-50">
               <TableRow className="hover:bg-transparent">
@@ -39,9 +39,9 @@ export default function AdminUsuariosIndex({ usuarios = [] }) {
                   <TableCell>{usuario.telefone || 'Não informado'}</TableCell>
                   <TableCell>{usuario.regra_label}</TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/admin/usuarios/${usuario.id}/edit`} className="inline-flex h-9 items-center justify-center rounded-md border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-900">
-                      Editar
-                    </Link>
+                    <Button asChild variant="outline" size="sm" className="w-auto">
+                      <Link href={`/admin/usuarios/${usuario.id}/edit`}>Editar</Link>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

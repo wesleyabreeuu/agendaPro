@@ -149,7 +149,7 @@ export default function MeuDia({ initialData = null }) {
   return (
     <AppLayout title="Meu Dia" chrome="dashboard">
       <div className="space-y-6">
-        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-5">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-zinc-700">
@@ -184,7 +184,7 @@ export default function MeuDia({ initialData = null }) {
 
               <div className="space-y-3 xl:min-w-[560px]">
                 <div className="flex flex-col items-start gap-2 xl:items-end">
-                  <Button type="button" onClick={() => router.visit('/meu-dia?visao=dia')} variant="outline" className="h-11 w-auto rounded-2xl border-zinc-200 bg-white px-4 text-sm text-zinc-700 shadow-sm hover:bg-zinc-50">
+                  <Button type="button" onClick={() => router.visit('/meu-dia?visao=dia')} variant="outline" className="h-11 w-auto rounded-lg border-zinc-200 bg-white px-4 text-sm text-zinc-700 shadow-sm hover:bg-zinc-50">
                     Fazer leitura do dia
                   </Button>
                   <p className="text-sm text-zinc-500 xl:max-w-[280px] xl:text-right">
@@ -193,19 +193,19 @@ export default function MeuDia({ initialData = null }) {
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-4">
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Dia</p>
                     <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{resumo.total}</p>
                   </div>
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Feitos</p>
                     <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{resumo.concluidos}</p>
                   </div>
-                  <div className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Pendentes</p>
                     <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{pendingCount}</p>
                   </div>
-                  <div className="rounded-2xl border border-zinc-950 bg-zinc-950 px-4 py-3 text-white">
+                  <div className="rounded-lg border border-zinc-950 bg-zinc-950 px-4 py-3 text-white">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-400">Ritmo</p>
@@ -220,7 +220,7 @@ export default function MeuDia({ initialData = null }) {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center justify-between gap-4 border-b border-zinc-200 pb-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Timeline</p>
@@ -252,7 +252,7 @@ export default function MeuDia({ initialData = null }) {
                 onOpen={item.origem_url ? () => router.visit(item.origem_url) : null}
               />
             )) : (
-              <div className="rounded-2xl border border-dashed border-zinc-300 px-5 py-10 text-center text-sm text-zinc-500">
+              <div className="rounded-lg border border-dashed border-zinc-300 px-5 py-10 text-center text-sm text-zinc-500">
                 Nenhum item programado na timeline de hoje.
               </div>
             )}
@@ -260,7 +260,7 @@ export default function MeuDia({ initialData = null }) {
         </section>
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center gap-3">
               <ListTodo className="h-5 w-5 text-zinc-500" />
               <div>
@@ -271,7 +271,7 @@ export default function MeuDia({ initialData = null }) {
 
             <div className="mt-5 space-y-5">
               {Object.keys(pendenciasAgrupadas).length ? Object.entries(pendenciasAgrupadas).map(([grupo, items]) => (
-                <div key={grupo} className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4">
+                <div key={grupo} className="rounded-lg border border-zinc-200 bg-zinc-50/60 p-4">
                   <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">{sectionTitle(grupo)}</h3>
                   <div className="mt-3 space-y-2">
                     {items.map((item) => (
@@ -292,14 +292,14 @@ export default function MeuDia({ initialData = null }) {
                   </div>
                 </div>
               )) : (
-                <div className="rounded-2xl border border-dashed border-zinc-300 px-5 py-10 text-center text-sm text-zinc-500">
+                <div className="rounded-lg border border-dashed border-zinc-300 px-5 py-10 text-center text-sm text-zinc-500">
                   Nenhuma pendência fora da timeline por enquanto.
                 </div>
               )}
             </div>
           </section>
 
-          <section className="rounded-[28px] border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
+          <section className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Resumo</p>
@@ -315,21 +315,21 @@ export default function MeuDia({ initialData = null }) {
             </div>
 
             <div className="mt-5 space-y-3">
-              <div className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   <span className="text-sm text-zinc-600">Concluídos</span>
                 </div>
                 <span className="text-lg font-semibold text-zinc-950">{compactCountLabel(resumo.concluidos, 'itens')}</span>
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <CircleDashed className="h-4 w-4 text-zinc-500" />
                   <span className="text-sm text-zinc-600">Pendentes</span>
                 </div>
                 <span className="text-lg font-semibold text-zinc-950">{compactCountLabel(pendingCount, 'itens')}</span>
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-zinc-200 px-4 py-3">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <TrendingUp className="h-4 w-4 text-zinc-500" />
                   <span className="text-sm text-zinc-600">Progresso</span>

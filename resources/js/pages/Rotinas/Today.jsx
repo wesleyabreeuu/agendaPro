@@ -16,7 +16,7 @@ import {
 
 function Metric({ title, value, helper, isDark = false }) {
   return (
-    <div className={`rounded-[24px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+    <div className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
       {helper ? <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p> : null}
@@ -44,14 +44,14 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
   return (
     <AppLayout title="Rotinas de Hoje" chrome="dashboard">
       <div className="space-y-6">
-        <section className={`rounded-[30px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <section className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Execução diária</p>
               <h1 className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Rotinas de hoje</h1>
               <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Feche o dia com consistência. Concluir no modo mínimo também conta e protege seu ritmo.</p>
             </div>
-            <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
+            <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
               <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>{today.data_formatada}</p>
               <p className={`mt-2 text-lg font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{formatPercent(summary.taxa_conclusao_hoje)} de execução</p>
             </div>
@@ -73,7 +73,7 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
           <div className="space-y-4">
             {(today.items || []).map((rotina) => (
-              <section key={rotina.id} className={`rounded-[28px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+              <section key={rotina.id} className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -117,18 +117,18 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
             ))}
 
             {!today.items?.length ? (
-              <div className={`rounded-[28px] border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+              <div className={`rounded-xl border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
                 Nenhuma rotina prevista para hoje.
               </div>
             ) : null}
           </div>
 
           <aside className="space-y-6">
-            <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Leitura rápida</h2>
               <div className="mt-4 space-y-3">
                 {recentProgress.map((day) => (
-                  <div key={day.data} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                  <div key={day.data} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                     <div className="flex items-center justify-between gap-3">
                       <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{day.label}</p>
                       <p className={`text-sm ${day.cumpriu_meta_dia ? 'text-emerald-600' : isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{formatPercent(day.taxa)}</p>
@@ -139,7 +139,7 @@ export default function RotinasToday({ summary, today, recentProgress = [] }) {
               </div>
             </section>
 
-            <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Regra de streak</h2>
               <p className={`mt-3 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>O dia conta para a sequência quando pelo menos 60% das rotinas previstas são concluídas, seja no modo normal ou no modo mínimo.</p>
             </section>

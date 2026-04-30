@@ -8,7 +8,7 @@ import { CATEGORY_OPTIONS, categoryBadgeStyle, categoryLabel, statusBadgeClass, 
 
 function SummaryCard({ title, value, helper, isDark = false }) {
   return (
-    <div className={`rounded-[24px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+    <div className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
       {helper ? <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p> : null}
@@ -34,7 +34,7 @@ export default function RotinasHistory({ filters, summary, historico = [] }) {
   return (
     <AppLayout title="Histórico de Rotinas" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-[30px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <h1 className={`text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Histórico</h1>
           <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Revise o que foi concluído, o que entrou no modo mínimo e o que acabou sendo pulado.</p>
         </div>
@@ -46,7 +46,7 @@ export default function RotinasHistory({ filters, summary, historico = [] }) {
           <SummaryCard title="Puladas" value={summary.puladas} helper="Rotinas sinalizadas para revisão" isDark={isDark} />
         </div>
 
-        <form onSubmit={submit} className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <form onSubmit={submit} className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <Input type="date" value={form.data.data_inicio} onChange={(event) => form.setData('data_inicio', event.target.value)} />
             <Input type="date" value={form.data.data_fim} onChange={(event) => form.setData('data_fim', event.target.value)} />
@@ -69,7 +69,7 @@ export default function RotinasHistory({ filters, summary, historico = [] }) {
 
         <div className="space-y-5">
           {historico.map((grupo) => (
-            <section key={grupo.data} className={`rounded-[28px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section key={grupo.data} className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <div className="flex items-center justify-between gap-4">
                 <h2 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{grupo.data_formatada}</h2>
                 <span className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{grupo.items.length} registro(s)</span>
@@ -77,7 +77,7 @@ export default function RotinasHistory({ filters, summary, historico = [] }) {
 
               <div className="mt-4 space-y-3">
                 {grupo.items.map((item) => (
-                  <div key={item.id} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                  <div key={item.id} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -96,7 +96,7 @@ export default function RotinasHistory({ filters, summary, historico = [] }) {
           ))}
 
           {!historico.length ? (
-            <div className={`rounded-[28px] border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+            <div className={`rounded-xl border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
               Nenhum registro encontrado para o período selecionado.
             </div>
           ) : null}

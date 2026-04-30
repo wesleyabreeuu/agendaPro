@@ -11,7 +11,7 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
   return (
     <AppLayout title="Saúde & Fitness" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Integração com Strava</h2>
@@ -47,7 +47,7 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <Panel title="Suas metas" action={<Link href="/saude/metas" className="text-sm text-zinc-600 hover:text-zinc-900">Gerenciar</Link>}>
+          <Panel title="Suas metas" action={<Button asChild variant="outline" size="sm" className="w-auto"><Link href="/saude/metas">Gerenciar</Link></Button>}>
             <div className="space-y-4">
               {metasProgresso.map((item) => (
                 <div key={item.meta.id}>
@@ -67,10 +67,10 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
             </div>
           </Panel>
 
-          <Panel title="Distribuição de atividades" action={<Link href="/saude/atividades" className="text-sm text-zinc-600 hover:text-zinc-900">Ver atividades</Link>}>
+          <Panel title="Distribuição de atividades" action={<Button asChild variant="outline" size="sm" className="w-auto"><Link href="/saude/atividades">Ver atividades</Link></Button>}>
             <div className="space-y-4">
               {atividadesPorCategoria.map((atividade) => (
-                <div key={atividade.categoria} className="rounded-2xl border border-zinc-200 p-4">
+                <div key={atividade.categoria} className="rounded-lg border border-zinc-200 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <p className="font-medium text-zinc-950">{atividade.categoria}</p>
                     <span className="text-sm text-zinc-500">{atividade.sessoes}x</span>
@@ -83,10 +83,10 @@ export default function SaudeDashboard({ resumo, strava, atividadesPorCategoria 
           </Panel>
         </div>
 
-        <Panel title="Últimas atividades" action={<Link href="/saude/atividades" className="text-sm text-zinc-600 hover:text-zinc-900">Abrir lista</Link>}>
+        <Panel title="Últimas atividades" action={<Button asChild variant="outline" size="sm" className="w-auto"><Link href="/saude/atividades">Abrir lista</Link></Button>}>
           <div className="space-y-3">
             {ultimasAtividades.map((atividade) => (
-              <div key={atividade.id} className="rounded-2xl border border-zinc-200 p-4">
+              <div key={atividade.id} className="rounded-lg border border-zinc-200 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-medium text-zinc-950">{atividade.categoria?.nome || 'Atividade'}</p>
@@ -114,7 +114,7 @@ function Metric({ title, value }) {
   const isDark = theme === 'dark'
 
   return (
-    <div className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+    <div className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-3 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
     </div>
@@ -126,7 +126,7 @@ function Panel({ title, action = null, children }) {
   const isDark = theme === 'dark'
 
   return (
-    <div className={`rounded-3xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+    <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className={`text-lg font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{title}</h3>
         {action}

@@ -12,7 +12,7 @@ export function ChartContainer({ config = {}, className = '', children }) {
 
   return (
     <div
-      className={`rounded-[24px] border border-zinc-200/80 bg-white p-3 ${className}`.trim()}
+      className={`rounded-xl border border-zinc-200 bg-white p-3 shadow-sm ${className}`.trim()}
       style={style}
     >
       <div className="h-[220px] w-full md:h-[240px]">
@@ -34,7 +34,7 @@ export function ChartTooltipContent({ active, payload, label, indicator = 'dot' 
   }
 
   return (
-    <div className="min-w-[180px] rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 shadow-xl">
+    <div className="min-w-[180px] rounded-xl border border-zinc-200 bg-white px-3 py-2.5 shadow-sm">
       {label ? <div className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-zinc-500">{label}</div> : null}
       <div className="space-y-1.5">
         {payload.map((entry) => (

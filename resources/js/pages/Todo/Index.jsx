@@ -36,6 +36,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
+import { PageCard, PageCardContent, PageCardHeader } from '@/components/page'
 
 const statusOptions = [
   { value: 'aguardando', label: 'Não iniciado', tone: 'bg-rose-100 text-rose-700 border-rose-200', dot: 'bg-rose-400' },
@@ -168,18 +169,20 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
   return (
     <AppLayout title="Todo List" chrome="dashboard">
       <div className="space-y-6">
-        <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Nova tarefa</h2>
-              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie itens com horário, status, urgência e observação.</p>
-            </div>
-            <div className={`rounded-2xl border px-4 py-2 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
+        <PageCard>
+          <PageCardHeader
+            icon={Plus}
+            title="Nova tarefa"
+            description="Crie itens com horário, status, urgência e observação."
+            action={
+              <div className={`rounded-lg border px-3 py-1.5 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
               Dia selecionado: <span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>{dataSelecionada}</span>
             </div>
-          </div>
+            }
+          />
 
-          <form onSubmit={submit} className="mt-6 grid gap-4 lg:grid-cols-[140px_minmax(0,1.5fr)_220px_180px_120px]">
+          <PageCardContent>
+          <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[140px_minmax(0,1.5fr)_220px_180px_120px]">
             <div className="grid gap-2">
               <Label className="text-zinc-900">Hora</Label>
               <Input type="time" value={data.hora} onChange={(e) => setData('hora', e.target.value)} />
@@ -235,19 +238,21 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               </Button>
             </div>
           </form>
-        </section>
+          </PageCardContent>
+        </PageCard>
 
-        <section className={`overflow-hidden rounded-[28px] border shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-          <div className={`flex items-center justify-between gap-4 border-b px-6 py-5 ${isDark ? 'border-zinc-700' : 'border-zinc-200'}`}>
-            <div>
-              <h3 className={`text-xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Tarefas do dia</h3>
-              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Atualize status, urgência, observações e conclusão direto na tabela.</p>
-            </div>
-            <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
+        <PageCard>
+          <PageCardHeader
+            icon={Clock3}
+            title="Tarefas do dia"
+            description="Atualize status, urgência, observações e conclusão direto na tabela."
+            action={
+              <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
               <Clock3 className="h-3.5 w-3.5" />
               {rows.length} tarefas
             </div>
-          </div>
+            }
+          />
 
           <div className="overflow-x-auto">
             <Table className="min-w-[980px]">
@@ -350,14 +355,14 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               </TableBody>
             </Table>
           </div>
-        </section>
+        </PageCard>
       </div>
 
       <Dialog open={Boolean(observationModal)} onOpenChange={(open) => {
         if (!open) closeObservationModal()
       }}>
         {observationModal ? (
-          <DialogContent className={`max-w-2xl rounded-[28px] p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white'}`}>
+          <DialogContent className={`max-w-2xl rounded-xl p-6 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white'}`}>
             <div className="flex items-start justify-between gap-4">
               <DialogHeader>
                 <DialogDescription className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>Observação da tarefa</DialogDescription>
@@ -370,7 +375,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
 
             <div className="mt-5">
               <Label className={isDark ? 'text-zinc-100' : 'text-zinc-900'}>Observação</Label>
-              <div className={`mt-2 rounded-2xl border shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+              <div className={`mt-2 rounded-lg border shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                 <Textarea
                   className="min-h-44 resize-y border-0 shadow-none focus:ring-0"
                   value={observationModal.observacao}

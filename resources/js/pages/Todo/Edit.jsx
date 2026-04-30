@@ -2,7 +2,9 @@ import React from 'react'
 import { Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Checkbox, Input, Select, Textarea } from '@/components/ui'
+import { Button, Checkbox, Input, Label, Select, Textarea } from '@/components/ui'
+import { ActionBar, FieldGrid, PageCard, PageCardContent, PageCardHeader } from '@/components/page'
+import { CheckSquare } from 'lucide-react'
 
 export default function TodoEdit({ tarefa, errors = {} }) {
   const { data, setData, put, processing } = useForm({
@@ -22,26 +24,33 @@ export default function TodoEdit({ tarefa, errors = {} }) {
 
   return (
     <AppLayout title="Editar Tarefa">
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <form onSubmit={submit} className="grid gap-6 lg:grid-cols-2">
+      <PageCard>
+        <PageCardHeader
+          icon={CheckSquare}
+          title="Editar tarefa"
+          description="Atualize data, status, urgência e observações da tarefa."
+        />
+        <PageCardContent>
+        <form onSubmit={submit} className="grid gap-6">
+          <FieldGrid>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Data</label>
+            <Label className="text-zinc-900">Data</Label>
             <Input type="date" value={data.data} onChange={(e) => setData('data', e.target.value)} />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Hora</label>
+            <Label className="text-zinc-900">Hora</Label>
             <Input type="time" value={data.hora} onChange={(e) => setData('hora', e.target.value)} />
           </div>
           <div className="grid gap-2 lg:col-span-2">
-            <label className="text-sm font-medium text-zinc-900">Descrição</label>
+            <Label className="text-zinc-900">Descrição</Label>
             <Input value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
           </div>
           <div className="grid gap-2 lg:col-span-2">
-            <label className="text-sm font-medium text-zinc-900">Observação</label>
+            <Label className="text-zinc-900">Observação</Label>
             <Textarea className="min-h-28" value={data.observacao} onChange={(e) => setData('observacao', e.target.value)} />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Urgência</label>
+            <Label className="text-zinc-900">Urgência</Label>
             <Select value={data.urgencia} onChange={(e) => setData('urgencia', e.target.value)}>
               <option value="baixa">Baixa</option>
               <option value="media">Média</option>
@@ -50,7 +59,7 @@ export default function TodoEdit({ tarefa, errors = {} }) {
             </Select>
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Status</label>
+            <Label className="text-zinc-900">Status</Label>
             <Select
               value={data.status}
               onChange={(e) => {
@@ -63,7 +72,8 @@ export default function TodoEdit({ tarefa, errors = {} }) {
               <option value="finalizado">Finalizado</option>
             </Select>
           </div>
-          <label className="inline-flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm lg:col-span-2">
+          </FieldGrid>
+          <label className="inline-flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm">
             <Checkbox
               checked={data.concluida}
               onCheckedChange={(checked) => {
@@ -75,12 +85,15 @@ export default function TodoEdit({ tarefa, errors = {} }) {
             <span>Marcar como concluída</span>
           </label>
           {Object.values(errors).length ? <div className="text-sm text-red-600 lg:col-span-2">{Object.values(errors)[0]}</div> : null}
-          <div className="flex gap-3 lg:col-span-2">
+          <ActionBar>
             <Button disabled={processing} className="w-auto">Salvar</Button>
-            <Link href={`/todo?data=${tarefa.data}`} className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
-          </div>
+            <Button asChild variant="outline" className="w-auto">
+              <Link href={`/todo?data=${tarefa.data}`}>Cancelar</Link>
+            </Button>
+          </ActionBar>
         </form>
-      </div>
+        </PageCardContent>
+      </PageCard>
     </AppLayout>
   )
 }

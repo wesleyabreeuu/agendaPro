@@ -1,18 +1,42 @@
 import React from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui'
+import { MoreHorizontal, Pencil, Plus, ShieldCheck, Trash2 } from 'lucide-react'
+import { PageCard, PageCardContent, PageCardHeader } from '@/components/page'
 
 export default function RegrasIndex({ regras }) {
   return (
     <AppLayout title="Regras">
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <Button asChild className="w-auto">
-            <Link href="/regras/create">Nova regra</Link>
-          </Button>
-        </div>
-        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
+      <div className="space-y-6">
+        <PageCard>
+          <PageCardHeader
+            icon={ShieldCheck}
+            title="Regras"
+            description="Controle os grupos de acesso disponíveis no sistema."
+            action={
+              <Button asChild className="w-auto gap-2 rounded-lg px-4">
+                <Link href="/regras/create">
+                  <Plus className="h-4 w-4" />
+                  Nova regra
+                </Link>
+              </Button>
+            }
+          />
+          <PageCardContent className="p-0">
           <Table>
             <TableHeader className="bg-zinc-50">
               <TableRow className="hover:bg-transparent">
@@ -25,20 +49,34 @@ export default function RegrasIndex({ regras }) {
             <TableBody>
               {regras.map((regra) => (
                 <TableRow key={regra.id}>
-                  <TableCell>{regra.nome}</TableCell>
-                  <TableCell>{regra.slug}</TableCell>
+                  <TableCell className="font-medium text-zinc-950">{regra.nome}</TableCell>
+                  <TableCell><Badge variant="outline">{regra.slug}</Badge></TableCell>
                   <TableCell>{regra.descricao || '-'}</TableCell>
                   <TableCell className="text-right">
-                    <div className="inline-flex gap-2">
-                      <Link href={`/regras/${regra.id}/edit`} className="rounded-md border border-zinc-200 px-3 py-2">Editar</Link>
-                      <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/regras/${regra.id}`)}>Excluir</Button>
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button type="button" variant="outline" size="icon-sm" className="rounded-lg">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem onClick={() => router.visit(`/regras/${regra.id}/edit`)}>
+                          <Pencil className="h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive" onClick={() => router.delete(`/regras/${regra.id}`)}>
+                          <Trash2 className="h-4 w-4" />
+                          Excluir
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-        </div>
+          </PageCardContent>
+        </PageCard>
       </div>
     </AppLayout>
   )

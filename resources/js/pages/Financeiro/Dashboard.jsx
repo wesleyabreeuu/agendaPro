@@ -92,12 +92,12 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
     <AppLayout title="Controle Financeiro">
       <div className="space-y-6">
         {!financeiroAvancado ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             O modo completo de contas a pagar e receber ainda não está ativo neste banco.
           </div>
         ) : null}
 
-        <form onSubmit={filtrar} className="grid gap-4 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-3">
+        <form onSubmit={filtrar} className="grid gap-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm md:grid-cols-3">
           <div className="grid gap-2">
             <label className="text-sm font-medium text-zinc-900">Início</label>
             <Input type="date" value={filterForm.data.data_inicio} onChange={(e) => filterForm.setData('data_inicio', e.target.value)} />
@@ -108,7 +108,9 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
           </div>
           <div className="flex items-end gap-3">
             <Button className="w-auto">Atualizar visão</Button>
-            <Link href="/financeiro/transacoes" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Lançamentos</Link>
+            <Button asChild variant="outline" className="w-auto">
+              <Link href="/financeiro/transacoes">Lançamentos</Link>
+            </Button>
           </div>
         </form>
 
@@ -119,7 +121,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
           <MetricCard title={Number(resumo.resultado) >= 0 ? 'Lucro' : 'Prejuízo'} value={moeda(Math.abs(Number(resumo.resultado || 0)))} />
         </div>
 
-        <Panel title="Cadastrar receita ou gasto" action={<Link href="/financeiro/transacoes" className="text-sm text-zinc-600 hover:text-zinc-900">Abrir tela completa</Link>}>
+        <Panel title="Cadastrar receita ou gasto" action={<Button asChild variant="outline" size="sm" className="w-auto"><Link href="/financeiro/transacoes">Abrir tela completa</Link></Button>}>
           <form onSubmit={submitTransacao} className="grid gap-4">
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <Select className={quickFieldClassName} value={transacaoForm.data.tipo} onChange={(e) => updateTipoTransacao(e.target.value)}>
@@ -161,7 +163,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
             </div>
 
             {Object.keys(transacaoForm.errors).length ? (
-              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {Object.values(transacaoForm.errors).join(' ')}
               </div>
             ) : null}
@@ -172,7 +174,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
           <Panel title="Pendências financeiras">
             <div className="space-y-3">
               {pendentes.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-4 rounded-2xl border border-zinc-200 p-4">
+                <div key={item.id} className="flex items-start justify-between gap-4 rounded-lg border border-zinc-200 p-4">
                   <div>
                     <p className="font-medium text-zinc-950">{item.descricao}</p>
                     <p className="mt-1 text-sm text-zinc-500">{item.categoria?.nome || 'Sem categoria'} • {item.data}</p>
@@ -203,10 +205,10 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
-          <Panel title="Contas e carteiras" action={<Link href="/financeiro/contas" className="text-sm text-zinc-600 hover:text-zinc-900">Ver contas</Link>}>
+          <Panel title="Contas e carteiras" action={<Button asChild variant="outline" size="sm" className="w-auto"><Link href="/financeiro/contas">Ver contas</Link></Button>}>
             <div className="space-y-3">
               {contas.map((conta) => (
-                <div key={conta.id} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 p-4">
+                <div key={conta.id} className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4">
                   <div>
                     <p className="font-medium text-zinc-950">{conta.nome}</p>
                     <p className="mt-1 text-sm text-zinc-500">{conta.instituicao || 'Sem instituição'} • {conta.tipo}</p>
@@ -217,10 +219,10 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
             </div>
           </Panel>
 
-          <Panel title="Últimos lançamentos" action={<Link href="/financeiro/transacoes" className="text-sm text-zinc-600 hover:text-zinc-900">Ver lançamentos</Link>}>
+          <Panel title="Últimos lançamentos" action={<Button asChild variant="outline" size="sm" className="w-auto"><Link href="/financeiro/transacoes">Ver lançamentos</Link></Button>}>
             <div className="space-y-3">
               {ultimasTransacoes.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 p-4">
+                <div key={item.id} className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 p-4">
                   <div>
                     <p className="font-medium text-zinc-950">{item.descricao}</p>
                     <p className="mt-1 text-sm text-zinc-500">{item.data}{item.status ? ` • ${item.status}` : ''}</p>
@@ -234,7 +236,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
 
         <div className="grid gap-6 xl:grid-cols-2">
           <Panel title="Meta de economia">
-            <form onSubmit={(e) => { e.preventDefault(); metaEconomiaForm.post('/financeiro/metas-economia', { preserveScroll: true }) }} className="grid gap-4 rounded-2xl border border-zinc-200 p-4">
+            <form onSubmit={(e) => { e.preventDefault(); metaEconomiaForm.post('/financeiro/metas-economia', { preserveScroll: true }) }} className="grid gap-4 rounded-lg border border-zinc-200 p-4">
               <Input placeholder="Título" value={metaEconomiaForm.data.titulo} onChange={(e) => metaEconomiaForm.setData('titulo', e.target.value)} />
               <Input placeholder="Descrição" value={metaEconomiaForm.data.descricao} onChange={(e) => metaEconomiaForm.setData('descricao', e.target.value)} />
               <div className="grid gap-4 md:grid-cols-3">
@@ -244,7 +246,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
               </div>
               <Button className="h-10 w-auto rounded-md px-4">Salvar meta</Button>
               {Object.keys(metaEconomiaForm.errors).length ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {Object.values(metaEconomiaForm.errors).join(' ')}
                 </div>
               ) : null}
@@ -252,7 +254,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
 
             <div className="mt-4 space-y-3">
               {metasEconomia.map((item) => (
-                <div key={item.meta.id} className="rounded-2xl border border-zinc-200 p-4">
+                <div key={item.meta.id} className="rounded-lg border border-zinc-200 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-medium text-zinc-950">{item.meta.titulo}</p>
@@ -275,7 +277,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
           </Panel>
 
           <Panel title="Meta de bem material">
-            <form onSubmit={(e) => { e.preventDefault(); metaBemForm.post('/financeiro/metas-bens', { preserveScroll: true }) }} className="grid gap-4 rounded-2xl border border-zinc-200 p-4">
+            <form onSubmit={(e) => { e.preventDefault(); metaBemForm.post('/financeiro/metas-bens', { preserveScroll: true }) }} className="grid gap-4 rounded-lg border border-zinc-200 p-4">
               <Input placeholder="Nome do bem" value={metaBemForm.data.nome_bem} onChange={(e) => metaBemForm.setData('nome_bem', e.target.value)} />
               <Input placeholder="Descrição" value={metaBemForm.data.descricao} onChange={(e) => metaBemForm.setData('descricao', e.target.value)} />
               <div className="grid gap-4 md:grid-cols-3">
@@ -285,7 +287,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
               </div>
               <Button className="h-10 w-auto rounded-md px-4">Salvar meta</Button>
               {Object.keys(metaBemForm.errors).length ? (
-                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {Object.values(metaBemForm.errors).join(' ')}
                 </div>
               ) : null}
@@ -293,7 +295,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
 
             <div className="mt-4 space-y-3">
               {metasBens.map((item) => (
-                <div key={item.meta.id} className="rounded-2xl border border-zinc-200 p-4">
+                <div key={item.meta.id} className="rounded-lg border border-zinc-200 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="font-medium text-zinc-950">{item.meta.nome_bem}</p>
@@ -322,7 +324,7 @@ export default function FinanceiroDashboard({ filtros, resumo, contas = [], cate
 
 function MetricCard({ title, value }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -331,7 +333,7 @@ function MetricCard({ title, value }) {
 
 function Panel({ title, action = null, children }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <div className="mb-5 flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
         {action}

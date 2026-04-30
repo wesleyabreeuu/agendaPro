@@ -62,21 +62,21 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
   return (
     <AppLayout title={mode === 'edit' ? 'Editar rotina' : 'Nova rotina'} chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-[30px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Rotinas</p>
               <h1 className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{mode === 'edit' ? 'Editar rotina' : 'Criar nova rotina'}</h1>
               <p className={`mt-2 max-w-2xl text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Defina frequência, dificuldade, energia e um modo mínimo para proteger sua constância.</p>
             </div>
-            <Link href="/rotinas/minhas" className={`inline-flex h-11 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
-              Voltar para minhas rotinas
-            </Link>
+            <Button asChild variant="outline" className={`w-auto ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-900 hover:text-zinc-50' : ''}`}>
+              <Link href="/rotinas/minhas">Voltar para minhas rotinas</Link>
+            </Button>
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-          <form onSubmit={submit} className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+          <form onSubmit={submit} className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
             <div className="grid gap-5 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
                 <label className={`text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Nome</label>
@@ -196,7 +196,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
               </div>
             </div>
 
-            <div className={`mt-5 rounded-3xl border p-5 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+            <div className={`mt-5 rounded-xl border p-5 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
               <label className={`flex items-center gap-3 text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                 <Checkbox checked={form.data.modo_minimo_ativo} onCheckedChange={(checked) => form.setData('modo_minimo_ativo', Boolean(checked))} />
                 Ativar modo mínimo
@@ -211,31 +211,31 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
               ) : null}
             </div>
 
-            <label className={`mt-5 flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
+            <label className={`mt-5 flex items-center gap-3 rounded-lg border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
               <Checkbox checked={form.data.ativo} onCheckedChange={(checked) => form.setData('ativo', Boolean(checked))} />
               Rotina ativa
             </label>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Button type="submit" className="w-auto rounded-xl px-5" disabled={form.processing}>{mode === 'edit' ? 'Salvar alterações' : 'Criar rotina'}</Button>
-              <Link href="/rotinas/minhas" className={`inline-flex h-10 items-center justify-center rounded-xl border px-4 text-sm font-medium shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
-                Cancelar
-              </Link>
+              <Button asChild variant="outline" className={`w-auto ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:bg-zinc-900 hover:text-zinc-50' : ''}`}>
+                <Link href="/rotinas/minhas">Cancelar</Link>
+              </Button>
             </div>
           </form>
 
           <aside className="space-y-6">
-            <section className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <p className={`text-sm uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Prévia</p>
               <h2 className={`mt-3 text-2xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{form.data.nome || 'Sua nova rotina'}</h2>
               <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{form.data.descricao || 'Descreva brevemente o sentido dessa prática.'}</p>
 
               <div className="mt-5 grid gap-3">
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Categoria</p>
                   <p className={`mt-2 font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{categoryLabel(form.data.categoria)}</p>
                 </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Frequência</p>
                   <p className={`mt-2 font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>
                     {form.data.frequencia_tipo === 'dias_semana'
@@ -245,7 +245,7 @@ export default function RotinasForm({ mode = 'create', rotina = null }) {
                         : 'Todos os dias'}
                   </p>
                 </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Modo mínimo</p>
                   <p className={`mt-2 font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{form.data.modo_minimo_ativo ? form.data.modo_minimo_descricao || 'Ativo, mas sem descrição' : 'Desativado'}</p>
                 </div>

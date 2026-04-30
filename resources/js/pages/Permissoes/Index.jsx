@@ -1,7 +1,9 @@
 import React from 'react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { Badge, Button, Select, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui'
+import { PageCard, PageCardContent, PageCardHeader } from '@/components/page'
+import { ShieldCheck } from 'lucide-react'
 
 function RowForm({ usuario, regras }) {
   const { data, setData, put, processing } = useForm({
@@ -29,7 +31,13 @@ function RowForm({ usuario, regras }) {
 export default function PermissoesIndex({ usuarios, regras }) {
   return (
     <AppLayout title="Permissões">
-      <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
+      <PageCard>
+        <PageCardHeader
+          icon={ShieldCheck}
+          title="Permissões"
+          description="Ajuste a regra de acesso de cada usuário cadastrado."
+        />
+        <PageCardContent className="p-0">
         <Table>
           <TableHeader className="bg-zinc-50">
             <TableRow className="hover:bg-transparent">
@@ -43,10 +51,14 @@ export default function PermissoesIndex({ usuarios, regras }) {
           <TableBody>
             {usuarios.map((usuario) => (
               <TableRow key={usuario.id}>
-                <TableCell>{usuario.name}</TableCell>
-                <TableCell>{usuario.email}</TableCell>
-                <TableCell>{usuario.is_admin ? 'Administrador' : 'Usuário'}</TableCell>
-                <TableCell>{usuario.regra_nome}</TableCell>
+                <TableCell className="font-medium text-zinc-950">{usuario.name}</TableCell>
+                <TableCell className="text-zinc-600">{usuario.email}</TableCell>
+                <TableCell>
+                  <Badge variant={usuario.is_admin ? 'default' : 'secondary'}>
+                    {usuario.is_admin ? 'Administrador' : 'Usuário'}
+                  </Badge>
+                </TableCell>
+                <TableCell><Badge variant="outline">{usuario.regra_nome}</Badge></TableCell>
                 <TableCell className="text-right">
                   {usuario.is_admin ? <span className="text-zinc-500">Administrador fixo</span> : <RowForm usuario={usuario} regras={regras} />}
                 </TableCell>
@@ -54,7 +66,8 @@ export default function PermissoesIndex({ usuarios, regras }) {
             ))}
           </TableBody>
         </Table>
-      </div>
+        </PageCardContent>
+      </PageCard>
     </AppLayout>
   )
 }

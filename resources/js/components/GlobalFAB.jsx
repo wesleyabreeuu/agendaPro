@@ -47,11 +47,11 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
               router.visit(item.href)
             }}
             variant="outline"
-            className="h-auto gap-3 rounded-2xl border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-lg transition hover:-translate-y-0.5"
+            className="h-auto gap-3 rounded-xl border-zinc-200 bg-white px-4 py-3 text-sm font-medium text-zinc-900 shadow-sm"
             style={{ transitionDelay: `${index * 25}ms` }}
           >
             <span>{item.label}</span>
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-950 text-white">
               <Icon className="h-4 w-4" />
             </span>
           </Button>
@@ -62,7 +62,7 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
         type="button"
         onClick={() => setOpen((value) => !value)}
         size="icon-lg"
-        className="h-14 w-14 rounded-full shadow-[0_18px_38px_rgba(24,24,27,0.26)] transition hover:scale-[1.03]"
+        className="h-14 w-14 rounded-xl shadow-sm"
         aria-label={open ? 'Fechar ações rápidas' : 'Abrir ações rápidas'}
       >
         {open ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}

@@ -28,7 +28,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
     <AppLayout title="Atividades Físicas">
       <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-6">
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Novo tipo de atividade</h2>
             <form onSubmit={(e) => { e.preventDefault(); categoriaForm.post('/saude/categorias') }} className="mt-5 grid gap-4">
               <Input placeholder="Nome" value={categoriaForm.data.nome} onChange={(e) => categoriaForm.setData('nome', e.target.value)} />
@@ -43,7 +43,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
             </form>
           </div>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Nova atividade</h2>
             <form onSubmit={(e) => { e.preventDefault(); atividadeForm.post('/saude/atividades') }} className="mt-5 grid gap-4">
               <Select value={atividadeForm.data.categoria_atividade_fisica_id} onChange={(e) => atividadeForm.setData('categoria_atividade_fisica_id', e.target.value)}>
@@ -65,18 +65,22 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between gap-3">
             <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Atividades registradas</h3>
             <div className="flex gap-3">
-              <Link href="/saude/calendario" className="text-sm text-zinc-600 hover:text-zinc-900">Calendário</Link>
-              <Link href="/saude/relatorios" className="text-sm text-zinc-600 hover:text-zinc-900">Relatórios</Link>
+              <Button asChild variant="outline" size="sm" className="w-auto">
+                <Link href="/saude/calendario">Calendário</Link>
+              </Button>
+              <Button asChild variant="outline" size="sm" className="w-auto">
+                <Link href="/saude/relatorios">Relatórios</Link>
+              </Button>
             </div>
           </div>
 
           <div className="space-y-3">
             {atividades.data.map((atividade) => (
-              <div key={atividade.id} className="rounded-2xl border border-zinc-200 p-4">
+              <div key={atividade.id} className="rounded-lg border border-zinc-200 p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="font-medium text-zinc-950">{atividade.categoria?.nome || 'Atividade'}</p>
@@ -87,13 +91,15 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
                   <div className="text-right">
                     <p className="font-semibold text-zinc-950">{atividade.calorias_queimadas} kcal</p>
                     <div className="mt-3 flex justify-end gap-2">
-                      <Link href={`/saude/atividades/${atividade.id}/edit`} className="rounded-md border border-zinc-200 px-3 py-2 text-xs text-zinc-700">Editar</Link>
+                      <Button asChild variant="outline" size="sm" className="w-auto">
+                        <Link href={`/saude/atividades/${atividade.id}/edit`}>Editar</Link>
+                      </Button>
                       <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/saude/atividades/${atividade.id}`)}>Excluir</Button>
                     </div>
                   </div>
                 </div>
                 {atividade.mapa_resumo_svg_path ? (
-                  <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-3">
+                  <div className="mt-4 rounded-lg border border-orange-200 bg-orange-50 p-3">
                     <svg viewBox="0 0 260 96" className="h-24 w-full">
                       <path d={atividade.mapa_resumo_svg_path} fill="none" stroke="#ea580c" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>

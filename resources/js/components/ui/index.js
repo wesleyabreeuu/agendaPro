@@ -2,7 +2,7 @@ export { Alert, AlertTitle, AlertDescription, AlertAction } from "./alert"
 export { Button, buttonVariants } from "./button"
 export { Badge, badgeVariants } from "./badge"
 export { Calendar, CalendarDayButton } from "./calendar"
-export { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./card"
+export { Card, CardHeader, CardTitle, CardAction, CardDescription, CardContent, CardFooter } from "./card"
 export { Checkbox } from "./checkbox"
 export {
   DropdownMenu,

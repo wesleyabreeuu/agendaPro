@@ -21,7 +21,7 @@ import {
 
 function SummaryCard({ title, value, helper, isDark = false }) {
   return (
-    <div className={`rounded-[24px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+    <div className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{title}</p>
       <p className={`mt-2 text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{value}</p>
       {helper ? <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p> : null}
@@ -68,7 +68,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
   return (
     <AppLayout title="Minhas Rotinas" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-[30px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h1 className={`text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Minhas rotinas</h1>
@@ -92,7 +92,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
           <SummaryCard title="Com modo mínimo" value={summary.com_modo_minimo} helper="Prontas para dias mais difíceis" isDark={isDark} />
         </div>
 
-        <form onSubmit={submitFilters} className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <form onSubmit={submitFilters} className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <Input placeholder="Buscar por nome" value={filterForm.data.search} onChange={(event) => filterForm.setData('search', event.target.value)} />
             <Select value={filterForm.data.categoria} onChange={(event) => filterForm.setData('categoria', event.target.value)}>
@@ -121,7 +121,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
 
         <div className="space-y-4">
           {rotinas.map((rotina) => (
-            <section key={rotina.id} className={`rounded-[28px] border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section key={rotina.id} className={`rounded-xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -150,30 +150,30 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
               </div>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Frequência</p>
                   <p className={`mt-2 text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{frequencyLabel(rotina)}</p>
                 </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Horário</p>
                   <p className={`mt-2 text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{rotina.horario || 'Livre'}</p>
                 </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Energia</p>
                   <p className={`mt-2 text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{rotina.energia_recomendada || 'Livre'}</p>
                 </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Última execução</p>
                   <p className={`mt-2 text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{rotina.ultima_execucao_em || 'Sem histórico'}</p>
                 </div>
-                <div className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                <div className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                   <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Consistência 30d</p>
                   <p className={`mt-2 text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{formatPercent(rotina.consistencia_30_dias)}</p>
                 </div>
               </div>
 
               {rotina.modo_minimo_ativo ? (
-                <div className={`mt-4 rounded-2xl border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
+                <div className={`mt-4 rounded-lg border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
                   <span className="font-medium">Modo mínimo:</span> {rotina.modo_minimo_descricao || 'Ativo, mas sem descrição.'}
                 </div>
               ) : null}
@@ -181,7 +181,7 @@ export default function RotinasIndex({ rotinas = [], filters, summary }) {
           ))}
 
           {!rotinas.length ? (
-            <div className={`rounded-[28px] border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+            <div className={`rounded-xl border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
               Nenhuma rotina encontrada com os filtros atuais.
             </div>
           ) : null}

@@ -102,7 +102,7 @@ function ResultCard({ item, isDark = false }) {
   if (role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm shadow-sm ${isDark ? 'bg-white text-black' : 'bg-zinc-950 text-white'}`}>
+        <div className={`max-w-[88%] rounded-xl px-4 py-3 text-sm shadow-sm ${isDark ? 'bg-white text-black' : 'bg-zinc-950 text-white'}`}>
           {content}
         </div>
       </div>
@@ -113,14 +113,14 @@ function ResultCard({ item, isDark = false }) {
 
   return (
     <div className="flex justify-start">
-      <div className={`max-w-[92%] rounded-3xl border px-4 py-3 shadow-sm ${isError
+      <div className={`max-w-[92%] rounded-xl border px-4 py-3 shadow-sm ${isError
         ? 'border-red-200 bg-red-50 text-red-700'
         : isDark
           ? 'border-zinc-700 bg-zinc-900 text-zinc-100'
           : 'border-zinc-200 bg-white text-zinc-900'
       }`}>
         <div className="flex items-center gap-2">
-          <div className={`flex h-8 w-8 items-center justify-center rounded-2xl ${isError
+          <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${isError
             ? 'bg-red-100 text-red-600'
             : isDark
               ? 'bg-zinc-800 text-zinc-100'
@@ -135,13 +135,13 @@ function ResultCard({ item, isDark = false }) {
         </div>
 
         {!isError ? (
-          <div className={`mt-3 rounded-2xl border px-3 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
+          <div className={`mt-3 rounded-xl border px-3 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
             <p>{renderActionSummary(action, data)}</p>
 
             {events.length ? (
               <div className="mt-3 space-y-2">
                 {events.map((event) => (
-                  <div key={event.id} className={`rounded-2xl border px-3 py-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+                  <div key={event.id} className={`rounded-xl border px-3 py-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
                     <p className="font-medium">{event.title}</p>
                     <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                       {event.date}{event.time ? ` às ${event.time}` : ' • dia inteiro'}
@@ -254,18 +254,18 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
         type="button"
         onClick={() => setOpen((value) => !value)}
         size="icon-lg"
-        className={`fixed right-4 bottom-4 z-[70] h-14 w-14 rounded-2xl border shadow-2xl transition hover:-translate-y-0.5 lg:right-6 lg:bottom-6 ${isDark ? 'border-zinc-700 bg-white text-black' : 'border-zinc-200 bg-zinc-950 text-white'}`}
+        className={`fixed right-4 bottom-4 z-[70] h-14 w-14 rounded-xl border shadow-sm transition  lg:right-6 lg:bottom-6 ${isDark ? 'border-zinc-700 bg-white text-black' : 'border-zinc-200 bg-zinc-950 text-white'}`}
         aria-label={open ? 'Fechar assistente' : 'Abrir assistente'}
       >
         {open ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
       </Button>
 
       {open ? (
-        <section className={`fixed right-4 bottom-20 z-[69] flex h-[min(78vh,680px)] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-[30px] border shadow-2xl lg:right-6 lg:bottom-24 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
+        <section className={`fixed right-4 bottom-20 z-[69] flex h-[min(78vh,680px)] w-[calc(100vw-2rem)] max-w-[420px] flex-col overflow-hidden rounded-xl border shadow-sm lg:right-6 lg:bottom-24 ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-950'}`}>
           <div className={`border-b px-5 py-4 ${isDark ? 'border-zinc-800 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isDark ? 'bg-white text-black' : 'bg-zinc-950 text-white'}`}>
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${isDark ? 'bg-white text-black' : 'bg-zinc-950 text-white'}`}>
                   <Bot className="h-5 w-5" />
                 </div>
                 <div>
@@ -280,7 +280,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                 onClick={() => setOpen(false)}
                 variant="outline"
                 size="icon-lg"
-                className={`rounded-2xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}
+                className={`rounded-xl ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}
                 aria-label="Fechar assistente"
               >
                 <X className="h-4 w-4" />
@@ -290,7 +290,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
 
           <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
             {!messages.length ? (
-              <div className={`rounded-[26px] border px-4 py-4 ${isDark ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
+              <div className={`rounded-xl border px-4 py-4 ${isDark ? 'border-zinc-800 bg-zinc-900' : 'border-zinc-200 bg-zinc-50'}`}>
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4" />
                   <p className="text-sm font-semibold">O que você pode pedir agora</p>
@@ -317,15 +317,15 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                 ) : null}
 
                 <div className={`mt-4 grid grid-cols-3 gap-2 text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                  <div className={`rounded-2xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
                     <CalendarDays className="mb-2 h-4 w-4" />
                     Agenda
                   </div>
-                  <div className={`rounded-2xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
                     <CheckSquare className="mb-2 h-4 w-4" />
                     Tarefas
                   </div>
-                  <div className={`rounded-2xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+                  <div className={`rounded-xl border px-3 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
                     <Wallet className="mb-2 h-4 w-4" />
                     Financeiro
                   </div>
@@ -339,7 +339,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
 
             {sending ? (
               <div className="flex justify-start">
-                <div className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-200' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
+                <div className={`inline-flex items-center gap-2 rounded-xl border px-4 py-3 text-sm ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-200' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
                   <LoaderCircle className="h-4 w-4 animate-spin" />
                   Interpretando seu comando...
                 </div>
@@ -349,12 +349,12 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
 
           <div className={`border-t px-4 py-4 ${isDark ? 'border-zinc-800 bg-zinc-950' : 'border-zinc-200 bg-zinc-50'}`}>
             {error ? (
-              <div className="mb-3 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+              <div className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
                 {error}
               </div>
             ) : null}
 
-            <div className={`rounded-[26px] border p-3 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <div className={`rounded-xl border p-3 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <Textarea
                 value={command}
                 onChange={(event) => setCommand(event.target.value)}
@@ -376,7 +376,7 @@ export default function AIAssistantWidget({ permissions = {}, isDark = false }) 
                   type="button"
                   onClick={() => submitCommand(command)}
                   disabled={!command.trim() || sending || !available}
-                  className={`h-11 w-auto gap-2 rounded-2xl px-4 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
+                  className={`h-11 w-auto gap-2 rounded-xl px-4 text-sm font-medium shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 ${isDark ? 'bg-white text-black hover:bg-zinc-200' : 'bg-zinc-950 text-white hover:bg-zinc-800'}`}
                 >
                   {sending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <SendHorizontal className="h-4 w-4" />}
                   Enviar

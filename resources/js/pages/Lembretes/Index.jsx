@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui'
 import { Clock3, MoreHorizontal, TableProperties } from 'lucide-react'
+import { PageCard, PageCardContent, PageCardHeader, PageEmptyState } from '@/components/page'
 
 export default function LembretesIndex({ lembretes, proximos }) {
   const [selectedUpcoming, setSelectedUpcoming] = useState(null)
@@ -59,16 +60,20 @@ export default function LembretesIndex({ lembretes, proximos }) {
           </div>
 
           <TabsContent value="proximos">
-            <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Próximos disparos</h3>
-              <div className="mt-5 space-y-4">
+            <PageCard>
+              <PageCardHeader
+                icon={Clock3}
+                title="Próximos disparos"
+                description="Veja quais lembretes ainda serão enviados."
+              />
+              <PageCardContent className="space-y-4">
                 {proximos.length ? proximos.map((item) => (
                   <Button
                     key={item.id}
                     type="button"
                     onClick={() => setSelectedUpcoming(item)}
                     variant="outline"
-                    className="h-auto w-full justify-start rounded-2xl p-4 text-left transition hover:bg-zinc-50"
+                    className="h-auto w-full justify-start rounded-lg p-4 text-left transition hover:bg-zinc-50"
                   >
                     <p className="font-medium text-zinc-950">{item.titulo_exibicao}</p>
                     <p className="mt-1 text-sm text-zinc-500">{item.descricao_exibicao || 'Sem descrição complementar.'}</p>
@@ -77,13 +82,14 @@ export default function LembretesIndex({ lembretes, proximos }) {
                       {item.momento_disparo || 'Sem horário'}
                     </p>
                   </Button>
-                )) : <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-500">Nenhum lembrete pendente no momento.</div>}
-              </div>
-            </div>
+                )) : <PageEmptyState title="Nenhum lembrete pendente" description="Quando houver disparos futuros, eles aparecerão aqui." />}
+              </PageCardContent>
+            </PageCard>
           </TabsContent>
 
           <TabsContent value="lista">
-            <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
+            <PageCard>
+            <PageCardContent className="p-0">
             <Table>
               <TableHeader className="bg-zinc-50">
                 <TableRow className="hover:bg-transparent">
@@ -166,7 +172,8 @@ export default function LembretesIndex({ lembretes, proximos }) {
                 ))}
               </TableBody>
             </Table>
-            </div>
+            </PageCardContent>
+            </PageCard>
           </TabsContent>
         </Tabs>
       </div>
@@ -180,11 +187,11 @@ export default function LembretesIndex({ lembretes, proximos }) {
                 <SheetDescription>Detalhes do próximo lembrete agendado</SheetDescription>
               </SheetHeader>
               <div className="space-y-4 px-4 pb-4">
-                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Descrição</p>
                   <p className="mt-2 text-sm text-zinc-800">{selectedUpcoming.descricao_exibicao || 'Sem descrição complementar.'}</p>
                 </div>
-                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Próximo disparo</p>
                   <p className="mt-2 text-sm text-zinc-800">{selectedUpcoming.momento_disparo || 'Sem horário'}</p>
                 </div>

@@ -183,7 +183,7 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
                 ) : null}
                 <Textarea className="min-h-24" placeholder="Observações" value={transacaoForm.data.observacoes} onChange={(e) => transacaoForm.setData('observacoes', e.target.value)} />
                 {Object.keys(transacaoForm.errors).length ? (
-                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {Object.values(transacaoForm.errors).join(' ')}
                   </div>
                 ) : null}
@@ -192,15 +192,17 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
             </Box>
           </div>
 
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between gap-3">
               <h3 className="text-lg font-semibold tracking-tight text-zinc-950">Entradas, saídas e pendências</h3>
-              <Link href="/financeiro/relatorios" className="text-sm text-zinc-600 hover:text-zinc-900">Ver relatórios</Link>
+              <Button asChild variant="outline" size="sm" className="w-auto">
+                <Link href="/financeiro/relatorios">Ver relatórios</Link>
+              </Button>
             </div>
 
             <div className="space-y-3">
               {transacoes.data.map((tx) => (
-                <div key={tx.id} className="rounded-2xl border border-zinc-200 p-4">
+                <div key={tx.id} className="rounded-lg border border-zinc-200 p-4">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                       <p className="font-medium text-zinc-950">{tx.descricao}</p>
@@ -219,7 +221,9 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
                             {tx.tipo === 'receita' ? 'Receber' : 'Quitar'}
                           </Button>
                         ) : null}
-                        <Link href={`/financeiro/transacoes/${tx.id}/edit`} className="rounded-md border border-zinc-200 px-3 py-2 text-xs text-zinc-700">Editar</Link>
+                        <Button asChild variant="outline" size="sm" className="w-auto">
+                          <Link href={`/financeiro/transacoes/${tx.id}/edit`}>Editar</Link>
+                        </Button>
                         <Button type="button" variant="destructive" size="sm" className="w-auto" onClick={() => router.delete(`/financeiro/transacoes/${tx.id}`)}>Excluir</Button>
                       </div>
                     </div>
@@ -240,7 +244,7 @@ export default function FinanceiroTransacoes({ transacoes, categorias = [], cont
 
 function Metric({ title, value }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
       <p className="text-sm text-zinc-500">{title}</p>
       <p className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950">{value}</p>
     </div>
@@ -249,7 +253,7 @@ function Metric({ title, value }) {
 
 function Box({ title, children }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
       <h3 className="mb-5 text-lg font-semibold tracking-tight text-zinc-950">{title}</h3>
       {children}
     </div>

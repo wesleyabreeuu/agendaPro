@@ -1,8 +1,23 @@
 import React, { useState } from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
-import { Button } from '@/components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
+import { CalendarDays, MoreHorizontal, Pencil, Plus, Repeat2, Share2, Trash2 } from 'lucide-react'
 
 function formatPermissionLabel(permission) {
   return {
@@ -25,25 +40,57 @@ function CompromissoCard({ compromisso }) {
   const isDark = theme === 'dark'
 
   return (
-    <div className={`rounded-3xl border p-5 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className={`text-base font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{compromisso.titulo}</h3>
-          <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{formatCategoryLabel(compromisso)}</p>
+    <Card className={`rounded-xl shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+      <CardHeader className="gap-3">
+        <div className="flex items-start gap-3">
+          <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
+            <CalendarDays className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <CardTitle className={isDark ? 'text-zinc-50' : 'text-zinc-950'}>{compromisso.titulo}</CardTitle>
+            <CardDescription>{formatCategoryLabel(compromisso)}</CardDescription>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <CardAction>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="outline" size="icon-sm" className={isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-700'}>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              {compromisso.pode_editar ? (
+                <DropdownMenuItem onClick={() => router.visit(`/compromissos/${compromisso.id}/edit`)}>
+                  <Pencil className="h-4 w-4" />
+                  Editar
+                </DropdownMenuItem>
+              ) : null}
+              {compromisso.pode_excluir ? (
+                <DropdownMenuItem variant="destructive" onClick={() => router.delete(`/compromissos/${compromisso.id}`)}>
+                  <Trash2 className="h-4 w-4" />
+                  Excluir
+                </DropdownMenuItem>
+              ) : null}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardAction>
+        <div className="flex flex-wrap gap-2">
           {compromisso.permissao ? (
-            <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${isDark ? 'border-zinc-700 text-zinc-200' : 'border-zinc-200 text-zinc-700'}`}>
-              {formatPermissionLabel(compromisso.permissao)}
-            </span>
+            <Badge variant="outline">{formatPermissionLabel(compromisso.permissao)}</Badge>
           ) : null}
           {compromisso.dia_inteiro ? (
-            <span className={`rounded-full border px-2.5 py-1 text-xs font-medium ${isDark ? 'border-zinc-700 text-zinc-200' : 'border-zinc-200 text-zinc-700'}`}>Dia inteiro</span>
+            <Badge variant="secondary">Dia inteiro</Badge>
+          ) : null}
+          {compromisso.recorrencia ? (
+            <Badge variant="info" className="gap-1">
+              <Repeat2 className="h-3 w-3" />
+              {compromisso.recorrencia}
+            </Badge>
           ) : null}
         </div>
-      </div>
+      </CardHeader>
 
-      <div className={`mt-4 space-y-2 text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
+      <CardContent className={`space-y-2 text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
         <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Início:</span> {compromisso.data_inicio}</p>
         <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Fim:</span> {compromisso.data_fim || 'Não definido'}</p>
         {compromisso.owner?.nome ? <p><span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Dono:</span> {compromisso.owner.nome}</p> : null}
@@ -56,35 +103,39 @@ function CompromissoCard({ compromisso }) {
         ) : null}
         {compromisso.compartilhado_com?.length ? (
           <div className="pt-1">
-            <p className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>Compartilhado com</p>
+            <p className={`inline-flex items-center gap-2 font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
+              <Share2 className="h-4 w-4" />
+              Compartilhado com
+            </p>
             <div className="mt-2 flex flex-wrap gap-2">
               {compromisso.compartilhado_com.map((item) => (
-                <span
-                  key={item.usuario_id}
-                  className={`rounded-full border px-3 py-1 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-100' : 'border-zinc-200 bg-zinc-100 text-black'}`}
-                >
+                <Badge key={item.usuario_id} variant="secondary">
                   {item.nome} • {formatPermissionLabel(item.permissao)}
-                </span>
+                </Badge>
               ))}
             </div>
           </div>
         ) : null}
         {compromisso.descricao ? <p className={`pt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{compromisso.descricao}</p> : null}
-      </div>
+      </CardContent>
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <CardFooter className={`gap-2 ${isDark ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-100 bg-zinc-50/80'}`}>
         {compromisso.pode_editar ? (
-          <Button asChild variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
-            <Link href={`/compromissos/${compromisso.id}/edit`}>Editar</Link>
+          <Button asChild variant="outline" className={`h-9 w-auto gap-2 rounded-lg px-3 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+            <Link href={`/compromissos/${compromisso.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+              Editar
+            </Link>
           </Button>
         ) : null}
         {compromisso.pode_excluir ? (
-          <Button type="button" onClick={() => router.delete(`/compromissos/${compromisso.id}`)} variant="outline" className={`h-10 w-auto rounded-md px-4 ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
+          <Button type="button" onClick={() => router.delete(`/compromissos/${compromisso.id}`)} variant="outline" className={`h-9 w-auto gap-2 rounded-lg px-3 ${isDark ? 'border-red-500/40 bg-zinc-900 text-red-400' : 'border-red-200 bg-white text-red-600'}`}>
+            <Trash2 className="h-4 w-4" />
             Excluir
           </Button>
         ) : null}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -103,12 +154,18 @@ export default function CompromissosIndex({ compromissos = [], compromissosCompa
             <p className={`${isDark ? 'text-zinc-400' : 'text-zinc-500'} text-sm`}>Gerencie agenda e recorrências do seu dia a dia.</p>
           </div>
           <div className="flex gap-3">
-            <Link href="/compromissos/calendario" className={`inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+            <Button asChild variant="outline" className={`w-auto rounded-lg px-4 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-white text-zinc-900'}`}>
+              <Link href="/compromissos/calendario">
+                <CalendarDays className="h-4 w-4" />
               Calendário
-            </Link>
-            <Link href="/compromissos/create" className="inline-flex h-10 items-center justify-center rounded-md bg-zinc-950 px-4 text-sm font-medium text-white dark:bg-white dark:text-black">
+              </Link>
+            </Button>
+            <Button asChild className="w-auto rounded-lg px-4">
+              <Link href="/compromissos/create">
+                <Plus className="h-4 w-4" />
               Novo compromisso
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -141,7 +198,7 @@ export default function CompromissosIndex({ compromissos = [], compromissosCompa
         ) : null}
 
         {ownedItems.length === 0 && sharedItems.length === 0 ? (
-          <div className={`rounded-3xl border border-dashed p-10 text-center shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-300 bg-white'}`}>
+          <div className={`rounded-xl border border-dashed p-10 text-center shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-300 bg-white'}`}>
             <h3 className={`text-lg font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Nenhum compromisso cadastrado</h3>
             <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie o primeiro compromisso para começar a organizar sua agenda.</p>
           </div>

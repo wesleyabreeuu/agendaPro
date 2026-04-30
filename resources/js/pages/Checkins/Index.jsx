@@ -31,7 +31,7 @@ async function apiRequest(url, options = {}) {
 
 function HabitCard({ habit, onComplete, onEdit, onDelete, busy }) {
   return (
-    <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -52,15 +52,15 @@ function HabitCard({ habit, onComplete, onEdit, onDelete, busy }) {
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-3">
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3">
           <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Streak atual</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{habit.estatisticas?.streak_atual || 0}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-3">
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3">
           <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Maior streak</p>
           <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-950">{habit.estatisticas?.maior_streak || 0}</p>
         </div>
-        <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-3">
+        <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3">
           <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Ultimo registro</p>
           <p className="mt-2 text-sm font-medium text-zinc-950">{habit.ultimo_registro_em || '-'}</p>
         </div>
@@ -199,28 +199,28 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
     <AppLayout title="Habitos">
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-zinc-500">Habitos ativos</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">{summary.total_habitos}</p>
           </div>
-          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-zinc-500">Concluidos hoje</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">{summary.concluidos_hoje}</p>
           </div>
-          <div className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-sm">
             <p className="text-sm text-zinc-500">Melhor streak atual</p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-zinc-950">{summary.melhor_streak_atual}</p>
           </div>
         </div>
 
         {feedback.message ? (
-          <div className={`rounded-2xl border px-4 py-3 text-sm ${feedback.type === 'error' ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
+          <div className={`rounded-lg border px-4 py-3 text-sm ${feedback.type === 'error' ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
             {feedback.message}
           </div>
         ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-2">
               <Plus className="h-4 w-4 text-zinc-500" />
               <h2 className="text-lg font-semibold tracking-tight text-zinc-950">{editingId ? 'Editar habito' : 'Novo habito'}</h2>
@@ -234,7 +234,7 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
                 <Label className="text-zinc-900">Descricao</Label>
                 <Textarea value={form.descricao} onChange={(event) => setForm((current) => ({ ...current, descricao: event.target.value }))} className="min-h-28" placeholder="Opcional" />
               </div>
-              <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-700">
+              <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-700">
                 <Checkbox checked={form.ativo} onCheckedChange={(checked) => setForm((current) => ({ ...current, ativo: Boolean(checked) }))} />
                 Habito ativo
               </label>
@@ -256,14 +256,14 @@ export default function CheckinsIndex({ today, habitos = [], historico = [] }) {
                 busy={busyId === habit.id}
               />
             )) : (
-              <div className="rounded-3xl border border-dashed border-zinc-300 bg-white px-6 py-12 text-center text-sm text-zinc-500 shadow-sm">
+              <div className="rounded-xl border border-dashed border-zinc-300 bg-white px-6 py-12 text-center text-sm text-zinc-500 shadow-sm">
                 Nenhum habito cadastrado ainda. Comece criando o primeiro na lateral.
               </div>
             )}
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
           <div className="border-b border-zinc-200 px-6 py-4">
             <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Historico recente</h2>
             <p className="mt-1 text-sm text-zinc-500">Ultimos registros de conclusao dos seus habitos.</p>

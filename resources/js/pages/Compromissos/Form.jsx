@@ -152,7 +152,7 @@ function ShareEditor({ compromisso, processing }) {
   }
 
   return (
-    <div className="rounded-2xl border border-blue-200 bg-blue-50/60 p-5">
+    <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-5">
       <div className="mb-4">
         <h3 className="text-base font-semibold text-zinc-950">Compartilhamento</h3>
         <p className="mt-1 text-sm text-zinc-600">Digite o e-mail do usuário do sistema. Se ele existir, o compromisso será compartilhado.</p>
@@ -191,7 +191,7 @@ function ShareEditor({ compromisso, processing }) {
 
       <div className="mt-4 space-y-3">
         {localItems.length ? localItems.map((item) => (
-          <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3">
+          <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3">
             <div>
               <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
               <p className="text-sm text-zinc-500">{item.email_masked || item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
@@ -207,7 +207,7 @@ function ShareEditor({ compromisso, processing }) {
             </Button>
           </div>
         )) : (
-          <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-4 py-5 text-sm text-zinc-500">
+          <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-5 text-sm text-zinc-500">
             Este compromisso ainda não foi compartilhado com ninguém.
           </div>
         )}
@@ -243,14 +243,14 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
   const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
   const shellInputClassName = 'h-full w-full !rounded-none !border-0 !bg-transparent !p-0 text-sm text-zinc-950 !shadow-none outline-none appearance-none focus:!border-0 focus:!ring-0'
-  const sectionClassName = 'grid gap-5 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
+  const sectionClassName = 'grid gap-5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
 
   return (
     <AppLayout title={editing ? 'Editar Compromisso' : 'Novo Compromisso'}>
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={submit} className="space-y-6">
           {editing && compromisso?.owner?.nome ? (
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
               Dono: <span className="font-medium text-zinc-900">{compromisso.owner.nome}</span>
               {compromisso.permissao ? <span className="ml-2"><Badge variant="outline">{formatPermissionLabel(compromisso.permissao)}</Badge></span> : null}
             </div>
@@ -358,8 +358,8 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5">
-            <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
+          <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-5">
+            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-sm">
               <Checkbox
                 checked={data.dia_inteiro}
                 onCheckedChange={(checked) => setData('dia_inteiro', Boolean(checked))}
@@ -369,7 +369,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           </div>
 
           {editing ? (
-            <label className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm lg:col-span-2">
+            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-sm lg:col-span-2">
               <Checkbox
                 checked={data.cancelar_lembrete}
                 onCheckedChange={(checked) => setData('cancelar_lembrete', Boolean(checked))}
@@ -380,7 +380,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className="grid gap-2">
             <Label className="text-zinc-900">Descrição</Label>
-            <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+            <div className="rounded-lg border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
               <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
             </div>
           </div>
@@ -391,9 +391,9 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             <Button disabled={processing} className="w-auto">
               {editing ? 'Salvar alterações' : 'Criar compromisso'}
             </Button>
-            <Link href="/compromissos" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
-              Cancelar
-            </Link>
+            <Button asChild variant="outline" className="w-auto">
+              <Link href="/compromissos">Cancelar</Link>
+            </Button>
           </div>
         </form>
 

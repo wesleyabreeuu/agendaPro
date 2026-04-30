@@ -29,7 +29,7 @@ export default function FinanceiroEditTransacao({ transacao, categorias = [], co
 
   return (
     <AppLayout title="Editar Lançamento">
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form onSubmit={submit} className="grid gap-5">
           <div className="grid gap-5 md:grid-cols-3">
             <Select value={form.data.tipo} onChange={(e) => form.setData('tipo', e.target.value)}>
@@ -95,7 +95,9 @@ export default function FinanceiroEditTransacao({ transacao, categorias = [], co
 
           <div className="flex gap-3">
             <Button className="w-auto">Salvar alterações</Button>
-            <Link href="/financeiro/transacoes" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
+            <Button asChild variant="outline" className="w-auto">
+              <Link href="/financeiro/transacoes">Cancelar</Link>
+            </Button>
           </div>
         </form>
       </div>

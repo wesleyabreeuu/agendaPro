@@ -51,11 +51,11 @@ export default function TimelineItem({
   const Icon = style.icon
 
   return (
-    <article className="rounded-2xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-zinc-300 hover:bg-zinc-50/40">
+    <article className="rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50/40">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_120px_150px_190px] lg:items-center">
         <div className="min-w-0">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-600">
+            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-600">
               <Icon className="h-4 w-4" />
             </div>
             <div className="min-w-0">

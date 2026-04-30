@@ -21,14 +21,14 @@ export default function RotinasTemplates({ templates = [] }) {
   return (
     <AppLayout title="Templates de Rotinas" chrome="dashboard">
       <div className="space-y-6">
-        <div className={`rounded-[30px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+        <div className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
           <h1 className={`text-3xl font-semibold tracking-tight ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Templates</h1>
           <p className={`mt-2 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Escolha uma estrutura pronta e importe várias rotinas de uma vez. Depois você pode editar cada uma livremente.</p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-2">
           {templates.map((template) => (
-            <section key={template.id} className={`rounded-[28px] border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+            <section key={template.id} className={`rounded-xl border p-6 shadow-sm ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -45,7 +45,7 @@ export default function RotinasTemplates({ templates = [] }) {
 
               <div className="mt-5 grid gap-3">
                 {template.rotinas.map((rotina, index) => (
-                  <div key={`${template.id}-${index}`} className={`rounded-2xl border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
+                  <div key={`${template.id}-${index}`} className={`rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-zinc-50/70'}`}>
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
                         <p className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{rotina.nome}</p>
@@ -60,7 +60,7 @@ export default function RotinasTemplates({ templates = [] }) {
           ))}
 
           {!templates.length ? (
-            <div className={`rounded-[28px] border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
+            <div className={`rounded-xl border border-dashed px-6 py-12 text-center text-sm ${isDark ? 'border-zinc-700 text-zinc-400' : 'border-zinc-300 text-zinc-500'}`}>
               Nenhum template disponível.
             </div>
           ) : null}

@@ -2,7 +2,9 @@ import React from 'react'
 import { Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
-import { Button, Checkbox, Input, Textarea } from '@/components/ui'
+import { Button, Checkbox, Input, Label, Textarea } from '@/components/ui'
+import { ActionBar, FieldGrid, PageCard, PageCardContent, PageCardHeader } from '@/components/page'
+import { ShieldCheck } from 'lucide-react'
 
 export default function RegrasForm({ regra, errors = {} }) {
   const editing = Boolean(regra?.id)
@@ -33,36 +35,47 @@ export default function RegrasForm({ regra, errors = {} }) {
 
   return (
     <AppLayout title={editing ? 'Editar Regra' : 'Nova Regra'}>
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <form onSubmit={submit} className="grid gap-6 lg:grid-cols-2">
+      <PageCard>
+        <PageCardHeader
+          icon={ShieldCheck}
+          title={editing ? 'Editar regra' : 'Nova regra'}
+          description="Configure permissões por área do sistema."
+        />
+        <PageCardContent>
+        <form onSubmit={submit} className="grid gap-6">
+          <FieldGrid>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Nome</label>
+            <Label className="text-zinc-900">Nome</Label>
             <Input value={data.nome} onChange={(e) => setData('nome', e.target.value)} />
             {errors.nome ? <p className="text-sm text-red-600">{errors.nome}</p> : null}
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-medium text-zinc-900">Slug</label>
+            <Label className="text-zinc-900">Slug</Label>
             <Input value={data.slug} onChange={(e) => setData('slug', e.target.value)} />
             {errors.slug ? <p className="text-sm text-red-600">{errors.slug}</p> : null}
           </div>
           <div className="grid gap-2 lg:col-span-2">
-            <label className="text-sm font-medium text-zinc-900">Descrição</label>
+            <Label className="text-zinc-900">Descrição</Label>
             <Textarea className="min-h-28" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
           </div>
+          </FieldGrid>
           <div className="grid gap-3 lg:col-span-2">
             {checks.map(([key, label]) => (
-              <label key={key} className="inline-flex items-center gap-3 text-sm text-zinc-700">
+              <label key={key} className="inline-flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm text-zinc-700">
                 <Checkbox checked={data[key]} onCheckedChange={(checked) => setData(key, Boolean(checked))} />
                 <span>{label}</span>
               </label>
             ))}
           </div>
-          <div className="flex gap-3 lg:col-span-2">
+          <ActionBar>
             <Button disabled={processing} className="w-auto">Salvar</Button>
-            <Link href="/regras" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">Cancelar</Link>
-          </div>
+            <Button asChild variant="outline" className="w-auto">
+              <Link href="/regras">Cancelar</Link>
+            </Button>
+          </ActionBar>
         </form>
-      </div>
+        </PageCardContent>
+      </PageCard>
     </AppLayout>
   )
 }

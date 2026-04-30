@@ -126,11 +126,11 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
 
   const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
   const shellInputClassName = 'h-full w-full !rounded-none !border-0 !bg-transparent !p-0 text-sm text-zinc-950 !shadow-none outline-none appearance-none focus:!border-0 focus:!ring-0'
-  const sectionClassName = 'grid gap-5 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
+  const sectionClassName = 'grid gap-5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
 
   return (
     <AppLayout title={editing ? 'Editar Lembrete' : 'Novo Lembrete'}>
-      <div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
         <form
           onSubmit={(event) => {
             event.preventDefault()
@@ -524,7 +524,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                           const error = getFirstError(field, serverErrors.dias_semana)
 
                           return (
-                            <div className="grid gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5">
+                            <div className="grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5">
                               <Label className="text-zinc-900">Dias da semana</Label>
                               <div className="flex flex-wrap gap-3">
                                 {Object.entries(diasSemana).map(([value, label]) => {
@@ -560,7 +560,7 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                       {(field) => (
                         <div className="grid gap-2">
                           <Label className="text-zinc-900">Descrição</Label>
-                          <div className="rounded-2xl border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
+                          <div className="rounded-lg border border-zinc-200 bg-white shadow-sm transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
                             <Textarea
                               className="min-h-32 resize-y border-0 shadow-none focus:ring-0"
                               value={field.state.value}
@@ -576,8 +576,8 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
 
                 <form.Field name="ativo">
                   {(field) => (
-                    <div className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5">
-                      <div className="flex items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white px-4 py-3 shadow-sm">
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-5">
+                      <div className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 shadow-sm">
                         <div>
                           <Label className="text-zinc-900">Manter lembrete ativo</Label>
                           <p className="mt-1 text-sm text-zinc-500">Desative para parar novos disparos sem apagar o histórico.</p>
@@ -594,9 +594,9 @@ export default function LembretesForm({ lembrete = null, compromissos = [], dias
                   <Button disabled={isSubmitting} className="w-auto">
                     {isSubmitting ? 'Salvando...' : 'Salvar'}
                   </Button>
-                  <Link href="/lembretes" className="inline-flex h-10 items-center justify-center rounded-md border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-900">
-                    Cancelar
-                  </Link>
+                  <Button asChild variant="outline" className="w-auto">
+                    <Link href="/lembretes">Cancelar</Link>
+                  </Button>
                 </div>
               </>
             )}
