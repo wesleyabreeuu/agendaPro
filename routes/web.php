@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('can:access-projetos')->group(function () {
         Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
+        Route::get('kanban/boards', [KanbanController::class, 'redirectToIndex']);
         Route::get('kanban/boards/{board}', [KanbanController::class, 'show'])->name('kanban.show');
         Route::post('kanban/boards', [KanbanController::class, 'storeBoard'])->name('kanban.boards.store');
         Route::put('kanban/boards/{board}', [KanbanController::class, 'updateBoard'])->name('kanban.boards.update');

@@ -37,6 +37,11 @@ class KanbanController extends Controller
         ]);
     }
 
+    public function redirectToIndex(): RedirectResponse
+    {
+        return redirect()->route('kanban.index');
+    }
+
     public function show(KanbanBoard $board): Response
     {
         $this->authorizeBoard($board);
