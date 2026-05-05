@@ -438,13 +438,33 @@ export default function AppLayout({ title, children, chrome = 'dashboard' }) {
     return Uint8Array.from([...rawData].map((char) => char.charCodeAt(0)))
   }
 
+  const pushKeysMatch = (subscription, publicKey) => {
+    const currentKey = subscription.options?.applicationServerKey
+
+    if (!currentKey) {
+      return true
+    }
+
+    const expectedKey = urlBase64ToUint8Array(publicKey)
+    const activeKey = new Uint8Array(currentKey)
+
+    return activeKey.length === expectedKey.length
+      && activeKey.every((value, index) => value === expectedKey[index])
+  }
+
   const syncPushSubscription = async (registration) => {
     if (!pushEnabled || !('PushManager' in window) || window.Notification.permission !== 'granted') {
       return
     }
 
-    const existingSubscription = await registration.pushManager.getSubscription()
-    const subscription = existingSubscription || await registration.pushManager.subscribe({
+    let subscription = await registration.pushManager.getSubscription()
+
+    if (subscription && !pushKeysMatch(subscription, pushPublicKey)) {
+      await subscription.unsubscribe()
+      subscription = null
+    }
+
+    subscription ||= await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(pushPublicKey),
     })
@@ -468,13 +488,19 @@ export default function AppLayout({ title, children, chrome = 'dashboard' }) {
     }
 
     try {
-      const registrations = await navigator.serviceWorker.getRegistrations()
-      await Promise.all(registrations.map((registration) => registration.unregister()))
-    } catch (error) {
-      console.error('Falha ao desativar service worker.', error)
-    }
+      const registration = await navigator.serviceWorker.register('/service-worker.js', {
+        scope: '/',
+        updateViaCache: 'none',
+      })
 
-    return null
+      await registration.update()
+      await navigator.serviceWorker.ready
+
+      return registration
+    } catch (error) {
+      console.error('Falha ao registrar service worker.', error)
+      return null
+    }
   }
 
   const requestNotificationPermission = async ({ force = false } = {}) => {

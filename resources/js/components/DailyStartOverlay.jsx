@@ -1,5 +1,21 @@
 import React from 'react'
-import { Button } from '@/components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Progress,
+} from '@/components/ui'
+import { useTheme } from '@/contexts/ThemeContext'
 import {
   CalendarDays,
   CheckSquare,
@@ -46,6 +62,8 @@ export default function DailyStartOverlay({
   onSkip,
   starting = false,
 }) {
+  const { theme } = useTheme()
+
   if (!open) {
     return null
   }
@@ -53,32 +71,48 @@ export default function DailyStartOverlay({
   const resumo = preview?.resumo || {}
   const counts = resumo?.itens_por_tipo || {}
   const miniTimeline = (preview?.timeline || []).slice(0, 4)
+  const progress = resumo?.percentual || 0
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-zinc-950/75 px-4 py-4 backdrop-blur-sm">
-      <div className="w-full max-w-[860px] overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs">
-        <div className="grid gap-0 lg:grid-cols-[0.98fr_0.82fr]">
-          <section className="p-4 sm:p-5 lg:p-6">
-            <span className="inline-flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-700">
-              <Sparkles className="h-3.5 w-3.5" />
+    <Dialog open={open}>
+      <DialogContent
+        className={`${theme === 'dark' ? 'dark' : ''} max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-[880px] overflow-y-auto border-border bg-card p-0 text-card-foreground shadow-xs`}
+      >
+        <div className="grid gap-0 lg:grid-cols-[1fr_0.86fr]">
+          <section className="bg-card p-4 sm:p-5 lg:p-6">
+            <DialogHeader>
+              <Badge
+                variant="outline"
+                className="w-fit gap-2 rounded-lg border-border bg-background px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
               Ritual de início
-            </span>
-            <h2 className="mt-4 text-[36px] font-semibold tracking-tight text-zinc-950">
-              Bom dia, {user?.name}
-            </h2>
-            <p className="mt-3 max-w-lg text-[15px] leading-7 text-zinc-600">
-              Sua agenda já está organizada. Faça uma leitura rápida, entre no foco do dia e comece com clareza.
-            </p>
+              </Badge>
+              <DialogTitle className="mt-4 text-[32px] font-semibold tracking-tight text-foreground sm:text-[36px]">
+                Bom dia, {user?.name}
+              </DialogTitle>
+              <DialogDescription className="max-w-lg text-[15px] leading-7 text-muted-foreground">
+                Sua agenda já está organizada. Faça uma leitura rápida, entre no foco do dia e comece com clareza.
+              </DialogDescription>
+            </DialogHeader>
 
             <div className="mt-5 grid max-w-[470px] gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {summaryItems.map(({ key, label, icon: Icon }) => (
-                <div key={key} className="min-h-[102px] rounded-lg border border-zinc-200 bg-white px-4 py-3.5 shadow-xs">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[13px] font-medium text-zinc-600">{label}</p>
-                    <Icon className="h-3.5 w-3.5 text-zinc-500" />
-                  </div>
-                  <p className="mt-3 text-[24px] font-semibold tracking-tight text-zinc-950">{counts[key] || 0}</p>
-                </div>
+                <Card
+                  key={key}
+                  size="sm"
+                  className="min-h-[102px] gap-3 rounded-lg border-border bg-background py-3.5 shadow-none"
+                >
+                  <CardHeader className="grid-cols-[1fr_auto] gap-3 px-4">
+                    <CardDescription className="text-[13px] font-medium">{label}</CardDescription>
+                    <CardAction className="row-span-1">
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent className="px-4">
+                    <p className="text-[24px] font-semibold tracking-tight text-foreground">{counts[key] || 0}</p>
+                  </CardContent>
+                </Card>
               ))}
             </div>
 
@@ -95,74 +129,86 @@ export default function DailyStartOverlay({
                 type="button"
                 onClick={onSkip}
                 variant="outline"
-                className="h-11 w-auto border-zinc-200 bg-white px-5 text-sm font-semibold text-zinc-700"
+                className="h-11 w-auto px-5 text-sm font-semibold"
               >
                 Pular por hoje
               </Button>
             </div>
           </section>
 
-          <aside className="border-t border-zinc-200/80 bg-zinc-950 px-4 py-4 text-white lg:border-l lg:border-t-0 lg:px-5 lg:py-5">
+          <aside className="border-t border-border bg-muted/35 px-4 py-4 text-foreground lg:border-l lg:border-t-0 lg:px-5 lg:py-5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Mini timeline</p>
-                <h3 className="mt-2 text-[18px] font-semibold">Seus próximos passos</h3>
+                <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Mini timeline</p>
+                <h3 className="mt-2 text-[18px] font-semibold text-foreground">Seus próximos passos</h3>
               </div>
-              <div className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-right">
-                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Progresso</p>
-                <p className="mt-1 text-[16px] font-semibold text-white">{resumo?.percentual || 0}%</p>
-              </div>
+              <Card size="sm" className="w-[112px] gap-2 rounded-lg border-border bg-background py-3 text-right shadow-none">
+                <CardContent className="px-3">
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Progresso</p>
+                  <p className="mt-1 text-[16px] font-semibold text-foreground">{progress}%</p>
+                  <Progress value={progress} className="mt-2 h-1" />
+                </CardContent>
+              </Card>
             </div>
 
             <div className="mt-4 space-y-2.5">
               {miniTimeline.length ? miniTimeline.map((item) => (
-                <div
+                <Card
                   key={`${item.tipo}-${item.origem_id}`}
-                  className="rounded-lg border border-white/10 bg-white/[0.05] px-4 py-3"
+                  size="sm"
+                  className="gap-2 rounded-lg border-border bg-background py-3 shadow-none"
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[14px] font-medium text-white">{item.titulo}</p>
-                    <span className="text-[13px] text-zinc-300">{item.hora_inicio || 'Sem hora'}</span>
-                  </div>
-                  {item.descricao ? <p className="mt-1 text-[13px] leading-6 text-zinc-400">{item.descricao}</p> : null}
-                </div>
+                  <CardHeader className="grid-cols-[1fr_auto] gap-3 px-4">
+                    <CardTitle className="text-[14px] font-medium">{item.titulo}</CardTitle>
+                    <CardAction className="row-span-1 text-[13px] text-muted-foreground">
+                      {item.hora_inicio || 'Sem hora'}
+                    </CardAction>
+                  </CardHeader>
+                  {item.descricao ? (
+                    <CardContent className="px-4">
+                      <p className="text-[13px] leading-6 text-muted-foreground">{item.descricao}</p>
+                    </CardContent>
+                  ) : null}
+                </Card>
               )) : (
-                <div className="rounded-lg border border-dashed border-white/15 p-5 text-sm text-zinc-400">
+                <Card className="rounded-lg border-dashed border-border bg-background p-5 text-sm text-muted-foreground shadow-none">
                   Nada programado na timeline por enquanto.
-                </div>
+                </Card>
               )}
             </div>
 
-            <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.04] p-4">
-              <div className="flex items-center justify-between gap-3">
+            <Card className="mt-4 rounded-xl border-border bg-background shadow-none">
+              <CardHeader className="grid-cols-[1fr_auto] gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Boas do dia</p>
-                  <h4 className="mt-2 text-[14px] font-semibold text-white sm:text-[16px]">Pequenos ajustes, dia melhor</h4>
+                  <CardDescription className="text-xs uppercase tracking-[0.24em]">Boas do dia</CardDescription>
+                  <CardTitle className="mt-2 text-[14px] font-semibold sm:text-[16px]">Pequenos ajustes, dia melhor</CardTitle>
                 </div>
-                <div className="rounded-lg border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-[10px] font-medium text-amber-200">
+                <CardAction>
+                  <Badge variant="warning" className="rounded-lg px-2 py-1 text-[10px] font-medium">
                   3 lembretes
-                </div>
-              </div>
+                  </Badge>
+                </CardAction>
+              </CardHeader>
 
-              <div className="mt-3 space-y-2">
+              <CardContent className="space-y-2">
                 {dailyTips.map(({ title, description, icon: Icon }) => (
-                  <div key={title} className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-3">
+                  <div key={title} className="rounded-lg border border-border bg-muted/30 py-3">
                     <div className="flex items-start gap-2.5">
-                      <div className="rounded-lg border border-white/10 bg-white/[0.04] p-2">
-                        <Icon className="h-[14px] w-[14px] text-amber-300" />
+                      <div className="ml-3 rounded-lg border border-border bg-background p-2">
+                        <Icon className="h-[14px] w-[14px] text-amber-600" />
                       </div>
-                      <div>
-                        <p className="text-[13px] font-semibold text-white sm:text-[14px]">{title}</p>
-                        <p className="mt-1 text-[13px] leading-6 text-zinc-400">{description}</p>
+                      <div className="min-w-0 pr-3">
+                        <p className="text-[13px] font-semibold text-foreground sm:text-[14px]">{title}</p>
+                        <p className="mt-1 text-[13px] leading-6 text-muted-foreground">{description}</p>
                       </div>
                     </div>
                   </div>
                 ))}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </aside>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
