@@ -151,7 +151,7 @@ export default function SaudeDashboard({
 
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
           <Panel title="Melhores resultados" subtitle="Ranking automático dos seus pedais." isDark={isDark}>
-            <div className="grid gap-4 lg:grid-cols-3">
+            <div className="grid gap-4 xl:grid-cols-3">
               <Ranking title="Distância" items={ranking.distancia} field={(item) => `${number(item.km, 1)} km`} isDark={isDark} />
               <Ranking title="Altimetria" items={ranking.altimetria} field={(item) => `${number(item.altimetria)} m`} isDark={isDark} />
               <Ranking title="Velocidade" items={ranking.velocidade} field={(item) => `${number(item.velocidade_media, 1)} km/h`} isDark={isDark} />
@@ -243,13 +243,15 @@ function Ranking({ title, items = [], field, isDark }) {
       <p className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{title}</p>
       {items.map((item, index) => (
         <div key={`${title}-${item.id}`} className={innerClass(isDark)}>
-          <div className="flex items-start gap-3">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
             <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>{index + 1}</span>
-            <div className="min-w-0 flex-1">
-              <p className={`truncate font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
-              <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</p>
+            <div className="min-w-0">
+              <p className={`truncate text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
+              <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
+                <span className={`text-lg font-semibold leading-none ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</span>
+                <span className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</span>
+              </div>
             </div>
-            <span className={`text-sm font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</span>
           </div>
         </div>
       ))}

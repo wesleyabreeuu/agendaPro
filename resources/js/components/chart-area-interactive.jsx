@@ -74,26 +74,39 @@ export function ChartAreaInteractive({
     km: acc.km + Number(item.km || 0),
     altimetria: acc.altimetria + Number(item.altimetria || 0),
   }), { km: 0, altimetria: 0 })
+  const selectedLabel = timeRange === "90d"
+    ? "Últimos 3 meses"
+    : timeRange === "30d"
+      ? "Últimos 30 dias"
+      : "Últimos 7 dias"
 
   return (
     <Card className="pt-0">
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
-        <div className="grid flex-1 gap-1">
+      <CardHeader className="flex flex-col gap-4 border-b py-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
           <CardTitle>{title}</CardTitle>
-          <CardDescription>
-            {chartDescription} {formatNumber(totals.km, 1)} km • {formatNumber(totals.altimetria)} m
+          <CardDescription className="mt-1 max-w-xl">
+            {chartDescription}
           </CardDescription>
         </div>
-        <Select
-          value={timeRange}
-          onChange={(event) => setTimeRange(event.target.value)}
-          className="hidden w-[160px] rounded-lg sm:ml-auto sm:flex"
-          aria-label="Selecione o período"
-        >
-          <option value="90d">Últimos 3 meses</option>
-          <option value="30d">Últimos 30 dias</option>
-          <option value="7d">Últimos 7 dias</option>
-        </Select>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:items-end">
+          <Select
+            value={timeRange}
+            onChange={(event) => setTimeRange(event.target.value)}
+            className="h-9 w-full rounded-lg px-3 sm:w-[180px]"
+            aria-label="Selecione o período"
+          >
+            <option value="90d">Últimos 3 meses</option>
+            <option value="30d">Últimos 30 dias</option>
+            <option value="7d">Últimos 7 dias</option>
+          </Select>
+          <p className="text-sm font-medium text-foreground">
+            {formatNumber(totals.km, 1)} km
+            <span className="mx-2 text-muted-foreground">•</span>
+            {formatNumber(totals.altimetria)} m
+          </p>
+          <p className="text-xs text-muted-foreground">{selectedLabel}</p>
+        </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
