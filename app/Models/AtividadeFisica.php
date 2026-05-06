@@ -18,29 +18,54 @@ class AtividadeFisica extends Model
         'data',
         'hora_inicio',
         'duracao_minutos',
+        'tempo_movimento_segundos',
+        'tempo_decorrido_segundos',
         'intensidade',
         'calorias_queimadas',
         'distancia_metros',
         'elevacao_ganho_metros',
+        'elevacao_maxima_metros',
+        'elevacao_minima_metros',
         'velocidade_media_mps',
         'velocidade_maxima_mps',
         'ritmo_medio_segundos',
+        'achievement_count',
+        'pr_count',
+        'total_photo_count',
+        'start_latitude',
+        'start_longitude',
+        'end_latitude',
+        'end_longitude',
         'mapa_resumo_polyline',
+        'stream_data',
         'notas',
         'fonte',
         'fonte_id',
+        'sport_type',
         'sincronizado_em',
     ];
 
     protected $casts = [
         'data' => 'date',
         'duracao_minutos' => 'integer',
+        'tempo_movimento_segundos' => 'integer',
+        'tempo_decorrido_segundos' => 'integer',
         'calorias_queimadas' => 'integer',
         'distancia_metros' => 'float',
         'elevacao_ganho_metros' => 'float',
+        'elevacao_maxima_metros' => 'float',
+        'elevacao_minima_metros' => 'float',
         'velocidade_media_mps' => 'float',
         'velocidade_maxima_mps' => 'float',
         'ritmo_medio_segundos' => 'integer',
+        'achievement_count' => 'integer',
+        'pr_count' => 'integer',
+        'total_photo_count' => 'integer',
+        'start_latitude' => 'float',
+        'start_longitude' => 'float',
+        'end_latitude' => 'float',
+        'end_longitude' => 'float',
+        'stream_data' => 'array',
         'sincronizado_em' => 'datetime',
     ];
 
@@ -94,6 +119,13 @@ class AtividadeFisica extends Model
             : null;
     }
 
+    public function getElevacaoMaximaFormatadaAttribute(): ?string
+    {
+        return $this->elevacao_maxima_metros !== null
+            ? number_format($this->elevacao_maxima_metros, 0, ',', '.') . ' m'
+            : null;
+    }
+
     public function getVelocidadeMediaKmhAttribute(): ?float
     {
         return $this->velocidade_media_mps !== null
@@ -105,6 +137,20 @@ class AtividadeFisica extends Model
     {
         return $this->velocidade_maxima_mps !== null
             ? round($this->velocidade_maxima_mps * 3.6, 1)
+            : null;
+    }
+
+    public function getTempoMovimentoFormatadoAttribute(): ?string
+    {
+        return $this->tempo_movimento_segundos
+            ? $this->formatSeconds($this->tempo_movimento_segundos)
+            : null;
+    }
+
+    public function getTempoDecorridoFormatadoAttribute(): ?string
+    {
+        return $this->tempo_decorrido_segundos
+            ? $this->formatSeconds($this->tempo_decorrido_segundos)
             : null;
     }
 
@@ -202,5 +248,16 @@ class AtividadeFisica extends Model
         } while ($byte >= 0x20 && $index < strlen($polyline) + 1);
 
         return ($result & 1) ? ~($result >> 1) : ($result >> 1);
+    }
+
+    private function formatSeconds(int $seconds): string
+    {
+        $hours = intdiv($seconds, 3600);
+        $minutes = intdiv($seconds % 3600, 60);
+        $remainingSeconds = $seconds % 60;
+
+        return $hours > 0
+            ? sprintf('%d:%02d:%02d', $hours, $minutes, $remainingSeconds)
+            : sprintf('%d:%02d', $minutes, $remainingSeconds);
     }
 }

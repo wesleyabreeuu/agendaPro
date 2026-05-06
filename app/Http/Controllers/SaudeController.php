@@ -90,42 +90,45 @@ class SaudeController extends Controller
         $user = Auth::user();
         $this->garantirCategoriasPadrao($user->id);
 
-        // Período: última semana
-        $dataInicio = Carbon::now()->startOfWeek();
-        $dataFim = Carbon::now()->endOfWeek();
+        $dataInicioSemana = Carbon::now()->startOfWeek();
+        $dataFimSemana = Carbon::now()->endOfWeek();
 
-        // Atividades da semana
-        $atividades = AtividadeFisica::where('user_id', $user->id)
-            ->whereBetween('data', [$dataInicio, $dataFim])
+        $atividadesSemana = AtividadeFisica::where('user_id', $user->id)
+            ->whereBetween('data', [$dataInicioSemana, $dataFimSemana])
             ->with('categoria')
             ->orderBy('data', 'desc')
             ->get();
 
-        // Estatísticas
-        $totalHoras = $atividades->sum('duracao_minutos') / 60;
-        $totalCalorias = $atividades->sum('calorias_queimadas');
-        $sessoes = $atividades->count();
+        $atividades = AtividadeFisica::where('user_id', $user->id)
+            ->with('categoria')
+            ->orderBy('data')
+            ->get();
 
-        // Atividades por categoria
+        $pedais = $atividades->filter(fn (AtividadeFisica $atividade) => $this->isRideActivity($atividade));
+
+        $totalTempoMovimento = $pedais->sum(fn (AtividadeFisica $atividade) => $this->movingSeconds($atividade));
+        $totalTempoDecorrido = $pedais->sum(fn (AtividadeFisica $atividade) => $this->elapsedSeconds($atividade));
+        $totalDistancia = $pedais->sum(fn (AtividadeFisica $atividade) => (float) ($atividade->distancia_metros ?? 0));
+        $velocidadeMedia = $totalTempoMovimento > 0 ? ($totalDistancia / $totalTempoMovimento) * 3.6 : 0;
+
         $atividadesPorCategoria = $atividades->groupBy('categoria.nome')
             ->map(fn ($group) => [
                 'categoria' => $group->first()->categoria->nome,
                 'sessoes' => $group->count(),
-                'horas' => $group->sum('duracao_minutos') / 60,
+                'horas' => $group->sum(fn (AtividadeFisica $atividade) => $this->movingSeconds($atividade)) / 3600,
                 'calorias' => $group->sum('calorias_queimadas'),
+                'distancia_km' => round($group->sum(fn (AtividadeFisica $atividade) => (float) ($atividade->distancia_metros ?? 0)) / 1000, 1),
             ]);
 
-        // Metas
         $metas = MetaSaude::where('user_id', $user->id)
             ->where('ativa', true)
             ->get();
 
-        // Progressão de metas
-        $metasProgresso = $metas->map(function ($meta) use ($atividades) {
+        $metasProgresso = $metas->map(function ($meta) use ($atividadesSemana) {
             $progresso = match ($meta->tipo) {
-                'horas_semanais' => $atividades->sum('duracao_minutos') / 60,
-                'calorias_semana' => $atividades->sum('calorias_queimadas'),
-                'dias_semana' => $atividades->groupBy('data')->count(),
+                'horas_semanais' => $atividadesSemana->sum(fn (AtividadeFisica $atividade) => $this->movingSeconds($atividade)) / 3600,
+                'calorias_semana' => $atividadesSemana->sum('calorias_queimadas'),
+                'dias_semana' => $atividadesSemana->groupBy('data')->count(),
                 'sessoes_mes' => 0, // Será calculado no mês
                 default => 0,
             };
@@ -137,24 +140,37 @@ class SaudeController extends Controller
             ];
         });
 
-        // últimas atividades
         $ultimasAtividades = AtividadeFisica::where('user_id', $user->id)
             ->with('categoria')
             ->latest('data')
-            ->take(5)
+            ->take(6)
             ->get();
 
         return Inertia::render('Saude/Dashboard', [
             'resumo' => [
-                'total_horas' => (float) $totalHoras,
-                'total_calorias' => (int) $totalCalorias,
-                'sessoes' => (int) $sessoes,
+                'total_horas' => round($totalTempoMovimento / 3600, 1),
+                'tempo_decorrido_horas' => round($totalTempoDecorrido / 3600, 1),
+                'total_calorias' => (int) $pedais->sum('calorias_queimadas'),
+                'sessoes' => (int) $pedais->count(),
                 'tipos_atividade' => (int) $atividadesPorCategoria->count(),
+                'total_km' => round($totalDistancia / 1000, 1),
+                'altimetria_total_m' => (int) round($pedais->sum(fn (AtividadeFisica $atividade) => (float) ($atividade->elevacao_ganho_metros ?? 0))),
+                'velocidade_media_kmh' => round($velocidadeMedia, 1),
+                'velocidade_maxima_kmh' => round((float) $pedais->max(fn (AtividadeFisica $atividade) => (float) ($atividade->velocidade_maxima_kmh ?? 0)), 1),
+                'maior_pedal_km' => round(((float) $pedais->max(fn (AtividadeFisica $atividade) => (float) ($atividade->distancia_metros ?? 0))) / 1000, 1),
+                'maior_ganho_elevacao_m' => (int) round((float) $pedais->max(fn (AtividadeFisica $atividade) => (float) ($atividade->elevacao_ganho_metros ?? 0))),
+                'pico_altimetria_m' => (int) round((float) $pedais->max(fn (AtividadeFisica $atividade) => (float) ($atividade->elevacao_maxima_metros ?? 0))),
             ],
             'strava' => [
                 'connected' => $user->hasStravaConnected(),
             ],
             'atividadesPorCategoria' => $atividadesPorCategoria->values()->all(),
+            'graficos' => [
+                'evolucao_mensal' => $this->buildMonthlyRideSeries($pedais),
+                'pedais_recentes' => $this->buildRecentRideSeries($pedais),
+                'perfil_altimetria' => $this->buildElevationProfile($pedais),
+                'ranking' => $this->buildRideRanking($pedais),
+            ],
             'metasProgresso' => $metasProgresso->map(fn (array $item) => [
                 'meta' => $this->serializeMeta($item['meta']),
                 'progresso' => (float) $item['progresso'],
@@ -444,6 +460,141 @@ class SaudeController extends Controller
         ]);
     }
 
+    private function isRideActivity(AtividadeFisica $atividade): bool
+    {
+        $sportType = $atividade->sport_type;
+        $categoria = $atividade->categoria?->nome;
+
+        return in_array($sportType, ['Ride', 'GravelRide', 'EBikeRide', 'MountainBikeRide', 'VirtualRide'], true)
+            || $categoria === 'Ciclismo';
+    }
+
+    private function movingSeconds(AtividadeFisica $atividade): int
+    {
+        return (int) ($atividade->tempo_movimento_segundos ?: ($atividade->duracao_minutos * 60));
+    }
+
+    private function elapsedSeconds(AtividadeFisica $atividade): int
+    {
+        return (int) ($atividade->tempo_decorrido_segundos ?: $this->movingSeconds($atividade));
+    }
+
+    private function buildMonthlyRideSeries($pedais): array
+    {
+        $months = collect(range(11, 0))
+            ->mapWithKeys(function (int $offset) {
+                $date = now()->subMonths($offset);
+
+                return [$date->format('Y-m') => [
+                    'date' => $date->startOfMonth()->toDateString(),
+                    'mes' => $date->translatedFormat('M/y'),
+                    'km' => 0,
+                    'altimetria' => 0,
+                    'calorias' => 0,
+                    'horas' => 0,
+                    'sessoes' => 0,
+                ]];
+            });
+
+        $pedais
+            ->filter(fn (AtividadeFisica $atividade) => $atividade->data?->gte(now()->subMonths(11)->startOfMonth()))
+            ->groupBy(fn (AtividadeFisica $atividade) => $atividade->data?->format('Y-m'))
+            ->each(function ($group, string $key) use (&$months) {
+                if (!$months->has($key)) {
+                    return;
+                }
+
+                $months[$key] = [
+                    'date' => $months[$key]['date'],
+                    'mes' => $months[$key]['mes'],
+                    'km' => round($group->sum(fn (AtividadeFisica $atividade) => (float) ($atividade->distancia_metros ?? 0)) / 1000, 1),
+                    'altimetria' => (int) round($group->sum(fn (AtividadeFisica $atividade) => (float) ($atividade->elevacao_ganho_metros ?? 0))),
+                    'calorias' => (int) $group->sum('calorias_queimadas'),
+                    'horas' => round($group->sum(fn (AtividadeFisica $atividade) => $this->movingSeconds($atividade)) / 3600, 1),
+                    'sessoes' => $group->count(),
+                ];
+            });
+
+        return $months->values()->all();
+    }
+
+    private function buildRecentRideSeries($pedais): array
+    {
+        return $pedais
+            ->sortByDesc('data')
+            ->take(12)
+            ->reverse()
+            ->values()
+            ->map(fn (AtividadeFisica $atividade) => [
+                'label' => $atividade->data?->format('d/m') ?? '-',
+                'nome' => $atividade->descricao ?: 'Pedal',
+                'km' => round(((float) ($atividade->distancia_metros ?? 0)) / 1000, 1),
+                'altimetria' => (int) round((float) ($atividade->elevacao_ganho_metros ?? 0)),
+                'velocidade_media' => round((float) ($atividade->velocidade_media_kmh ?? 0), 1),
+                'velocidade_maxima' => round((float) ($atividade->velocidade_maxima_kmh ?? 0), 1),
+                'calorias' => (int) ($atividade->calorias_queimadas ?? 0),
+            ])
+            ->all();
+    }
+
+    private function buildElevationProfile($pedais): array
+    {
+        $atividade = $pedais
+            ->filter(fn (AtividadeFisica $atividade) => !empty($atividade->stream_data['altitude']) && !empty($atividade->stream_data['distance']))
+            ->sortByDesc('data')
+            ->first();
+
+        if (!$atividade) {
+            return [
+                'atividade' => null,
+                'pontos' => [],
+            ];
+        }
+
+        $altitude = $atividade->stream_data['altitude'] ?? [];
+        $distance = $atividade->stream_data['distance'] ?? [];
+        $velocity = $atividade->stream_data['velocity_smooth'] ?? [];
+        $limit = min(count($altitude), count($distance));
+        $points = [];
+
+        for ($index = 0; $index < $limit; $index++) {
+            $points[] = [
+                'km' => round(((float) $distance[$index]) / 1000, 2),
+                'altitude' => round((float) $altitude[$index], 1),
+                'velocidade' => isset($velocity[$index]) ? round(((float) $velocity[$index]) * 3.6, 1) : null,
+            ];
+        }
+
+        return [
+            'atividade' => $this->serializeAtividade($atividade),
+            'pontos' => $points,
+        ];
+    }
+
+    private function buildRideRanking($pedais): array
+    {
+        $build = fn ($collection) => $collection
+            ->take(5)
+            ->values()
+            ->map(fn (AtividadeFisica $atividade) => [
+                'id' => $atividade->id,
+                'nome' => $atividade->descricao ?: 'Pedal',
+                'data' => $atividade->data?->format('d/m/Y'),
+                'km' => round(((float) ($atividade->distancia_metros ?? 0)) / 1000, 1),
+                'altimetria' => (int) round((float) ($atividade->elevacao_ganho_metros ?? 0)),
+                'velocidade_media' => round((float) ($atividade->velocidade_media_kmh ?? 0), 1),
+                'velocidade_maxima' => round((float) ($atividade->velocidade_maxima_kmh ?? 0), 1),
+                'calorias' => (int) ($atividade->calorias_queimadas ?? 0),
+            ])
+            ->all();
+
+        return [
+            'distancia' => $build($pedais->sortByDesc(fn (AtividadeFisica $atividade) => (float) ($atividade->distancia_metros ?? 0))),
+            'altimetria' => $build($pedais->sortByDesc(fn (AtividadeFisica $atividade) => (float) ($atividade->elevacao_ganho_metros ?? 0))),
+            'velocidade' => $build($pedais->sortByDesc(fn (AtividadeFisica $atividade) => (float) ($atividade->velocidade_media_kmh ?? 0))),
+        ];
+    }
+
     private function garantirCategoriasPadrao(int $userId): void
     {
         if (CategoriaAtividadeFisica::ownedBy($userId)->exists()) {
@@ -480,12 +631,27 @@ class SaudeController extends Controller
             'data_iso' => $atividade->data?->toDateString(),
             'hora_inicio' => $atividade->hora_inicio,
             'duracao_minutos' => (int) $atividade->duracao_minutos,
+            'tempo_movimento_segundos' => (int) ($atividade->tempo_movimento_segundos ?: $this->movingSeconds($atividade)),
+            'tempo_decorrido_segundos' => (int) ($atividade->tempo_decorrido_segundos ?: $this->elapsedSeconds($atividade)),
+            'tempo_movimento_formatado' => $atividade->tempo_movimento_formatado,
+            'tempo_decorrido_formatado' => $atividade->tempo_decorrido_formatado,
             'intensidade' => $atividade->intensidade,
             'calorias_queimadas' => (int) $atividade->calorias_queimadas,
+            'distancia_metros' => $atividade->distancia_metros,
+            'distancia_km' => $atividade->distancia_km,
             'distancia_formatada' => $atividade->distancia_formatada,
+            'elevacao_ganho_metros' => $atividade->elevacao_ganho_metros,
+            'elevacao_maxima_metros' => $atividade->elevacao_maxima_metros,
+            'elevacao_minima_metros' => $atividade->elevacao_minima_metros,
             'elevacao_formatada' => $atividade->elevacao_formatada,
+            'elevacao_maxima_formatada' => $atividade->elevacao_maxima_formatada,
             'velocidade_media_kmh' => $atividade->velocidade_media_kmh,
+            'velocidade_maxima_kmh' => $atividade->velocidade_maxima_kmh,
             'ritmo_medio_formatado' => $atividade->ritmo_medio_formatado,
+            'achievement_count' => $atividade->achievement_count,
+            'pr_count' => $atividade->pr_count,
+            'total_photo_count' => $atividade->total_photo_count,
+            'sport_type' => $atividade->sport_type,
             'notas' => $atividade->notas,
             'fonte' => $atividade->fonte,
             'strava_url' => $atividade->stravaUrl(),

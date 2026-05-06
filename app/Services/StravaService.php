@@ -8,6 +8,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use RuntimeException;
+use Throwable;
 
 class StravaService
 {
@@ -73,7 +74,9 @@ class StravaService
             return null;
         }
 
-        return $this->upsertActivityFromStrava($user, $activity);
+        $streams = $this->getActivityStreams($user, $activityId);
+
+        return $this->upsertActivityFromStrava($user, $activity, $streams);
     }
 
     public function deleteImportedActivity(string|int $activityId): void
@@ -141,6 +144,43 @@ class StravaService
         return $response->json();
     }
 
+    public function getActivityStreams(User $user, string|int $activityId): ?array
+    {
+        $user = $this->refreshToken($user);
+
+        try {
+            $response = Http::timeout(20)
+                ->acceptJson()
+                ->withToken($user->strava_access_token)
+                ->get(self::API_BASE . '/activities/' . $activityId . '/streams', [
+                    'keys' => implode(',', [
+                        'time',
+                        'distance',
+                        'latlng',
+                        'altitude',
+                        'velocity_smooth',
+                        'grade_smooth',
+                        'heartrate',
+                        'cadence',
+                        'watts',
+                        'temp',
+                        'moving',
+                    ]),
+                    'key_by_type' => 'true',
+                ]);
+
+            if ($response->status() === 404) {
+                return null;
+            }
+
+            $response->throw();
+
+            return $this->normalizeStreams($response->json());
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
     public function syncRecentActivities(User $user, int $days = 30, int $perPage = 100): int
     {
         $user = $this->refreshToken($user);
@@ -167,7 +207,11 @@ class StravaService
             }
 
             foreach ($activities as $activity) {
-                $this->upsertActivityFromStrava($user, $activity);
+                $activityId = $activity['id'] ?? null;
+                $detailedActivity = $activityId ? ($this->getActivity($user, $activityId) ?? $activity) : $activity;
+                $streams = $activityId ? $this->getActivityStreams($user, $activityId) : null;
+
+                $this->upsertActivityFromStrava($user, $detailedActivity, $streams);
                 $imported++;
             }
 
@@ -177,10 +221,14 @@ class StravaService
         return $imported;
     }
 
-    public function upsertActivityFromStrava(User $user, array $activity): AtividadeFisica
+    public function upsertActivityFromStrava(User $user, array $activity, ?array $streams = null): AtividadeFisica
     {
         $categoria = $this->resolveCategoryForSport($user, (string) ($activity['sport_type'] ?? $activity['type'] ?? 'Workout'));
         $start = Carbon::parse($activity['start_date_local'] ?? $activity['start_date'] ?? now());
+        $startLatLng = data_get($activity, 'start_latlng', []);
+        $endLatLng = data_get($activity, 'end_latlng', []);
+        $movingTime = $activity['moving_time'] ?? $activity['elapsed_time'] ?? null;
+        $elapsedTime = $activity['elapsed_time'] ?? $activity['moving_time'] ?? null;
 
         $payload = [
             'user_id' => $user->id,
@@ -188,20 +236,36 @@ class StravaService
             'descricao' => $activity['name'] ?? $categoria->nome,
             'data' => $start->toDateString(),
             'hora_inicio' => $start->format('H:i'),
-            'duracao_minutos' => max(1, (int) ceil(($activity['moving_time'] ?? $activity['elapsed_time'] ?? 0) / 60)),
+            'duracao_minutos' => max(1, (int) ceil(((int) ($movingTime ?? 0)) / 60)),
+            'tempo_movimento_segundos' => is_numeric($movingTime) ? (int) $movingTime : null,
+            'tempo_decorrido_segundos' => is_numeric($elapsedTime) ? (int) $elapsedTime : null,
             'intensidade' => $this->guessIntensity($activity),
             'calorias_queimadas' => $this->extractCalories($activity),
             'distancia_metros' => $this->extractFloat($activity, 'distance'),
             'elevacao_ganho_metros' => $this->extractFloat($activity, 'total_elevation_gain'),
+            'elevacao_maxima_metros' => $this->extractFloat($activity, 'elev_high'),
+            'elevacao_minima_metros' => $this->extractFloat($activity, 'elev_low'),
             'velocidade_media_mps' => $this->extractFloat($activity, 'average_speed'),
             'velocidade_maxima_mps' => $this->extractFloat($activity, 'max_speed'),
             'ritmo_medio_segundos' => $this->extractAveragePace($activity),
+            'achievement_count' => $this->extractInteger($activity, 'achievement_count'),
+            'pr_count' => $this->extractInteger($activity, 'pr_count'),
+            'total_photo_count' => $this->extractInteger($activity, 'total_photo_count'),
+            'start_latitude' => $this->coordinateFromLatLng($startLatLng, 0),
+            'start_longitude' => $this->coordinateFromLatLng($startLatLng, 1),
+            'end_latitude' => $this->coordinateFromLatLng($endLatLng, 0),
+            'end_longitude' => $this->coordinateFromLatLng($endLatLng, 1),
             'mapa_resumo_polyline' => data_get($activity, 'map.summary_polyline'),
             'notas' => $this->buildNotes($activity),
             'fonte' => 'strava',
             'fonte_id' => (string) $activity['id'],
+            'sport_type' => (string) ($activity['sport_type'] ?? $activity['type'] ?? 'Workout'),
             'sincronizado_em' => now(),
         ];
+
+        if ($streams !== null) {
+            $payload['stream_data'] = $streams;
+        }
 
         return AtividadeFisica::query()->updateOrCreate(
             [
@@ -307,6 +371,63 @@ class StravaService
         $value = data_get($activity, $key);
 
         return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function extractInteger(array $activity, string $key): ?int
+    {
+        $value = data_get($activity, $key);
+
+        return is_numeric($value) ? (int) $value : null;
+    }
+
+    private function coordinateFromLatLng(mixed $latLng, int $index): ?float
+    {
+        if (!is_array($latLng) || !array_key_exists($index, $latLng)) {
+            return null;
+        }
+
+        return is_numeric($latLng[$index]) ? (float) $latLng[$index] : null;
+    }
+
+    private function normalizeStreams(?array $streams): ?array
+    {
+        if (!$streams) {
+            return null;
+        }
+
+        $data = [];
+
+        foreach ($streams as $key => $stream) {
+            $values = is_array($stream) && array_key_exists('data', $stream)
+                ? $stream['data']
+                : $stream;
+
+            if (is_array($values) && $values !== []) {
+                $data[$key] = $this->sampleStreamValues($values);
+            }
+        }
+
+        return $data ?: null;
+    }
+
+    private function sampleStreamValues(array $values, int $maxPoints = 600): array
+    {
+        $count = count($values);
+
+        if ($count <= $maxPoints) {
+            return array_values($values);
+        }
+
+        $step = max(1, (int) ceil($count / $maxPoints));
+        $sampled = [];
+
+        foreach ($values as $index => $value) {
+            if ($index % $step === 0 || $index === $count - 1) {
+                $sampled[] = $value;
+            }
+        }
+
+        return $sampled;
     }
 
     private function extractAveragePace(array $activity): ?int
