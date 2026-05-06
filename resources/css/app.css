@@ -42,8 +42,40 @@
     --sidebar-ring: oklch(0.708 0 0);
 }
 
-:root:has(body.theme-dark) {
+:root:has(body.theme-dark),
+:root.dark {
     color-scheme: dark;
+    --background: oklch(0.06 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.12 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.12 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.985 0 0);
+    --primary-foreground: oklch(0.12 0 0);
+    --secondary: oklch(0.18 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.18 0 0);
+    --muted-foreground: oklch(0.72 0 0);
+    --accent: oklch(0.18 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(0.28 0 0);
+    --input: oklch(0.22 0 0);
+    --ring: oklch(0.55 0 0);
+    --chart-1: oklch(0.77 0 0);
+    --chart-2: oklch(0.65 0 0);
+    --chart-3: oklch(0.55 0 0);
+    --chart-4: oklch(0.45 0 0);
+    --chart-5: oklch(0.35 0 0);
+    --sidebar: oklch(0.08 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.985 0 0);
+    --sidebar-primary-foreground: oklch(0.12 0 0);
+    --sidebar-accent: oklch(0.18 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.24 0 0);
+    --sidebar-ring: oklch(0.55 0 0);
 }
 
 *,
@@ -98,14 +130,86 @@ body.theme-dark .bg-zinc-100,
 body.theme-dark .bg-zinc-100\/70,
 body.theme-dark .bg-zinc-100\/80,
 body.theme-dark .bg-zinc-100\/90,
-body.theme-dark .bg-zinc-50\/80,
-body.theme-dark .bg-blue-50,
-body.theme-dark .bg-emerald-50,
-body.theme-dark .bg-amber-50,
-body.theme-dark .bg-violet-50,
+body.theme-dark .bg-zinc-50\/80 {
+    background-color: #27272a !important;
+    color: #f4f4f5 !important;
+}
+
+body.theme-dark .bg-blue-50 {
+    background-color: rgba(37, 99, 235, .14) !important;
+    color: #bfdbfe !important;
+}
+
+body.theme-dark .bg-emerald-50 {
+    background-color: rgba(5, 150, 105, .14) !important;
+    color: #a7f3d0 !important;
+}
+
+body.theme-dark .bg-amber-50 {
+    background-color: rgba(217, 119, 6, .16) !important;
+    color: #fde68a !important;
+}
+
+body.theme-dark .bg-violet-50 {
+    background-color: rgba(124, 58, 237, .16) !important;
+    color: #ddd6fe !important;
+}
+
 body.theme-dark .bg-red-50 {
-    background-color: #f4f4f5 !important;
-    color: #020617 !important;
+    background-color: rgba(220, 38, 38, .14) !important;
+    color: #fecaca !important;
+}
+
+body.theme-dark .border-blue-200 {
+    border-color: rgba(96, 165, 250, .45) !important;
+}
+
+body.theme-dark .border-emerald-200 {
+    border-color: rgba(52, 211, 153, .45) !important;
+}
+
+body.theme-dark .border-amber-200 {
+    border-color: rgba(251, 191, 36, .45) !important;
+}
+
+body.theme-dark .border-violet-200 {
+    border-color: rgba(167, 139, 250, .45) !important;
+}
+
+body.theme-dark .border-red-200 {
+    border-color: rgba(248, 113, 113, .45) !important;
+}
+
+body.theme-dark .text-blue-700 {
+    color: #bfdbfe !important;
+}
+
+body.theme-dark .text-emerald-700 {
+    color: #a7f3d0 !important;
+}
+
+body.theme-dark .text-amber-700,
+body.theme-dark .text-amber-900 {
+    color: #fde68a !important;
+}
+
+body.theme-dark .text-violet-700 {
+    color: #ddd6fe !important;
+}
+
+body.theme-dark .text-red-700,
+body.theme-dark .text-red-600 {
+    color: #fecaca !important;
+}
+
+body.theme-dark :is(
+    .bg-zinc-100,
+    .bg-zinc-100\/70,
+    .bg-zinc-100\/80,
+    .bg-zinc-100\/90,
+    .bg-zinc-50\/80
+) :is(.text-zinc-950, .text-zinc-900, .text-zinc-700, .text-zinc-600, .text-zinc-500, .text-zinc-400, .text-white) {
+    color: #f4f4f5 !important;
 }
 
 body.theme-dark .border-zinc-200,
@@ -145,36 +249,6 @@ body.theme-dark :is(
     .bg-zinc-50\/70
 ) :is(.text-zinc-700, .text-zinc-600, .text-zinc-500, .text-zinc-400) {
     color: #d4d4d8 !important;
-}
-
-body.theme-dark :is(
-    .bg-zinc-100,
-    .bg-zinc-100\/70,
-    .bg-zinc-100\/80,
-    .bg-zinc-100\/90,
-    .bg-zinc-50\/80,
-    .bg-blue-50,
-    .bg-emerald-50,
-    .bg-amber-50,
-    .bg-violet-50,
-    .bg-red-50
-) :is(.text-zinc-950, .text-zinc-900, .text-zinc-700, .text-zinc-600, .text-zinc-500, .text-zinc-400, .text-white) {
-    color: #020617 !important;
-}
-
-body.theme-dark :is(
-    .bg-zinc-100,
-    .bg-zinc-100\/70,
-    .bg-zinc-100\/80,
-    .bg-zinc-100\/90,
-    .bg-zinc-50\/80,
-    .bg-blue-50,
-    .bg-emerald-50,
-    .bg-amber-50,
-    .bg-violet-50,
-    .bg-red-50
-) {
-    color: #020617 !important;
 }
 
 body.theme-dark .bg-green-100,

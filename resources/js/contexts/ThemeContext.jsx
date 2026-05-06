@@ -23,6 +23,7 @@ export function ThemeProvider({ children }) {
     if (typeof window === 'undefined') return
 
     window.localStorage.setItem(STORAGE_KEY, theme)
+    document.documentElement.classList.toggle('dark', theme === 'dark')
     document.body.classList.remove('theme-light', 'theme-dark')
     document.body.classList.add(theme === 'dark' ? 'theme-dark' : 'theme-light')
     document.body.dataset.theme = theme
