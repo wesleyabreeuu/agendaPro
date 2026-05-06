@@ -61,6 +61,7 @@ export default function DailyStartOverlay({
   onStart,
   onSkip,
   starting = false,
+  error = '',
 }) {
   const { theme } = useTheme()
 
@@ -134,6 +135,12 @@ export default function DailyStartOverlay({
                 Pular por hoje
               </Button>
             </div>
+
+            {error ? (
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
           </section>
 
           <aside className="border-t border-border bg-muted/35 px-4 py-4 text-foreground lg:border-l lg:border-t-0 lg:px-5 lg:py-5">

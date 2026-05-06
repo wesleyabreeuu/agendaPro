@@ -75,6 +75,7 @@ export function useDailySession({ enabled = true, userId = null }) {
   const [loading, setLoading] = useState(enabled)
   const [open, setOpen] = useState(false)
   const [starting, setStarting] = useState(false)
+  const [error, setError] = useState('')
   const [date, setDate] = useState('')
   const [preview, setPreview] = useState(null)
 
@@ -155,37 +156,44 @@ export function useDailySession({ enabled = true, userId = null }) {
   }, [enabled, userId])
 
   async function startDay() {
+    if (starting) {
+      return
+    }
+
     setStarting(true)
+    setError('')
 
     try {
       const response = await fetch('/api/daily-session/start', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
+          'Content-Type': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
         },
         credentials: 'same-origin',
+        body: JSON.stringify({}),
       })
 
       if (!response.ok) {
-        throw new Error('Falha ao iniciar o dia.')
+        const payload = await response.json().catch(() => ({}))
+        throw new Error(payload?.message || 'Falha ao iniciar o dia.')
       }
 
       setOpen(false)
       clearHiddenFlag(hiddenKey)
-      router.visit('/meu-dia')
       clearGuidedViewParam()
 
       if (typeof window !== 'undefined') {
-        window.setTimeout(() => {
-          if (window.location.pathname !== '/meu-dia') {
-            window.location.assign('/meu-dia')
-          }
-        }, 250)
+        window.location.assign('/meu-dia')
+        return
       }
+
+      router.visit('/meu-dia')
     } catch (error) {
       console.error(error)
+      setError(error?.message || 'Nao foi possivel iniciar o dia agora.')
     } finally {
       setStarting(false)
     }
@@ -193,6 +201,7 @@ export function useDailySession({ enabled = true, userId = null }) {
 
   function skipForToday() {
     setOpen(false)
+    setError('')
     setHiddenFlag(hiddenKey)
     clearGuidedViewParam()
   }
@@ -200,6 +209,7 @@ export function useDailySession({ enabled = true, userId = null }) {
   return {
     loading,
     open,
+    error,
     preview,
     starting,
     startDay,

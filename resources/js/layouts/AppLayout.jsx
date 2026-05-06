@@ -811,6 +811,7 @@ export default function AppLayout({ title, children, chrome = 'dashboard' }) {
         onStart={dailySession.startDay}
         onSkip={dailySession.skipForToday}
         starting={dailySession.starting}
+        error={dailySession.error}
       />
       <GlobalFAB permissions={permissions} currentPath={currentPath} />
       {/* Assistente de IA temporariamente oculto até retomarmos esse fluxo. */}
