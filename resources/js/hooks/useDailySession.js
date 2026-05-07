@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react'
+import axios from 'axios'
 import { useEffect, useMemo, useState } from 'react'
 
 function storageKey(userId, date) {
@@ -164,22 +165,7 @@ export function useDailySession({ enabled = true, userId = null }) {
     setError('')
 
     try {
-      const response = await fetch('/api/daily-session/start', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({}),
-      })
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}))
-        throw new Error(payload?.message || 'Falha ao iniciar o dia.')
-      }
+      await axios.post('/api/daily-session/start')
 
       setOpen(false)
       clearHiddenFlag(hiddenKey)
@@ -193,7 +179,7 @@ export function useDailySession({ enabled = true, userId = null }) {
       router.visit('/meu-dia')
     } catch (error) {
       console.error(error)
-      setError(error?.message || 'Nao foi possivel iniciar o dia agora.')
+      setError(error?.response?.data?.message || error?.message || 'Nao foi possivel iniciar o dia agora.')
     } finally {
       setStarting(false)
     }
