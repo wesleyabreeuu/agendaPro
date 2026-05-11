@@ -201,9 +201,12 @@ class CompromissoController extends Controller
 
     private function criarRecorrencias(Compromisso $compromisso, ?int $leadMinutes = null): void
     {
-        $dataAtual          = Carbon::parse($compromisso->data_inicio);
-        $dataFimRecorrencia = Carbon::parse($compromisso->data_fim_recorrencia);
-        $intervalo          = $compromisso->recorrencia_intervalo ?? 1;
+        $dataAtual = Carbon::parse($compromisso->data_inicio);
+        $dataFimRecorrencia = Carbon::parse($compromisso->data_fim_recorrencia)->endOfDay();
+        $intervalo = max(1, (int) ($compromisso->recorrencia_intervalo ?: 1));
+        $duracaoMinutos = $compromisso->data_fim
+            ? $dataAtual->diffInMinutes(Carbon::parse($compromisso->data_fim), false)
+            : null;
 
         while (true) {
             switch ($compromisso->recorrencia) {
@@ -228,11 +231,7 @@ class CompromissoController extends Controller
                 'titulo'       => $compromisso->titulo,
                 'descricao'    => $compromisso->descricao,
                 'data_inicio'  => $dataAtual,
-                'data_fim'     => $compromisso->data_fim
-                    ? Carbon::parse($dataAtual)->addMinutes(
-                        Carbon::parse($compromisso->data_fim)->diffInMinutes($compromisso->data_inicio)
-                    )
-                    : null,
+                'data_fim'     => !is_null($duracaoMinutos) ? $dataAtual->copy()->addMinutes($duracaoMinutos) : null,
                 'dia_inteiro'  => $compromisso->dia_inteiro,
                 'telefone'     => $compromisso->telefone,
                 'recorrencia'  => null, // as instâncias geradas normalmente não continuam recorrentes
@@ -421,6 +420,7 @@ class CompromissoController extends Controller
         $fimRecorrencia = $compromisso->data_fim_recorrencia ? Carbon::parse($compromisso->data_fim_recorrencia) : null;
         $permissao = $compromisso->isOwnedBy($user) ? 'owner' : $compromisso->sharedPermissionFor($user);
         $isOwner = $permissao === 'owner';
+        $termino = $compromisso->data_fim ?? $compromisso->data_inicio;
 
         return [
             'id' => $compromisso->id,
@@ -430,6 +430,7 @@ class CompromissoController extends Controller
             'categoria_id' => $compromisso->categoria_id,
             'data_inicio' => $compromisso->data_inicio?->format('d/m/Y H:i'),
             'data_fim' => $compromisso->data_fim?->format('d/m/Y H:i'),
+            'ja_aconteceu' => $termino ? Carbon::parse($termino)->isPast() : false,
             'dia_inteiro' => (bool) $compromisso->dia_inteiro,
             'telefone' => $isOwner ? $compromisso->telefone : null,
             'recorrencia' => $compromisso->recorrencia,

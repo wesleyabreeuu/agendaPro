@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Link, router } from '@inertiajs/react'
 import AppLayout from '../../layouts/AppLayout'
 import {
@@ -38,9 +38,10 @@ function formatCategoryLabel(compromisso) {
 function CompromissoCard({ compromisso }) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
+  const hasPassed = Boolean(compromisso.ja_aconteceu)
 
   return (
-    <Card className={`rounded-xl shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
+    <Card className={`rounded-xl shadow-xs transition ${hasPassed ? 'opacity-65 grayscale' : ''} ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
       <CardHeader className="gap-3">
         <div className="flex items-start gap-3">
           <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
@@ -75,6 +76,11 @@ function CompromissoCard({ compromisso }) {
           </DropdownMenu>
         </CardAction>
         <div className="flex flex-wrap gap-2">
+          {hasPassed ? (
+            <Badge variant="secondary" className={isDark ? 'border-zinc-700 bg-zinc-800 text-zinc-300' : 'border-zinc-300 bg-zinc-100 text-zinc-600'}>
+              Compromisso já foi
+            </Badge>
+          ) : null}
           {compromisso.permissao ? (
             <Badge variant="outline">{formatPermissionLabel(compromisso.permissao)}</Badge>
           ) : null}
@@ -116,10 +122,14 @@ function CompromissoCard({ compromisso }) {
             </div>
           </div>
         ) : null}
-        {compromisso.descricao ? <p className={`pt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{compromisso.descricao}</p> : null}
+        <div className="min-h-12 pt-1">
+          {compromisso.descricao ? (
+            <p className={isDark ? 'text-zinc-400' : 'text-zinc-500'}>{compromisso.descricao}</p>
+          ) : null}
+        </div>
       </CardContent>
 
-      <CardFooter className={`gap-2 ${isDark ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-100 bg-zinc-50/80'}`}>
+      <CardFooter className={`mt-auto gap-2 ${isDark ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-100 bg-zinc-50/80'}`}>
         {compromisso.pode_editar ? (
           <Button asChild variant="outline" className={`h-9 w-auto gap-2 rounded-lg px-3 ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-900'}`}>
             <Link href={`/compromissos/${compromisso.id}/edit`}>
@@ -142,8 +152,8 @@ function CompromissoCard({ compromisso }) {
 export default function CompromissosIndex({ compromissos = [], compromissosCompartilhados = [] }) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
-  const [ownedItems] = useState(compromissos)
-  const [sharedItems] = useState(compromissosCompartilhados)
+  const ownedItems = compromissos
+  const sharedItems = compromissosCompartilhados
 
   return (
     <AppLayout title="Compromissos">
