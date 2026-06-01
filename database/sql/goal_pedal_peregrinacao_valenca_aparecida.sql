@@ -32,7 +32,7 @@ SELECT
     '2026-12-20',
     'em_andamento',
     '#2563eb',
-    '🚲',
+    'bike',
     110,
     95,
     250,
@@ -87,31 +87,31 @@ INSERT INTO goal_progress (
 (@goal_id, '2026-07-01', 'Meta mensal de treinos', 16, 'treino', 'Objetivo: 16 treinos por mês.', NOW(), NOW());
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Pedalar Terça-feira', 'Treino semanal de pedal vinculado ao objetivo Valença -> Aparecida. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('ter'), NULL, '2026-07-01', NULL, 'media', 'alta', 1, 'Pedal leve de manutenção ou rolo por 30 minutos.', '#2563eb', '🚲', 1, 1, NOW(), NOW()
+SELECT @user_id, 'Pedalar Terça-feira', 'Treino semanal de pedal vinculado ao objetivo Valença -> Aparecida. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('ter'), NULL, '2026-07-01', NULL, 'media', 'alta', 1, 'Pedal leve de manutenção ou rolo por 30 minutos.', '#2563eb', 'bike', 1, 1, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Pedalar Terça-feira');
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Pedalar Quarta-feira', 'Treino semanal de pedal vinculado ao objetivo Valença -> Aparecida. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('qua'), NULL, '2026-07-01', NULL, 'media', 'alta', 1, 'Pedal leve de manutenção ou rolo por 30 minutos.', '#2563eb', '🚲', 1, 2, NOW(), NOW()
+SELECT @user_id, 'Pedalar Quarta-feira', 'Treino semanal de pedal vinculado ao objetivo Valença -> Aparecida. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('qua'), NULL, '2026-07-01', NULL, 'media', 'alta', 1, 'Pedal leve de manutenção ou rolo por 30 minutos.', '#2563eb', 'bike', 1, 2, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Pedalar Quarta-feira');
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Pedalar Sexta-feira', 'Treino semanal de pedal vinculado ao objetivo Valença -> Aparecida. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('sex'), NULL, '2026-07-01', NULL, 'media', 'alta', 1, 'Pedal leve de manutenção ou rolo por 30 minutos.', '#2563eb', '🚲', 1, 3, NOW(), NOW()
+SELECT @user_id, 'Pedalar Sexta-feira', 'Treino semanal de pedal vinculado ao objetivo Valença -> Aparecida. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('sex'), NULL, '2026-07-01', NULL, 'media', 'alta', 1, 'Pedal leve de manutenção ou rolo por 30 minutos.', '#2563eb', 'bike', 1, 3, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Pedalar Sexta-feira');
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Longão de Sábado', 'Treino longo semanal. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('sab'), NULL, '2026-07-01', NULL, 'dificil', 'alta', 1, 'Longão reduzido, mantendo o compromisso sem exagerar.', '#1d4ed8', '🚲', 1, 4, NOW(), NOW()
+SELECT @user_id, 'Longão de Sábado', 'Treino longo semanal. Meta: 1x por semana.', 'saude', 'dias_semana', JSON_ARRAY('sab'), NULL, '2026-07-01', NULL, 'dificil', 'alta', 1, 'Longão reduzido, mantendo o compromisso sem exagerar.', '#1d4ed8', 'bike', 1, 4, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Longão de Sábado');
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Fortalecimento Muscular', 'Fortalecimento para pernas, core e prevenção de lesões. Meta: 2x por semana ou 8x por mês.', 'saude', 'dias_semana', JSON_ARRAY('seg', 'qui'), NULL, '2026-07-01', NULL, 'media', 'media', 1, 'Série curta de 15 minutos.', '#16a34a', '💪', 1, 5, NOW(), NOW()
+SELECT @user_id, 'Fortalecimento Muscular', 'Fortalecimento para pernas, core e prevenção de lesões. Meta: 2x por semana ou 8x por mês.', 'saude', 'dias_semana', JSON_ARRAY('seg', 'qui'), NULL, '2026-07-01', NULL, 'media', 'media', 1, 'Série curta de 15 minutos.', '#16a34a', 'dumbbell', 1, 5, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Fortalecimento Muscular');
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Consumir 2 Frutas', 'Hábito alimentar diário. Meta: 2 vezes ao dia.', 'saude', 'diaria', NULL, NULL, '2026-07-01', NULL, 'facil', 'baixa', 1, 'Consumir ao menos 1 fruta no dia.', '#f59e0b', '🍎', 1, 6, NOW(), NOW()
+SELECT @user_id, 'Consumir 2 Frutas', 'Hábito alimentar diário. Meta: 2 vezes ao dia.', 'saude', 'diaria', NULL, NULL, '2026-07-01', NULL, 'facil', 'baixa', 1, 'Consumir ao menos 1 fruta no dia.', '#f59e0b', 'apple', 1, 6, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Consumir 2 Frutas');
 
 INSERT INTO rotinas (user_id, nome, descricao, categoria, frequencia_tipo, dias_semana, intervalo_dias, data_inicio, horario, dificuldade, energia_recomendada, modo_minimo_ativo, modo_minimo_descricao, cor, icone, ativo, ordem, created_at, updated_at)
-SELECT @user_id, 'Beber 3 Litros de Água', 'Hidratação diária. Meta: 3 litros.', 'saude', 'diaria', NULL, NULL, '2026-07-01', NULL, 'facil', 'baixa', 1, 'Beber ao menos 1,5 litro no dia.', '#0ea5e9', '💧', 1, 7, NOW(), NOW()
+SELECT @user_id, 'Beber 3 Litros de Água', 'Hidratação diária. Meta: 3 litros.', 'saude', 'diaria', NULL, NULL, '2026-07-01', NULL, 'facil', 'baixa', 1, 'Beber ao menos 1,5 litro no dia.', '#0ea5e9', 'droplet', 1, 7, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM rotinas WHERE user_id = @user_id AND nome = 'Beber 3 Litros de Água');
 
 INSERT IGNORE INTO goal_rotina (goal_id, rotina_id, created_at, updated_at)
