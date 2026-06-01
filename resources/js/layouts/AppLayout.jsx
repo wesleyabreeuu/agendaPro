@@ -238,7 +238,10 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
           ) : null}
 
           {permissions.projetos ? (
-            <DashboardNavGroup label="Projetos" icon={FolderKanban} open={currentPath.startsWith('/kanban')} collapsed={collapsed} isDark={isDark}>
+            <DashboardNavGroup label="Projetos" icon={FolderKanban} open={currentPath.startsWith('/kanban') || currentPath.startsWith('/goals')} collapsed={collapsed} isDark={isDark}>
+              <DashboardSubLink href="/goals" active={currentPath.startsWith('/goals')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+                Objetivos
+              </DashboardSubLink>
               <DashboardSubLink href="/kanban" active={currentPath.startsWith('/kanban')} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
                 Kanban
               </DashboardSubLink>

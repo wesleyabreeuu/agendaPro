@@ -8,10 +8,12 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use App\Models\Compromisso;
+use App\Models\Goal;
 use App\Models\Habito;
 use App\Models\Rotina;
 use App\Models\User;
 use App\Policies\CompromissoPolicy;
+use App\Policies\GoalPolicy;
 use App\Policies\HabitoPolicy;
 use App\Policies\RotinaPolicy;
 
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::policy(Compromisso::class, CompromissoPolicy::class);
+        Gate::policy(Goal::class, GoalPolicy::class);
         Gate::policy(Habito::class, HabitoPolicy::class);
         Gate::policy(Rotina::class, RotinaPolicy::class);
         Gate::define('admin-only', fn (User $user) => $user->isAdmin());

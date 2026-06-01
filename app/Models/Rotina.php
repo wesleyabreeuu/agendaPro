@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rotina extends Model
@@ -56,5 +57,10 @@ class Rotina extends Model
     public function execucoes(): HasMany
     {
         return $this->hasMany(RotinaExecucao::class, 'rotina_id');
+    }
+
+    public function goals(): BelongsToMany
+    {
+        return $this->belongsToMany(Goal::class, 'goal_rotina', 'rotina_id', 'goal_id')->withTimestamps();
     }
 }

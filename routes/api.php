@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\CompromissoCompartilhamentoController;
 use App\Http\Controllers\Api\HabitoController;
 use App\Http\Controllers\Api\HabitoLogController;
+use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\DailySessionController;
 use App\Http\Controllers\MeuDiaController;
 use Illuminate\Support\Facades\Route;
@@ -34,4 +35,13 @@ Route::middleware(['web', 'auth', 'can:access-dia-a-dia', 'throttle:api-authenti
     Route::post('/meu-dia/action', [MeuDiaController::class, 'action']);
     Route::get('/daily-session/check', [DailySessionController::class, 'check']);
     Route::post('/daily-session/start', [DailySessionController::class, 'start']);
+});
+
+Route::middleware(['web', 'auth', 'can:access-projetos', 'throttle:api-authenticated'])->group(function () {
+    Route::get('/goals', [GoalController::class, 'index']);
+    Route::post('/goals', [GoalController::class, 'store']);
+    Route::get('/goals/{goal}', [GoalController::class, 'show']);
+    Route::put('/goals/{goal}', [GoalController::class, 'update']);
+    Route::delete('/goals/{goal}', [GoalController::class, 'destroy']);
+    Route::post('/goals/{goal}/progress', [GoalController::class, 'storeProgress']);
 });

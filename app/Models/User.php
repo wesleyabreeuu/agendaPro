@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Goal;
 use App\Models\Rotina;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -119,6 +120,11 @@ class User extends Authenticatable
     public function rotinas(): HasMany
     {
         return $this->hasMany(Rotina::class, 'user_id');
+    }
+
+    public function goals(): HasMany
+    {
+        return $this->hasMany(Goal::class, 'user_id');
     }
 
     public function dailySessions(): HasMany

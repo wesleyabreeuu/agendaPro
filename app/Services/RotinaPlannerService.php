@@ -86,6 +86,32 @@ class RotinaPlannerService
         $execucao->observacao = $observacao ?: null;
         $execucao->save();
 
+        $linkedGoals = $rotina->goals()->get();
+
+        if ($status === 'concluida') {
+            $linkedGoals->each(function ($goal) use ($rotina, $date, $modoUsado) {
+                $goal->progress()->firstOrCreate(
+                    [
+                        'data' => $date->toDateString(),
+                        'tipo' => 'treino',
+                        'descricao' => 'Rotina concluída: '.$rotina->nome,
+                    ],
+                    [
+                        'valor' => 1,
+                        'observacoes' => $modoUsado === 'minimo' ? 'Concluída em modo mínimo.' : null,
+                    ]
+                );
+            });
+        } else {
+            $linkedGoals->each(function ($goal) use ($rotina, $date) {
+                $goal->progress()
+                    ->whereDate('data', $date->toDateString())
+                    ->where('tipo', 'treino')
+                    ->where('descricao', 'Rotina concluída: '.$rotina->nome)
+                    ->delete();
+            });
+        }
+
         return $execucao;
     }
 

@@ -22,6 +22,7 @@ use App\Http\Controllers\RotinaHojeController;
 use App\Http\Controllers\RotinaHistoricoController;
 use App\Http\Controllers\RotinaTemplateController;
 use App\Http\Controllers\MeuDiaController;
+use App\Http\Controllers\GoalController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
@@ -95,6 +96,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/teste-whatsapp', [LembreteController::class, 'enviarTesteWhatsApp']);
 
     Route::middleware('can:access-projetos')->group(function () {
+        Route::prefix('goals')->name('goals.')->group(function () {
+            Route::get('/', [GoalController::class, 'index'])->name('index');
+            Route::get('/criar', [GoalController::class, 'create'])->name('create');
+            Route::post('/', [GoalController::class, 'store'])->name('store');
+            Route::get('/{goal}', [GoalController::class, 'show'])->name('show');
+            Route::get('/{goal}/editar', [GoalController::class, 'edit'])->name('edit');
+            Route::put('/{goal}', [GoalController::class, 'update'])->name('update');
+            Route::delete('/{goal}', [GoalController::class, 'destroy'])->name('destroy');
+            Route::post('/{goal}/progress', [GoalController::class, 'storeProgress'])->name('progress.store');
+            Route::patch('/{goal}/milestones/{milestone}', [GoalController::class, 'updateMilestone'])->name('milestones.update');
+        });
+
         Route::get('kanban', [KanbanController::class, 'index'])->name('kanban.index');
         Route::get('kanban/boards', [KanbanController::class, 'redirectToIndex']);
         Route::get('kanban/boards/{board}', [KanbanController::class, 'show'])->name('kanban.show');
