@@ -6,6 +6,7 @@ use App\Models\KanbanTask;
 use App\Models\Lembrete;
 use App\Models\Todo;
 use App\Models\User;
+use App\Services\DailyPlannerService;
 use App\Services\MeuDiaService;
 use App\Services\RotinaPlannerService;
 use Illuminate\Http\JsonResponse;
@@ -37,6 +38,14 @@ class MeuDiaController extends Controller
         $user = Auth::user();
 
         return response()->json($meuDiaService->payload($user));
+    }
+
+    public function plan(DailyPlannerService $planner): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return response()->json($planner->plan($user));
     }
 
     public function action(

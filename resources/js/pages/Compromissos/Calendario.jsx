@@ -64,15 +64,34 @@ function normalizeEvent(evento) {
   }
 }
 
-function eventTone(tipo) {
-  if (tipo === 'todo') return 'border-emerald-200 bg-emerald-50 text-slate-950'
-  return 'border-blue-200 bg-blue-50 text-slate-950'
+function eventTone(tipo, isDark = false) {
+  if (tipo === 'todo') {
+    return isDark
+      ? 'border-zinc-500 bg-zinc-800 text-zinc-50'
+      : 'border-zinc-300 bg-zinc-100 text-zinc-950'
+  }
+
+  return isDark
+    ? 'border-zinc-500 bg-zinc-800 text-zinc-50'
+    : 'border-zinc-300 bg-zinc-100 text-zinc-950'
 }
 
-function permissionTone(permissao) {
-  if (permissao === 'owner') return 'border-blue-200 bg-blue-50 text-slate-950'
-  if (permissao === 'editar') return 'border-violet-200 bg-violet-50 text-slate-950'
-  return 'border-amber-200 bg-amber-50 text-slate-950'
+function permissionTone(permissao, isDark = false) {
+  if (permissao === 'owner') {
+    return isDark
+      ? 'border-zinc-500 bg-zinc-800 text-zinc-50'
+      : 'border-zinc-300 bg-zinc-100 text-zinc-950'
+  }
+
+  if (permissao === 'editar') {
+    return isDark
+      ? 'border-zinc-600 bg-zinc-900 text-zinc-100'
+      : 'border-zinc-300 bg-white text-zinc-950'
+  }
+
+  return isDark
+    ? 'border-zinc-700 bg-zinc-950 text-zinc-200'
+    : 'border-zinc-300 bg-zinc-50 text-zinc-800'
 }
 
 export default function CompromissosCalendario() {
@@ -145,6 +164,32 @@ export default function CompromissosCalendario() {
     })
   }, [eventsByDay])
 
+  const viewOptionClass = (value) => {
+    const selected = viewMode === value
+
+    if (selected) {
+      return isDark
+        ? 'border-white bg-white text-zinc-950 shadow-sm'
+        : 'border-zinc-950 bg-zinc-950 text-white shadow-sm'
+    }
+
+    return isDark
+      ? 'border-zinc-700 bg-zinc-950 text-zinc-100 hover:border-zinc-500 hover:bg-zinc-900'
+      : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card text-zinc-950 hover:border-zinc-400 hover:bg-zinc-50'
+  }
+
+  const viewOptionTitleClass = (value) => (
+    viewMode === value
+      ? isDark ? 'text-zinc-950' : 'text-white'
+      : isDark ? 'text-zinc-100' : 'text-zinc-950'
+  )
+
+  const viewOptionDescriptionClass = (value) => (
+    viewMode === value
+      ? isDark ? 'text-zinc-700' : 'text-zinc-200'
+      : isDark ? 'text-zinc-400' : 'text-zinc-500'
+  )
+
   return (
     <AppLayout title="Calendário" chrome="dashboard">
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
@@ -172,18 +217,18 @@ export default function CompromissosCalendario() {
               <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Troque entre a grade mensal e a lista da semana atual.</p>
             </div>
             <RadioGroup value={viewMode} onValueChange={setViewMode} className="gap-3">
-              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewMode === 'month' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
+              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewOptionClass('month')}`}>
                 <RadioGroupItem value="month" id="view-mode-month" className="mt-1" />
                 <div>
-                  <Label htmlFor="view-mode-month" className={`cursor-pointer text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>Calendário mensal</Label>
-                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Visão completa do mês com contagem e cartões por dia.</p>
+                  <Label htmlFor="view-mode-month" className={`cursor-pointer text-sm font-medium ${viewOptionTitleClass('month')}`}>Calendário mensal</Label>
+                  <p className={`mt-1 text-sm ${viewOptionDescriptionClass('month')}`}>Visão completa do mês com contagem e cartões por dia.</p>
                 </div>
               </label>
-              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewMode === 'week-list' ? 'border-blue-300 bg-blue-50/80' : isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'}`}>
+              <label className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition ${viewOptionClass('week-list')}`}>
                 <RadioGroupItem value="week-list" id="view-mode-week-list" className="mt-1" />
                 <div>
-                  <Label htmlFor="view-mode-week-list" className={`cursor-pointer text-sm font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>Lista semanal</Label>
-                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Agrupa os próximos itens por dia da semana atual.</p>
+                  <Label htmlFor="view-mode-week-list" className={`cursor-pointer text-sm font-medium ${viewOptionTitleClass('week-list')}`}>Lista semanal</Label>
+                  <p className={`mt-1 text-sm ${viewOptionDescriptionClass('week-list')}`}>Agrupa os próximos itens por dia da semana atual.</p>
                 </div>
               </label>
             </RadioGroup>
@@ -267,11 +312,11 @@ export default function CompromissosCalendario() {
                               e.preventDefault()
                             }
                           }}
-                          className={`block rounded-xl border px-3 py-2 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao) : eventTone(evento.extendedProps?.tipo)}`}
+                          className={`block rounded-xl border px-3 py-2 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao, isDark) : eventTone(evento.extendedProps?.tipo, isDark)}`}
                         >
-                          <div className="font-medium text-slate-950">{evento.title}</div>
-                          <div className="mt-1 text-slate-700">{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</div>
-                          {evento.extendedProps?.owner ? <div className="mt-1 text-slate-600">Owner: {evento.extendedProps.owner}</div> : null}
+                          <div className={`font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{evento.title}</div>
+                          <div className={`mt-1 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{evento.allDay ? 'Dia inteiro' : formatDateTime(evento.start)}</div>
+                          {evento.extendedProps?.owner ? <div className={`mt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>Owner: {evento.extendedProps.owner}</div> : null}
                         </a>
                       ))}
 
@@ -307,7 +352,7 @@ export default function CompromissosCalendario() {
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className={`rounded-full border px-2.5 py-1 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao) : eventTone(evento.extendedProps?.tipo)}`}>
+                            <span className={`rounded-full border px-2.5 py-1 text-xs ${evento.extendedProps?.tipo === 'compromisso' ? permissionTone(evento.extendedProps?.permissao, isDark) : eventTone(evento.extendedProps?.tipo, isDark)}`}>
                               {evento.extendedProps?.tipo === 'todo' ? 'Tarefa' : 'Compromisso'}
                             </span>
                             {evento.extendedProps?.permissao ? <span className={`rounded-full border px-2.5 py-1 text-xs ${isDark ? 'border-zinc-700 text-zinc-300' : 'border-zinc-200 text-zinc-600'}`}>{evento.extendedProps.permissao}</span> : null}

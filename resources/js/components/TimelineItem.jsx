@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button } from '@/components/ui'
 import { CalendarDays, Check, Clock3, HeartPulse, ListChecks, BellRing, FolderKanban, ArrowRight, CheckSquare2 } from 'lucide-react'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const typeStyles = {
   compromisso: {
@@ -47,38 +48,54 @@ export default function TimelineItem({
   canComplete = false,
   canDelay = false,
 }) {
+  const { theme } = useTheme()
+  const isDark = theme === 'dark'
   const style = typeStyles[tipo] || typeStyles.tarefa
   const Icon = style.icon
 
   return (
-    <article className="rounded-xl border border-zinc-200 bg-white px-4 py-3 shadow-xs transition hover:border-zinc-300 hover:bg-zinc-50/40">
+    <article className={`rounded-xl border px-4 py-3 shadow-xs transition ${
+      isDark
+        ? 'border-zinc-700 bg-zinc-950 text-zinc-50 hover:border-zinc-600 hover:bg-zinc-900/70'
+        : 'border-zinc-200 bg-white text-zinc-950 hover:border-zinc-300 hover:bg-zinc-50/40'
+    }`}>
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_120px_150px_190px] lg:items-center">
         <div className="min-w-0">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-600">
+            <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
+              isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'
+            }`}>
               <Icon className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-medium text-zinc-950 sm:text-[15px]">{titulo}</h3>
-              {descricao ? <p className="mt-1 truncate text-sm text-zinc-500">{descricao}</p> : null}
+              <h3 className={`truncate text-sm font-medium sm:text-[15px] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{titulo}</h3>
+              {descricao ? <p className={`mt-1 truncate text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{descricao}</p> : null}
             </div>
           </div>
         </div>
 
         <div className="flex items-center lg:justify-center">
-          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${style.badge}`}>
+          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${
+            isDark ? 'bg-zinc-800 text-zinc-200' : style.badge
+          }`}>
             {style.label}
           </span>
         </div>
 
         <div className="flex items-center lg:justify-center">
-          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${status === 'concluido' ? 'bg-emerald-50 text-emerald-700' : 'bg-zinc-100 text-zinc-600'}`}>
+          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${
+            status === 'concluido'
+              ? isDark ? 'bg-white text-zinc-950' : 'bg-zinc-950 text-white'
+              : isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-600'
+          }`}>
             {status === 'concluido' ? 'Concluído' : 'Pendente'}
           </span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-700">
+          <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${
+            isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-700'
+          }`}>
             <Clock3 className="h-3.5 w-3.5" />
             {hora || 'Sem hora'}
           </span>
@@ -101,7 +118,9 @@ export default function TimelineItem({
               onClick={onDelay}
               variant="outline"
               size="sm"
-              className="h-8 w-auto rounded-lg border-zinc-200 bg-white px-3 text-xs text-zinc-700"
+              className={`h-8 w-auto rounded-lg px-3 text-xs ${
+                isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700'
+              }`}
             >
               Adiar
             </Button>
@@ -113,7 +132,9 @@ export default function TimelineItem({
               onClick={onOpen}
               variant="outline"
               size="sm"
-              className="h-8 w-auto rounded-lg border-zinc-200 bg-white px-3 text-xs text-zinc-700"
+              className={`h-8 w-auto rounded-lg px-3 text-xs ${
+                isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800' : 'border-zinc-200 bg-white text-zinc-700'
+              }`}
             >
               Abrir
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { router } from '@inertiajs/react'
 import { Button } from '@/components/ui'
-import { Activity, BellPlus, CalendarPlus2, CheckSquare2, FolderKanban, Plus, X } from 'lucide-react'
+import { Activity, BellPlus, CalendarPlus2, CheckSquare2, FolderKanban, ListPlus, Plus, X } from 'lucide-react'
 
 export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
   const [open, setOpen] = useState(false)
@@ -16,6 +16,7 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
 
     if (permissions.dia_a_dia) {
       nextItems.push({ key: 'tarefa', label: 'Tarefa', href: '/todo', icon: CheckSquare2 })
+      nextItems.push({ key: 'rotina', label: 'Rotina', href: '/rotinas/criar', icon: ListPlus })
     }
 
     if (permissions.projetos) {
@@ -23,7 +24,7 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
     }
 
     if (permissions.saude) {
-      nextItems.push({ key: 'atividade', label: 'Atividade', href: '/saude/atividades', icon: Activity })
+      nextItems.push({ key: 'atividade', label: 'Registrar atividade', href: '/saude/atividades', icon: Activity })
     }
 
     return nextItems

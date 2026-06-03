@@ -23,6 +23,7 @@ use App\Http\Controllers\RotinaHistoricoController;
 use App\Http\Controllers\RotinaTemplateController;
 use App\Http\Controllers\MeuDiaController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\RelatorioGeralController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
@@ -47,6 +48,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('relatorios/geral', [RelatorioGeralController::class, 'index'])->name('relatorios.geral');
 
     Route::resource('usuarios', UsuarioController::class)->only(['index', 'show', 'edit', 'update']);
 

@@ -8,6 +8,7 @@ import {
   CheckSquare,
   ChevronRight,
   ClipboardList,
+  FileText,
   FolderKanban,
   HeartPulse,
   LayoutGrid,
@@ -169,6 +170,10 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
 
           <DashboardNavLink href="/usuarios" active={currentPath.startsWith('/usuarios')} icon={UserCircle2} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
             Meu Perfil
+          </DashboardNavLink>
+
+          <DashboardNavLink href="/relatorios/geral" active={currentPath.startsWith('/relatorios/geral')} icon={FileText} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+            Relatório Geral
           </DashboardNavLink>
 
           {permissions.compromissos ? (
