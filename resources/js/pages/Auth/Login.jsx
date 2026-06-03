@@ -81,7 +81,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       required
                       value={data.email}
                       onChange={(e) => setData('email', e.target.value)}
-                      className={`h-12 pl-10 ${
+                      className={`login-auth-input h-12 pl-10 ${
                         theme === 'dark'
                           ? 'border-white/10 bg-zinc-900/85 text-zinc-50 placeholder:text-zinc-500 focus-visible:border-zinc-300/70 focus-visible:ring-zinc-400/20'
                           : 'border-zinc-200 bg-white/90 text-zinc-950 placeholder:text-zinc-400'
@@ -111,7 +111,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       required
                       value={data.password}
                       onChange={(e) => setData('password', e.target.value)}
-                      className={`h-12 pl-10 ${
+                      className={`login-auth-input h-12 pl-10 ${
                         theme === 'dark'
                           ? 'border-white/10 bg-zinc-900/85 text-zinc-50 focus-visible:border-zinc-300/70 focus-visible:ring-zinc-400/20'
                           : 'border-zinc-200 bg-white/90 text-zinc-950'

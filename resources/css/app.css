@@ -1039,6 +1039,35 @@ textarea,
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+body.theme-dark .login-auth-input {
+    background-color: rgba(24, 24, 27, .9) !important;
+    color: #f4f4f5 !important;
+    caret-color: #f4f4f5;
+    -webkit-text-fill-color: #f4f4f5;
+}
+
+body.theme-dark .login-auth-input:focus,
+body.theme-dark .login-auth-input:focus-visible {
+    background-color: rgba(24, 24, 27, .95) !important;
+    color: #f4f4f5 !important;
+    -webkit-text-fill-color: #f4f4f5;
+}
+
+body.theme-dark .login-auth-input::placeholder {
+    color: #a1a1aa !important;
+    -webkit-text-fill-color: #a1a1aa;
+}
+
+body.theme-dark .login-auth-input:-webkit-autofill,
+body.theme-dark .login-auth-input:-webkit-autofill:hover,
+body.theme-dark .login-auth-input:-webkit-autofill:focus {
+    border-color: rgba(255, 255, 255, .18) !important;
+    box-shadow: 0 0 0 1000px #18181b inset !important;
+    caret-color: #f4f4f5;
+    -webkit-box-shadow: 0 0 0 1000px #18181b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
