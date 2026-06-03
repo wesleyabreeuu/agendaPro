@@ -1,16 +1,27 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Head, Link } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@/components/ui'
 import { useTheme } from '@/contexts/ThemeContext'
-import { LogIn, Mail, LockKeyhole } from 'lucide-react'
+import { Eye, EyeOff, LogIn, Mail, LockKeyhole } from 'lucide-react'
+
+const EMOJI_PATTERN = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\uFE0F\u200D]/gu
+
+function removeEmoji(value) {
+  return value.replace(EMOJI_PATTERN, '')
+}
 
 export default function Login({ errors = {}, canResetPassword = true, status = null }) {
   const { theme } = useTheme()
+  const [showPassword, setShowPassword] = useState(false)
   const { data, setData, post, processing } = useForm({
     email: '',
     password: '',
   })
+
+  function updateField(field, value) {
+    setData(field, removeEmoji(value))
+  }
 
   function submit(e) {
     e.preventDefault()
@@ -80,7 +91,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       placeholder="m@example.com"
                       required
                       value={data.email}
-                      onChange={(e) => setData('email', e.target.value)}
+                      onChange={(e) => updateField('email', e.target.value)}
                       className={`login-auth-input h-12 pl-12 ${
                         theme === 'dark'
                           ? 'border-white/10 bg-zinc-900/85 text-zinc-50 placeholder:text-zinc-500 focus-visible:border-zinc-300/70 focus-visible:ring-zinc-400/20'
@@ -107,16 +118,29 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       }`} />
                     <Input
                       id="password"
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       required
                       value={data.password}
-                      onChange={(e) => setData('password', e.target.value)}
-                      className={`login-auth-input h-12 pl-12 ${
+                      onChange={(e) => updateField('password', e.target.value)}
+                      className={`login-auth-input login-auth-password-input h-12 pl-12 pr-12 ${
                         theme === 'dark'
                           ? 'border-white/10 bg-zinc-900/85 text-zinc-50 focus-visible:border-zinc-300/70 focus-visible:ring-zinc-400/20'
                           : 'border-zinc-200 bg-white/90 text-zinc-950'
                       }`}
                     />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      title={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setShowPassword((current) => !current)}
+                      className={`absolute right-3 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md transition-colors ${
+                        theme === 'dark'
+                          ? 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                          : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-950'
+                      }`}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                     </div>
                   </div>
 

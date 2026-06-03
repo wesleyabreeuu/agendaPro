@@ -1047,6 +1047,10 @@ body.theme-dark .login-auth-input {
     -webkit-text-fill-color: #f4f4f5;
 }
 
+body.theme-dark .login-auth-password-input {
+    padding-right: 3rem !important;
+}
+
 body.theme-dark .login-auth-input:focus,
 body.theme-dark .login-auth-input:focus-visible {
     background-color: rgba(24, 24, 27, .95) !important;
