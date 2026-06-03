@@ -51,6 +51,7 @@ class RelatorioGeralService
             ->values()
             ->all();
 
+        $graficos = $this->graficos($secoes);
         $totaisPorModulo = collect($secoes)
             ->groupBy('modulo')
             ->map(fn (Collection $items) => $items->sum('total'))
@@ -73,7 +74,9 @@ class RelatorioGeralService
                 'total_registros' => collect($secoes)->sum('total'),
                 'total_secoes' => count($secoes),
                 'modulos' => $totaisPorModulo,
+                'destaques' => $graficos['destaques'],
             ],
+            'graficos' => $graficos,
             'secoes_disponiveis' => $secoesDisponiveis,
             'campos_disponiveis' => $camposDisponiveis,
             'secoes' => $secoes,
@@ -110,11 +113,28 @@ class RelatorioGeralService
             default => collect(),
         };
 
+        $analytics = $items
+            ->map(fn (array $item) => collect($item)->only([
+                'data',
+                'titulo',
+                'categoria',
+                'status',
+                'origem',
+                'valor_numero',
+                'tipo',
+                'distancia_km',
+                'duracao_minutos',
+                'calorias',
+            ])->all())
+            ->values()
+            ->all();
+
         return [
             'key' => $secao,
             'label' => $config['label'],
             'modulo' => $config['modulo'],
             'total' => $items->count(),
+            'analytics' => $analytics,
             'campos' => collect($camposDisponiveis)
                 ->whereIn('key', $camposSelecionados)
                 ->values()
@@ -401,7 +421,9 @@ class RelatorioGeralService
                 'status' => $item->fonte,
                 'origem' => 'Saúde',
                 'distancia' => $item->distancia_formatada,
+                'distancia_km' => $item->distancia_km,
                 'duracao' => $item->duracao_minutos ? "{$item->duracao_minutos} min" : null,
+                'duracao_minutos' => $item->duracao_minutos,
                 'calorias' => $item->calorias_queimadas,
                 'intensidade' => $item->intensidade,
                 'fonte' => $item->fonte,
@@ -457,6 +479,7 @@ class RelatorioGeralService
                 'status' => $item->status,
                 'origem' => trim(($item->conta?->nome ?: 'Conta') . ' | R$ ' . number_format((float) $item->valor, 2, ',', '.')),
                 'valor' => 'R$ ' . number_format((float) $item->valor, 2, ',', '.'),
+                'valor_numero' => (float) $item->valor,
                 'tipo' => $item->tipo,
                 'conta' => $item->conta?->nome,
                 'forma_pagamento' => $item->forma_pagamento,
@@ -612,6 +635,107 @@ class RelatorioGeralService
         }
 
         return $porSecao;
+    }
+
+    private function graficos(array $secoes): array
+    {
+        $sections = collect($secoes);
+        $analytics = $sections->flatMap(fn (array $secao) => collect($secao['analytics'] ?? [])->map(fn (array $item) => array_merge($item, [
+            '_secao' => $secao['label'],
+            '_modulo' => $secao['modulo'],
+        ])));
+
+        $porModulo = $sections
+            ->groupBy('modulo')
+            ->map(fn (Collection $items, string $modulo) => [
+                'name' => $modulo,
+                'total' => $items->sum('total'),
+            ])
+            ->values()
+            ->all();
+
+        $porSecao = $sections
+            ->map(fn (array $secao) => [
+                'name' => $secao['label'],
+                'total' => $secao['total'],
+                'modulo' => $secao['modulo'],
+            ])
+            ->sortByDesc('total')
+            ->values()
+            ->all();
+
+        $porStatus = $analytics
+            ->filter(fn (array $item) => filled($item['status'] ?? null))
+            ->groupBy(fn (array $item) => (string) $item['status'])
+            ->map(fn (Collection $items, string $status) => [
+                'name' => ucfirst(str_replace('_', ' ', $status)),
+                'total' => $items->count(),
+            ])
+            ->sortByDesc('total')
+            ->values()
+            ->take(8)
+            ->all();
+
+        $linhaDoTempo = $analytics
+            ->filter(fn (array $item) => filled($item['data'] ?? null))
+            ->groupBy('data')
+            ->map(fn (Collection $items, string $data) => [
+                'data' => $data,
+                'total' => $items->count(),
+            ])
+            ->sortBy(function (array $item) {
+                try {
+                    return Carbon::createFromFormat('d/m/Y', $item['data'])->timestamp;
+                } catch (\Throwable) {
+                    return 0;
+                }
+            })
+            ->values()
+            ->all();
+
+        $financeiro = $analytics
+            ->where('_secao', 'Transações financeiras')
+            ->groupBy(fn (array $item) => $item['tipo'] ?: 'sem_tipo')
+            ->map(fn (Collection $items, string $tipo) => [
+                'name' => ucfirst(str_replace('_', ' ', $tipo)),
+                'valor' => round($items->sum(fn (array $item) => (float) ($item['valor_numero'] ?? 0)), 2),
+            ])
+            ->values()
+            ->all();
+
+        $saude = $analytics
+            ->where('_secao', 'Atividades físicas')
+            ->groupBy(fn (array $item) => $item['categoria'] ?: 'Sem categoria')
+            ->map(fn (Collection $items, string $categoria) => [
+                'name' => $categoria,
+                'sessoes' => $items->count(),
+                'distancia' => round($items->sum(fn (array $item) => (float) ($item['distancia_km'] ?? 0)), 2),
+                'minutos' => $items->sum(fn (array $item) => (int) ($item['duracao_minutos'] ?? 0)),
+            ])
+            ->sortByDesc('sessoes')
+            ->values()
+            ->take(8)
+            ->all();
+
+        $destaques = [
+            'modulo_mais_movimentado' => collect($porModulo)->sortByDesc('total')->first(),
+            'secao_mais_movimentada' => collect($porSecao)->first(),
+            'status_principal' => collect($porStatus)->first(),
+            'dias_com_dados' => count($linhaDoTempo),
+            'receitas' => collect($financeiro)->firstWhere('name', 'Receita')['valor'] ?? 0,
+            'despesas' => collect($financeiro)->firstWhere('name', 'Despesa')['valor'] ?? 0,
+            'distancia_km' => collect($saude)->sum('distancia'),
+        ];
+
+        return [
+            'por_modulo' => $porModulo,
+            'por_secao' => $porSecao,
+            'por_status' => $porStatus,
+            'linha_do_tempo' => $linhaDoTempo,
+            'financeiro' => $financeiro,
+            'saude' => $saude,
+            'destaques' => $destaques,
+        ];
     }
 
     private function secoesDisponiveis(User $user): array

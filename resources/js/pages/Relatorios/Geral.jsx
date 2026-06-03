@@ -2,12 +2,27 @@ import React, { useMemo, useState } from 'react'
 import { router } from '@inertiajs/react'
 import {
   CalendarDays,
+  ChartNoAxesCombined,
   CheckSquare,
   Columns3,
   Database,
   Filter,
+  HeartPulse,
+  ListChecks,
   Search,
+  Wallet,
 } from 'lucide-react'
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import AppLayout from '../../layouts/AppLayout'
 import { Button } from '@/components/ui'
 import { useTheme } from '../../contexts/ThemeContext'
@@ -44,6 +59,15 @@ function inputClass(isDark) {
   }`
 }
 
+function formatCurrency(value) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0))
+}
+
+function formatNumber(value, suffix = '') {
+  const formatted = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(Number(value || 0))
+  return suffix ? `${formatted} ${suffix}` : formatted
+}
+
 export default function RelatorioGeral({ relatorio }) {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -65,6 +89,11 @@ export default function RelatorioGeral({ relatorio }) {
 
   const selectedSections = filters.secoes.length ? filters.secoes : secoesKeys
   const selectedFields = filters.campos.length ? filters.campos : camposKeys
+  const graficos = relatorio?.graficos || {}
+  const destaques = relatorio?.resumo?.destaques || {}
+  const chartStroke = isDark ? '#fafafa' : '#18181b'
+  const chartFill = isDark ? '#d4d4d8' : '#18181b'
+  const chartMuted = isDark ? '#52525b' : '#d4d4d8'
 
   function updateFilter(key, value) {
     setFilters((current) => ({ ...current, [key]: value }))
@@ -102,9 +131,9 @@ export default function RelatorioGeral({ relatorio }) {
               <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
                 Relatório Geral
               </p>
-              <h1 className="mt-2 text-2xl font-semibold tracking-tight">Visão consolidada de todos os dados</h1>
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight">Leitura geral da rotina, projetos, saúde e dinheiro</h1>
               <p className={`mt-2 max-w-3xl text-sm ${isDark ? 'text-zinc-300' : 'text-zinc-600'}`}>
-                Filtre por período, status, texto, módulos e campos para montar um relatório completo do AgendaPro.
+                Veja onde estão concentradas as ações, o que mais aparece no período e depois aprofunde nos dados detalhados.
               </p>
             </div>
 
@@ -248,13 +277,75 @@ export default function RelatorioGeral({ relatorio }) {
         </form>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <SummaryCard label="Período" value={relatorio?.resumo?.periodo || '-'} isDark={isDark} />
-          {Object.entries(relatorio?.resumo?.modulos || {}).slice(0, 3).map(([modulo, total]) => (
-            <SummaryCard key={modulo} label={modulo} value={total} isDark={isDark} />
-          ))}
+          <SummaryCard label="Período analisado" value={relatorio?.resumo?.periodo || '-'} icon={CalendarDays} isDark={isDark} />
+          <SummaryCard label="Módulo mais ativo" value={destaques.modulo_mais_movimentado?.name || '-'} helper={`${destaques.modulo_mais_movimentado?.total || 0} registros`} icon={ChartNoAxesCombined} isDark={isDark} />
+          <SummaryCard label="Status dominante" value={destaques.status_principal?.name || '-'} helper={`${destaques.status_principal?.total || 0} ocorrências`} icon={ListChecks} isDark={isDark} />
+          <SummaryCard label="Dias com dados" value={destaques.dias_com_dados || 0} helper="no período filtrado" icon={Database} isDark={isDark} />
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+          <ChartPanel title="Movimento por dia" description="Volume de registros encontrados em cada data do período." isDark={isDark}>
+            <ResponsiveContainer width="100%" height={280}>
+              <AreaChart data={graficos.linha_do_tempo || []}>
+                <CartesianGrid stroke={chartMuted} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="data" stroke={chartMuted} tickLine={false} axisLine={false} />
+                <YAxis stroke={chartMuted} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip isDark={isDark} />} />
+                <Area type="monotone" dataKey="total" stroke={chartStroke} fill={chartFill} fillOpacity={isDark ? 0.18 : 0.12} strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartPanel>
+
+          <ChartPanel title="Distribuição por módulo" description="Onde os dados estão mais concentrados." isDark={isDark}>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={graficos.por_modulo || []} layout="vertical" margin={{ left: 16 }}>
+                <CartesianGrid stroke={chartMuted} strokeDasharray="3 3" horizontal={false} />
+                <XAxis type="number" stroke={chartMuted} tickLine={false} axisLine={false} allowDecimals={false} />
+                <YAxis dataKey="name" type="category" stroke={chartMuted} tickLine={false} axisLine={false} width={92} />
+                <Tooltip content={<ChartTooltip isDark={isDark} />} />
+                <Bar dataKey="total" fill={chartFill} radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartPanel>
+        </section>
+
+        <section className="grid gap-6 xl:grid-cols-3">
+          <ChartPanel title="Seções mais movimentadas" description="Ranking das áreas com mais registros." isDark={isDark}>
+            <TopList data={(graficos.por_secao || []).slice(0, 7)} isDark={isDark} />
+          </ChartPanel>
+
+          <ChartPanel title="Status encontrados" description="Leitura rápida dos estados dos itens." isDark={isDark}>
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={graficos.por_status || []}>
+                <CartesianGrid stroke={chartMuted} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" stroke={chartMuted} tickLine={false} axisLine={false} />
+                <YAxis stroke={chartMuted} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip content={<ChartTooltip isDark={isDark} />} />
+                <Bar dataKey="total" fill={chartFill} radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartPanel>
+
+          <ChartPanel title="Sinais financeiros e saúde" description="Resumo visual dos módulos quantitativos." isDark={isDark}>
+            <div className="grid gap-3">
+              <SignalCard icon={Wallet} label="Receitas filtradas" value={formatCurrency(destaques.receitas)} isDark={isDark} />
+              <SignalCard icon={Wallet} label="Despesas filtradas" value={formatCurrency(destaques.despesas)} isDark={isDark} />
+              <SignalCard icon={HeartPulse} label="Distância registrada" value={formatNumber(destaques.distancia_km, 'km')} isDark={isDark} />
+            </div>
+            {(graficos.saude || []).length ? (
+              <div className="mt-5">
+                <p className={`mb-3 text-xs font-semibold uppercase tracking-[0.14em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Atividades</p>
+                <TopList data={(graficos.saude || []).map((item) => ({ name: item.name, total: item.sessoes, helper: `${formatNumber(item.distancia, 'km')}` })).slice(0, 4)} compact isDark={isDark} />
+              </div>
+            ) : null}
+          </ChartPanel>
         </section>
 
         <div className="space-y-5">
+          <div>
+            <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>Detalhamento</p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">Dados por seção</h2>
+          </div>
           {(relatorio?.secoes || []).length ? (
             relatorio.secoes.map((secao) => (
               <ReportSection key={secao.key} secao={secao} isDark={isDark} />
@@ -325,11 +416,89 @@ function Metric({ label, value }) {
   )
 }
 
-function SummaryCard({ label, value, isDark }) {
+function SummaryCard({ label, value, helper, icon: Icon, isDark }) {
   return (
     <div className={`rounded-xl border p-4 shadow-xs ${shellClass(isDark)}`}>
-      <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</p>
-      <p className="mt-2 text-xl font-semibold tracking-tight">{value}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className={`text-xs font-semibold uppercase tracking-[0.16em] ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{label}</p>
+          <p className="mt-2 text-xl font-semibold tracking-tight">{value}</p>
+          {helper ? <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p> : null}
+        </div>
+        {Icon ? (
+          <div className={`rounded-lg border p-2 ${subtleClass(isDark)}`}>
+            <Icon className="h-4 w-4" />
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function ChartPanel({ title, description, children, isDark }) {
+  return (
+    <section className={`rounded-xl border p-5 shadow-xs ${shellClass(isDark)}`}>
+      <div className="mb-5">
+        <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+        <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{description}</p>
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function ChartTooltip({ active, payload, label, isDark }) {
+  if (!active || !payload?.length) return null
+
+  return (
+    <div className={`rounded-lg border px-3 py-2 text-sm shadow-xs ${shellClass(isDark)}`}>
+      {label ? <p className="mb-1 font-semibold">{label}</p> : null}
+      {payload.map((item) => (
+        <p key={item.dataKey} className={isDark ? 'text-zinc-300' : 'text-zinc-600'}>
+          {item.name || item.dataKey}: {item.value}
+        </p>
+      ))}
+    </div>
+  )
+}
+
+function TopList({ data = [], compact = false, isDark }) {
+  const max = Math.max(...data.map((item) => Number(item.total || 0)), 1)
+
+  if (!data.length) {
+    return <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Sem dados suficientes para este gráfico.</p>
+  }
+
+  return (
+    <div className={compact ? 'space-y-2' : 'space-y-3'}>
+      {data.map((item) => (
+        <div key={item.name} className={`rounded-lg border p-3 ${subtleClass(isDark)}`}>
+          <div className="flex items-center justify-between gap-3 text-sm">
+            <span className="font-semibold">{item.name}</span>
+            <span>{item.helper || `${item.total} registro(s)`}</span>
+          </div>
+          <div className={`mt-2 h-2 rounded-full ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
+            <div
+              className={`h-2 rounded-full ${isDark ? 'bg-zinc-100' : 'bg-zinc-950'}`}
+              style={{ width: `${Math.max(6, (Number(item.total || 0) / max) * 100)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function SignalCard({ icon: Icon, label, value, isDark }) {
+  return (
+    <div className={`flex items-center justify-between gap-3 rounded-lg border p-3 ${subtleClass(isDark)}`}>
+      <div className="flex items-center gap-3">
+        <div className={`rounded-lg border p-2 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
+          <Icon className="h-4 w-4" />
+        </div>
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <span className="text-sm font-semibold">{value}</span>
     </div>
   )
 }

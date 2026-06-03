@@ -172,10 +172,6 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
             Meu Perfil
           </DashboardNavLink>
 
-          <DashboardNavLink href="/relatorios/geral" active={currentPath.startsWith('/relatorios/geral')} icon={FileText} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
-            Relatório Geral
-          </DashboardNavLink>
-
           {permissions.compromissos ? (
             <DashboardNavGroup
               label="Compromissos"
@@ -264,6 +260,10 @@ function DashboardSidebar({ currentPath, permissions, auth, collapsed, onToggle,
               Saúde e Fitness
             </DashboardNavLink>
           ) : null}
+
+          <DashboardNavLink href="/relatorios/geral" active={currentPath.startsWith('/relatorios/geral')} icon={FileText} collapsed={collapsed} onClick={handleNavigate} isDark={isDark}>
+            Relatório Geral
+          </DashboardNavLink>
 
           {isAdmin ? (
             <DashboardNavGroup
