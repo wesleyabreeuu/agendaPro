@@ -22,35 +22,35 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
       <Head title="Login" />
       <div className={`flex min-h-svh w-full items-center justify-center p-6 md:p-10 ${
         theme === 'dark'
-          ? 'bg-[radial-gradient(circle_at_50%_12%,rgba(59,130,246,0.20),transparent_30%),linear-gradient(145deg,#030712_0%,#0f172a_52%,#111827_100%)]'
+          ? 'bg-[radial-gradient(circle_at_50%_12%,rgba(255,255,255,0.10),transparent_30%),linear-gradient(145deg,#050505_0%,#111111_52%,#18181b_100%)]'
           : 'bg-[radial-gradient(circle_at_50%_10%,rgba(148,163,184,0.22),transparent_34%),#e4e7ec]'
       }`}>
         <div className="w-full max-w-sm">
           <div className="flex flex-col gap-6">
             <Card className={`border py-6 shadow-2xl backdrop-blur ${
               theme === 'dark'
-                ? 'border-white/10 bg-slate-950/78 shadow-blue-950/45 ring-white/10'
-                : 'border-white/75 bg-white/88 shadow-slate-300/70 ring-white/70'
+                ? 'border-white/10 bg-zinc-950/80 shadow-black/60 ring-white/10'
+                : 'border-white/75 bg-white/88 shadow-zinc-300/70 ring-white/70'
             }`}>
               <CardHeader className="text-center">
                 <div className="flex items-start justify-center gap-3">
                   <div className="w-full">
                     <div className="mb-4 flex justify-center">
                       <div className={`rounded-2xl p-2 shadow-lg ${
-                        theme === 'dark' ? 'bg-white shadow-blue-950/50' : 'bg-white shadow-slate-200'
+                        theme === 'dark' ? 'bg-white shadow-black/50' : 'bg-white shadow-zinc-200'
                       }`}>
                         <img src="/brand/agendapro-mark.svg" alt="AgendaPro" className="h-14 w-14 object-contain" />
                       </div>
                     </div>
                     <CardTitle className={`brand-agendapro text-[2.35rem] ${
-                      theme === 'dark' ? 'text-white' : 'text-slate-950'
+                      theme === 'dark' ? 'text-white' : 'text-zinc-950'
                     }`}>AgendaPro</CardTitle>
                     <p className={`mt-2 text-[11px] font-semibold uppercase tracking-[0.32em] ${
-                      theme === 'dark' ? 'text-blue-200/75' : 'text-slate-500'
+                      theme === 'dark' ? 'text-zinc-300' : 'text-zinc-500'
                     }`}>Versão 2.0</p>
                   </div>
                 </div>
-                <CardDescription className={theme === 'dark' ? 'italic text-slate-300' : 'italic text-slate-600'}>
+                <CardDescription className={theme === 'dark' ? 'italic text-zinc-300' : 'italic text-zinc-600'}>
                   Seu organizador de rotina de uma forma simples e inteligente.
                 </CardDescription>
               </CardHeader>
@@ -69,10 +69,10 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                   ) : null}
 
                   <div className="grid gap-2">
-                    <label htmlFor="email" className={theme === 'dark' ? 'text-sm font-medium text-slate-100' : 'text-sm font-medium text-slate-900'}>Email</label>
+                    <label htmlFor="email" className={theme === 'dark' ? 'text-sm font-medium text-zinc-100' : 'text-sm font-medium text-zinc-900'}>Email</label>
                     <div className="relative">
                       <Mail className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
-                        theme === 'dark' ? 'text-blue-200/70' : 'text-slate-400'
+                        theme === 'dark' ? 'text-zinc-400' : 'text-zinc-400'
                       }`} />
                     <Input
                       id="email"
@@ -83,8 +83,8 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       onChange={(e) => setData('email', e.target.value)}
                       className={`h-12 pl-10 ${
                         theme === 'dark'
-                          ? 'border-white/10 bg-slate-900/85 text-slate-50 placeholder:text-slate-500 focus-visible:border-blue-300/70 focus-visible:ring-blue-400/20'
-                          : 'border-slate-200 bg-white/90 text-slate-950 placeholder:text-slate-400'
+                          ? 'border-white/10 bg-zinc-900/85 text-zinc-50 placeholder:text-zinc-500 focus-visible:border-zinc-300/70 focus-visible:ring-zinc-400/20'
+                          : 'border-zinc-200 bg-white/90 text-zinc-950 placeholder:text-zinc-400'
                       }`}
                     />
                     </div>
@@ -92,10 +92,10 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
 
                   <div className="grid gap-2">
                     <div className="flex items-center">
-                      <label htmlFor="password" className={theme === 'dark' ? 'text-sm font-medium text-slate-100' : 'text-sm font-medium text-slate-900'}>Password</label>
+                      <label htmlFor="password" className={theme === 'dark' ? 'text-sm font-medium text-zinc-100' : 'text-sm font-medium text-zinc-900'}>Password</label>
                       {canResetPassword ? (
                         <Link href="/password/reset" className={`ml-auto inline-block text-sm underline-offset-4 hover:underline ${
-                          theme === 'dark' ? 'text-blue-200 hover:text-white' : 'text-slate-700 hover:text-slate-950'
+                          theme === 'dark' ? 'text-zinc-300 hover:text-white' : 'text-zinc-700 hover:text-zinc-950'
                         }`}>
                           Esqueceu sua senha?
                         </Link>
@@ -103,7 +103,7 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                     </div>
                     <div className="relative">
                       <LockKeyhole className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
-                        theme === 'dark' ? 'text-blue-200/70' : 'text-slate-400'
+                        theme === 'dark' ? 'text-zinc-400' : 'text-zinc-400'
                       }`} />
                     <Input
                       id="password"
@@ -113,8 +113,8 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       onChange={(e) => setData('password', e.target.value)}
                       className={`h-12 pl-10 ${
                         theme === 'dark'
-                          ? 'border-white/10 bg-slate-900/85 text-slate-50 focus-visible:border-blue-300/70 focus-visible:ring-blue-400/20'
-                          : 'border-slate-200 bg-white/90 text-slate-950'
+                          ? 'border-white/10 bg-zinc-900/85 text-zinc-50 focus-visible:border-zinc-300/70 focus-visible:ring-zinc-400/20'
+                          : 'border-zinc-200 bg-white/90 text-zinc-950'
                       }`}
                     />
                     </div>
@@ -127,8 +127,8 @@ export default function Login({ errors = {}, canResetPassword = true, status = n
                       fullWidth
                       className={`h-11 gap-2 font-semibold ${
                         theme === 'dark'
-                          ? 'border-blue-400/20 bg-blue-500 text-white shadow-lg shadow-blue-950/35 hover:bg-blue-400'
-                          : 'bg-slate-950 text-white hover:bg-slate-800'
+                          ? 'border-white/10 bg-white text-zinc-950 shadow-lg shadow-black/35 hover:bg-zinc-200'
+                          : 'bg-zinc-950 text-white hover:bg-zinc-800'
                       }`}
                     >
                       <LogIn className="h-4 w-4" />

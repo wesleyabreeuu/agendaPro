@@ -109,23 +109,23 @@ export default function DailyStartOverlay({
       <DialogContent
         className={`${theme === 'dark' ? 'dark' : ''} max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-[920px] overflow-y-auto border p-0 text-card-foreground shadow-2xl ${
           theme === 'dark'
-            ? 'border-slate-700/70 bg-slate-950 shadow-blue-950/40'
-            : 'border-slate-200 bg-white shadow-slate-300/60'
+            ? 'border-zinc-700/70 bg-zinc-950 shadow-black/60'
+            : 'border-zinc-200 bg-white shadow-zinc-300/60'
         }`}
       >
         <div className="grid gap-0 lg:grid-cols-[1fr_0.86fr]">
           <section className={`p-4 sm:p-5 lg:p-6 ${
             theme === 'dark'
-              ? 'bg-[radial-gradient(circle_at_16%_8%,rgba(59,130,246,0.16),transparent_34%),#0b1120]'
-              : 'bg-[radial-gradient(circle_at_16%_8%,rgba(59,130,246,0.08),transparent_32%),#ffffff]'
+              ? 'bg-[radial-gradient(circle_at_16%_8%,rgba(255,255,255,0.08),transparent_34%),#0a0a0a]'
+              : 'bg-[radial-gradient(circle_at_16%_8%,rgba(0,0,0,0.05),transparent_32%),#ffffff]'
           }`}>
             <DialogHeader>
               <Badge
                 variant="outline"
                 className={`w-fit gap-2 rounded-lg px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${
                   theme === 'dark'
-                    ? 'border-blue-400/20 bg-blue-400/10 text-blue-100'
-                    : 'border-blue-100 bg-blue-50 text-blue-800'
+                    ? 'border-white/15 bg-white/5 text-zinc-100'
+                    : 'border-zinc-200 bg-zinc-50 text-zinc-800'
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5" />
@@ -140,11 +140,11 @@ export default function DailyStartOverlay({
             </DialogHeader>
 
             <div className={`mt-5 rounded-xl border p-4 ${
-              theme === 'dark' ? 'border-blue-400/15 bg-slate-900/70' : 'border-slate-200 bg-slate-50/80'
+              theme === 'dark' ? 'border-white/10 bg-zinc-900/70' : 'border-zinc-200 bg-zinc-50/80'
             }`}>
               <div className="flex items-start gap-3">
                 <div className={`rounded-lg border p-2 ${
-                  theme === 'dark' ? 'border-blue-400/20 bg-blue-400/10 text-blue-200' : 'border-blue-100 bg-blue-50 text-blue-700'
+                  theme === 'dark' ? 'border-white/15 bg-white/5 text-zinc-200' : 'border-zinc-200 bg-white text-zinc-700'
                 }`}>
                   <Target className="h-4 w-4" />
                 </div>
@@ -163,8 +163,8 @@ export default function DailyStartOverlay({
                   size="sm"
                   className={`min-h-[112px] gap-3 rounded-lg border py-3.5 shadow-none ${
                     theme === 'dark'
-                      ? 'border-slate-700/70 bg-slate-950/70'
-                      : 'border-slate-200 bg-white'
+                      ? 'border-zinc-700/70 bg-zinc-950/70'
+                      : 'border-zinc-200 bg-white'
                   }`}
                 >
                   <CardHeader className="grid-cols-[1fr_auto] gap-3 px-4">
@@ -209,8 +209,8 @@ export default function DailyStartOverlay({
 
           <aside className={`border-t px-4 py-4 text-foreground lg:border-l lg:border-t-0 lg:px-5 lg:py-5 ${
             theme === 'dark'
-              ? 'border-slate-700/70 bg-slate-900'
-              : 'border-slate-200 bg-slate-50'
+              ? 'border-zinc-700/70 bg-zinc-900'
+              : 'border-zinc-200 bg-zinc-50'
           }`}>
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -218,7 +218,7 @@ export default function DailyStartOverlay({
                 <h3 className="mt-2 text-[18px] font-semibold text-foreground">Seus próximos passos</h3>
               </div>
               <Card size="sm" className={`w-[112px] gap-2 rounded-lg border py-3 text-right shadow-none ${
-                theme === 'dark' ? 'border-slate-700 bg-slate-950/75' : 'border-slate-200 bg-white'
+                theme === 'dark' ? 'border-zinc-700 bg-zinc-950/75' : 'border-zinc-200 bg-white'
               }`}>
                 <CardContent className="px-3">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Progresso</p>
@@ -234,7 +234,7 @@ export default function DailyStartOverlay({
                   key={`${item.tipo}-${item.origem_id}`}
                   size="sm"
                   className={`gap-2 rounded-lg border py-3 shadow-none ${
-                    theme === 'dark' ? 'border-slate-700 bg-slate-950/75' : 'border-slate-200 bg-white'
+                    theme === 'dark' ? 'border-zinc-700 bg-zinc-950/75' : 'border-zinc-200 bg-white'
                   }`}
                 >
                   <CardHeader className="grid-cols-[1fr_auto] gap-3 px-4">
@@ -253,7 +253,7 @@ export default function DailyStartOverlay({
                 </Card>
               )) : (
                 <Card className={`rounded-lg border-dashed p-5 text-sm text-muted-foreground shadow-none ${
-                  theme === 'dark' ? 'border-slate-700 bg-slate-950/60' : 'border-slate-200 bg-white'
+                  theme === 'dark' ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-200 bg-white'
                 }`}>
                   Nada com horário marcado por enquanto.
                 </Card>
@@ -261,7 +261,7 @@ export default function DailyStartOverlay({
             </div>
 
             <Card className={`mt-4 rounded-xl border shadow-none ${
-              theme === 'dark' ? 'border-slate-700 bg-slate-950/75' : 'border-slate-200 bg-white'
+              theme === 'dark' ? 'border-zinc-700 bg-zinc-950/75' : 'border-zinc-200 bg-white'
             }`}>
               <CardHeader className="grid-cols-[1fr_auto] gap-3">
                 <div>
@@ -269,7 +269,9 @@ export default function DailyStartOverlay({
                   <CardTitle className="mt-2 text-[14px] font-semibold sm:text-[16px]">O que merece atenção</CardTitle>
                 </div>
                 <CardAction>
-                  <Badge variant={hasLooseItems ? 'warning' : 'info'} className="rounded-lg px-2 py-1 text-[10px] font-medium">
+                  <Badge variant="outline" className={`rounded-lg px-2 py-1 text-[10px] font-medium ${
+                    theme === 'dark' ? 'border-white/15 bg-white/5 text-zinc-200' : 'border-zinc-200 bg-zinc-50 text-zinc-700'
+                  }`}>
                     {hasLooseItems ? `${pendingLooseItems.length} sem hora` : `${focusItems.length} itens`}
                   </Badge>
                 </CardAction>
@@ -277,11 +279,11 @@ export default function DailyStartOverlay({
 
               <CardContent className="space-y-2">
                 <div className={`rounded-lg border py-3 ${
-                  theme === 'dark' ? 'border-slate-700 bg-slate-900/75' : 'border-slate-200 bg-slate-50'
+                  theme === 'dark' ? 'border-zinc-700 bg-zinc-900/75' : 'border-zinc-200 bg-zinc-50'
                 }`}>
                   <div className="flex items-start gap-2.5">
                     <div className={`ml-3 rounded-lg border p-2 ${
-                      theme === 'dark' ? 'border-blue-400/20 bg-blue-400/10 text-blue-200' : 'border-blue-100 bg-blue-50 text-blue-700'
+                      theme === 'dark' ? 'border-white/15 bg-white/5 text-zinc-200' : 'border-zinc-200 bg-white text-zinc-700'
                     }`}>
                       <TimerReset className="h-[14px] w-[14px]" />
                     </div>
@@ -299,11 +301,11 @@ export default function DailyStartOverlay({
                 </div>
 
                 <div className={`rounded-lg border py-3 ${
-                  theme === 'dark' ? 'border-slate-700 bg-slate-900/75' : 'border-slate-200 bg-slate-50'
+                  theme === 'dark' ? 'border-zinc-700 bg-zinc-900/75' : 'border-zinc-200 bg-zinc-50'
                 }`}>
                   <div className="flex items-start gap-2.5">
                     <div className={`ml-3 rounded-lg border p-2 ${
-                      theme === 'dark' ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200' : 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                      theme === 'dark' ? 'border-white/15 bg-white/5 text-zinc-200' : 'border-zinc-200 bg-white text-zinc-700'
                     }`}>
                       <CheckCircle2 className="h-[14px] w-[14px]" />
                     </div>
@@ -319,11 +321,11 @@ export default function DailyStartOverlay({
                 </div>
 
                 <div className={`rounded-lg border py-3 ${
-                  theme === 'dark' ? 'border-slate-700 bg-slate-900/75' : 'border-slate-200 bg-slate-50'
+                  theme === 'dark' ? 'border-zinc-700 bg-zinc-900/75' : 'border-zinc-200 bg-zinc-50'
                 }`}>
                   <div className="flex items-start gap-2.5">
                     <div className={`ml-3 rounded-lg border p-2 ${
-                      theme === 'dark' ? 'border-amber-400/20 bg-amber-400/10 text-amber-200' : 'border-amber-100 bg-amber-50 text-amber-700'
+                      theme === 'dark' ? 'border-white/15 bg-white/5 text-zinc-200' : 'border-zinc-200 bg-white text-zinc-700'
                     }`}>
                       <ClipboardList className="h-[14px] w-[14px]" />
                     </div>
