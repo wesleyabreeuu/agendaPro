@@ -1043,6 +1043,7 @@ body.theme-dark .login-auth-input {
     background-color: rgba(24, 24, 27, .9) !important;
     color: #f4f4f5 !important;
     caret-color: #f4f4f5;
+    padding-left: 3rem !important;
     -webkit-text-fill-color: #f4f4f5;
 }
 
