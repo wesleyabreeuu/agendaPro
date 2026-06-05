@@ -152,10 +152,10 @@ function ShareEditor({ compromisso, processing }) {
   }
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-5">
+    <div className="rounded-lg border border-blue-200 bg-blue-50/60 p-5 dark:border-zinc-700 dark:bg-zinc-900/70">
       <div className="mb-4">
-        <h3 className="text-base font-semibold text-zinc-950">Compartilhamento</h3>
-        <p className="mt-1 text-sm text-zinc-600">Digite o e-mail do usuário do sistema. Se ele existir, o compromisso será compartilhado.</p>
+        <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">Compartilhamento</h3>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Digite o e-mail do usuário do sistema. Se ele existir, o compromisso será compartilhado.</p>
       </div>
 
       {feedback ? (
@@ -191,10 +191,10 @@ function ShareEditor({ compromisso, processing }) {
 
       <div className="mt-4 space-y-3">
         {localItems.length ? localItems.map((item) => (
-          <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3">
+          <div key={item.usuario_id} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-950">
             <div>
-              <p className="text-sm font-medium text-zinc-950">{item.nome}</p>
-              <p className="text-sm text-zinc-500">{item.email_masked || item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
+              <p className="text-sm font-medium text-zinc-950 dark:text-zinc-50">{item.nome}</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">{item.email_masked || item.email || 'Sem e-mail'} • {formatPermissionLabel(item.permissao)}</p>
             </div>
             <Button
               type="button"
@@ -207,7 +207,7 @@ function ShareEditor({ compromisso, processing }) {
             </Button>
           </div>
         )) : (
-          <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-5 text-sm text-zinc-500">
+          <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-5 text-sm text-zinc-500 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400">
             Este compromisso ainda não foi compartilhado com ninguém.
           </div>
         )}
@@ -241,23 +241,24 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
     else post('/compromissos')
   }
 
-  const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100'
-  const shellInputClassName = 'h-full w-full !rounded-none !border-0 !bg-transparent !p-0 text-sm text-zinc-950 !shadow-none outline-none appearance-none focus:!border-0 focus:!ring-0'
-  const sectionClassName = 'grid gap-5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2'
+  const shellClassName = 'flex h-11 w-full items-center rounded-xl border border-zinc-200 bg-white px-3 shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-950 dark:focus-within:border-zinc-500 dark:focus-within:ring-zinc-700/50'
+  const shellInputClassName = 'h-full w-full !rounded-none !border-0 !bg-transparent !p-0 text-sm text-zinc-950 !shadow-none outline-none appearance-none focus:!border-0 focus:!ring-0 dark:text-zinc-50 dark:placeholder:text-zinc-500'
+  const sectionClassName = 'grid gap-5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 lg:grid-cols-2 dark:border-zinc-700 dark:bg-zinc-900/70'
+  const labelClassName = 'text-zinc-900 dark:text-zinc-100'
 
   return (
     <AppLayout title={editing ? 'Editar Compromisso' : 'Novo Compromisso'}>
-      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
+      <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs dark:border-zinc-700 dark:from-zinc-950 dark:to-zinc-900">
         <form onSubmit={submit} className="space-y-6">
           {editing && compromisso?.owner?.nome ? (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600">
-              Dono: <span className="font-medium text-zinc-900">{compromisso.owner.nome}</span>
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 px-4 py-3 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-400">
+              Dono: <span className="font-medium text-zinc-900 dark:text-zinc-50">{compromisso.owner.nome}</span>
               {compromisso.permissao ? <span className="ml-2"><Badge variant="outline">{formatPermissionLabel(compromisso.permissao)}</Badge></span> : null}
             </div>
           ) : null}
 
           <div className="grid gap-2 lg:col-span-2">
-            <Label className="text-zinc-900">Título</Label>
+            <Label className={labelClassName}>Título</Label>
             <div className={shellClassName}>
               <Input value={data.titulo} onChange={(e) => setData('titulo', e.target.value)} className={shellInputClassName} />
             </div>
@@ -266,7 +267,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className={sectionClassName}>
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Data de início</Label>
+              <Label className={labelClassName}>Data de início</Label>
               <div className={shellClassName}>
                 <Input type="datetime-local" value={data.data_inicio} onChange={(e) => setData('data_inicio', e.target.value)} className={shellInputClassName} />
               </div>
@@ -274,7 +275,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Data final</Label>
+              <Label className={labelClassName}>Data final</Label>
               <div className={shellClassName}>
                 <Input type="datetime-local" value={data.data_fim} onChange={(e) => setData('data_fim', e.target.value)} className={shellInputClassName} />
               </div>
@@ -282,7 +283,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Categoria</Label>
+              <Label className={labelClassName}>Categoria</Label>
               <Combobox
                 items={categoriaOptions}
                 value={categoriaOptions.find((item) => item.value === String(data.categoria_id)) ?? null}
@@ -308,7 +309,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
 
           <div className={sectionClassName}>
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Recorrência</Label>
+              <Label className={labelClassName}>Recorrência</Label>
               <div className={shellClassName}>
                 <Select value={data.recorrencia} onChange={(e) => setData('recorrencia', e.target.value)} className={shellInputClassName}>
                   <option value="">Não repetir</option>
@@ -320,25 +321,25 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Intervalo</Label>
+              <Label className={labelClassName}>Intervalo</Label>
               <div className={shellClassName}>
                 <Input type="number" min="1" value={data.recorrencia_intervalo} onChange={(e) => setData('recorrencia_intervalo', e.target.value)} className={shellInputClassName} />
               </div>
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Repetir até</Label>
+              <Label className={labelClassName}>Repetir até</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
                     variant="outline"
-                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-xs hover:bg-zinc-50"
+                    className="h-11 w-full justify-between rounded-xl border-zinc-200 bg-white px-3 font-normal text-zinc-950 shadow-xs hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-900"
                   >
-                    <span className={data.data_fim_recorrencia ? 'text-zinc-950' : 'text-zinc-500'}>
+                    <span className={data.data_fim_recorrencia ? 'text-zinc-950 dark:text-zinc-50' : 'text-zinc-500 dark:text-zinc-500'}>
                       {formatDateLabel(data.data_fim_recorrencia)}
                     </span>
-                    <CalendarDays className="h-4 w-4 text-zinc-500" />
+                    <CalendarDays className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-auto p-2">
@@ -358,8 +359,8 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
             </div>
           </div>
 
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-5">
-            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-xs">
+          <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-5 dark:border-zinc-700 dark:bg-zinc-900/70">
+            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700 shadow-xs dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
               <Checkbox
                 checked={data.dia_inteiro}
                 onCheckedChange={(checked) => setData('dia_inteiro', Boolean(checked))}
@@ -369,7 +370,7 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           </div>
 
           {editing ? (
-            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-xs lg:col-span-2">
+            <label className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 shadow-xs lg:col-span-2 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
               <Checkbox
                 checked={data.cancelar_lembrete}
                 onCheckedChange={(checked) => setData('cancelar_lembrete', Boolean(checked))}
@@ -379,9 +380,9 @@ export default function CompromissosForm({ modo = 'create', compromisso = null, 
           ) : null}
 
           <div className="grid gap-2">
-            <Label className="text-zinc-900">Descrição</Label>
-            <div className="rounded-lg border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
-              <Textarea className="min-h-36 resize-y border-0 shadow-none focus:ring-0" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
+            <Label className={labelClassName}>Descrição</Label>
+            <div className="rounded-lg border border-zinc-200 bg-gradient-to-t from-primary/5 to-card shadow-xs transition focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100 dark:border-zinc-700 dark:from-zinc-950 dark:to-zinc-900 dark:focus-within:border-zinc-500 dark:focus-within:ring-zinc-700/50">
+              <Textarea className="min-h-36 resize-y border-0 text-zinc-950 shadow-none focus:ring-0 dark:text-zinc-50 dark:placeholder:text-zinc-500" value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} />
             </div>
           </div>
 

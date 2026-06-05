@@ -59,40 +59,34 @@ export default function TimelineItem({
         ? 'border-zinc-700 bg-zinc-950 text-zinc-50 hover:border-zinc-600 hover:bg-zinc-900/70'
         : 'border-zinc-200 bg-white text-zinc-950 hover:border-zinc-300 hover:bg-zinc-50/40'
     }`}>
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.8fr)_120px_150px_190px] lg:items-center">
-        <div className="min-w-0">
-          <div className="flex items-start gap-3">
-            <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
-              isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'
-            }`}>
-              <Icon className="h-4 w-4" />
-            </div>
-            <div className="min-w-0">
-              <h3 className={`truncate text-sm font-medium sm:text-[15px] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{titulo}</h3>
-              {descricao ? <p className={`mt-1 truncate text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{descricao}</p> : null}
+      <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${
+            isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'
+          }`}>
+            <Icon className="h-4 w-4" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className={`break-words text-sm font-medium leading-5 sm:text-[15px] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{titulo}</h3>
+            {descricao ? <p className={`mt-1 break-words text-sm leading-5 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{descricao}</p> : null}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${
+                isDark ? 'bg-zinc-800 text-zinc-200' : style.badge
+              }`}>
+                {style.label}
+              </span>
+              <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${
+                status === 'concluido'
+                  ? isDark ? 'bg-white text-zinc-950' : 'bg-zinc-950 text-white'
+                  : isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-600'
+              }`}>
+                {status === 'concluido' ? 'Concluído' : 'Pendente'}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center lg:justify-center">
-          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${
-            isDark ? 'bg-zinc-800 text-zinc-200' : style.badge
-          }`}>
-            {style.label}
-          </span>
-        </div>
-
-        <div className="flex items-center lg:justify-center">
-          <span className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium ${
-            status === 'concluido'
-              ? isDark ? 'bg-white text-zinc-950' : 'bg-zinc-950 text-white'
-              : isDark ? 'bg-zinc-800 text-zinc-300' : 'bg-zinc-100 text-zinc-600'
-          }`}>
-            {status === 'concluido' ? 'Concluído' : 'Pendente'}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 xl:justify-end">
           <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium ${
             isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-700'
           }`}>

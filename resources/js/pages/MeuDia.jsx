@@ -478,16 +478,16 @@ export default function MeuDia({ initialData = null }) {
           </div>
         ) : (
           <>
-        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+        <section className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(170px,1fr))]">
           {summaryCards.map(({ key, label, value, helper, icon: Icon }) => (
-            <div key={key} className={`rounded-xl border p-4 shadow-xs ${shellClasses(isDark)}`}>
+            <div key={key} className={`min-w-0 rounded-xl border p-4 shadow-xs ${shellClasses(isDark)}`}>
               <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className={`text-xs uppercase tracking-[0.16em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>{label}</p>
+                <div className="min-w-0">
+                  <p className={`break-words text-xs uppercase tracking-[0.12em] ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>{label}</p>
                   <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
-                  <p className={`mt-1 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p>
+                  <p className={`mt-1 break-words text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{helper}</p>
                 </div>
-                <span className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}>
+                <span className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-white text-zinc-600'}`}>
                   <Icon className="h-4 w-4" />
                 </span>
               </div>

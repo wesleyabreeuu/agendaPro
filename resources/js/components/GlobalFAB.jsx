@@ -30,7 +30,7 @@ export default function GlobalFAB({ permissions = {}, currentPath = '' }) {
     return nextItems
   }, [permissions])
 
-  if (!items.length || currentPath.startsWith('/login')) {
+  if (!items.length || currentPath.startsWith('/login') || currentPath.startsWith('/meu-dia')) {
     return null
   }
 
