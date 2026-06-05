@@ -252,6 +252,7 @@ class MeuDiaService
         Todo::ownedBy($user->id)
             ->whereDate('data', '<', today())
             ->where('status', '!=', 'finalizado')
+            ->whereIn('urgencia', ['alta', 'urgente'])
             ->orderByRaw("CASE WHEN urgencia = 'urgente' THEN 0 WHEN urgencia = 'alta' THEN 1 ELSE 2 END")
             ->orderBy('data')
             ->limit(3)
