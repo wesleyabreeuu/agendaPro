@@ -33,6 +33,8 @@ Route::middleware(['web', 'auth', 'can:access-dia-a-dia', 'throttle:api-authenti
     Route::get('/habitos/{habito}/estatisticas', [HabitoController::class, 'stats']);
     Route::get('/meu-dia', [MeuDiaController::class, 'index']);
     Route::post('/meu-dia/planejar', [MeuDiaController::class, 'plan']);
+    Route::post('/meu-dia/planejar/aplicar', [MeuDiaController::class, 'applyPlan']);
+    Route::post('/meu-dia/checkin', [MeuDiaController::class, 'checkin']);
     Route::post('/meu-dia/action', [MeuDiaController::class, 'action']);
     Route::get('/daily-session/check', [DailySessionController::class, 'check']);
     Route::post('/daily-session/start', [DailySessionController::class, 'start']);

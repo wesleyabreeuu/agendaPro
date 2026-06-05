@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KanbanTask;
+use App\Models\DailyCheckin;
 use App\Models\Lembrete;
 use App\Models\Todo;
 use App\Models\User;
@@ -46,6 +47,43 @@ class MeuDiaController extends Controller
         $user = Auth::user();
 
         return response()->json($planner->plan($user));
+    }
+
+    public function applyPlan(DailyPlannerService $planner): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return response()->json($planner->apply($user));
+    }
+
+    public function checkin(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $data = $request->validate([
+            'humor' => 'required|integer|min:1|max:5',
+            'energia' => 'required|integer|min:1|max:5',
+            'produtividade' => 'nullable|integer|min:1|max:5',
+        ]);
+
+        $checkin = DailyCheckin::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'data' => today()->toDateString(),
+            ],
+            [
+                'humor' => $data['humor'],
+                'energia' => $data['energia'],
+                'produtividade' => $data['produtividade'] ?? $data['energia'],
+            ]
+        );
+
+        return response()->json([
+            'ok' => true,
+            'checkin' => $checkin,
+        ]);
     }
 
     public function action(

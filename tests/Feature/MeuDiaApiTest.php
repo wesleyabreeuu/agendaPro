@@ -44,6 +44,11 @@ class MeuDiaApiTest extends TestCase
                 'timeline',
                 'pendencias',
                 'resumo' => ['total', 'concluidos', 'percentual', 'itens_por_tipo'],
+                'proxima_melhor_acao' => ['titulo', 'motivo', 'impacto', 'tempo_estimado'],
+                'tempo_disponivel' => ['total_minutos', 'texto', 'blocos'],
+                'score_dia' => ['valor', 'evolucao', 'componentes'],
+                'radar_vida' => ['score_geral', 'indicadores'],
+                'centro_decisoes',
             ])
             ->assertJsonPath('resumo.itens_por_tipo.compromissos', 1)
             ->assertJsonPath('resumo.itens_por_tipo.tarefas', 1);

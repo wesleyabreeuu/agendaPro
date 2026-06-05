@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AtividadeFisica;
 use App\Models\ContaBancaria;
 use App\Models\Compromisso;
+use App\Models\DailyCheckin;
 use App\Models\Goal;
 use App\Models\KanbanTask;
 use App\Models\Lembrete;
@@ -20,7 +21,10 @@ use Illuminate\Support\Collection;
 class MeuDiaService
 {
     public function __construct(
-        private readonly RotinaPlannerService $planner
+        private readonly RotinaPlannerService $planner,
+        private readonly LifeRadarService $lifeRadar,
+        private readonly GoalRiskAnalyzerService $goalRiskAnalyzer,
+        private readonly DecisionCenterService $decisionCenter
     ) {
     }
 
@@ -184,18 +188,43 @@ class MeuDiaService
         $timeline = $this->getTimeline($user);
         $pendencias = $this->montarPendencias($user);
         $resumo = $this->getResumoDia($user);
+        $prioridades = $this->getPrioridades($user, $timeline, $pendencias);
+        $progresso = $this->getProgresso($user, $timeline, $pendencias);
+        $objetivos = $this->getObjetivos($user);
+        $saude = $this->getSaude($user);
+        $financeiro = $this->getFinanceiro($user);
+        $objetivosEmRisco = $this->goalRiskAnalyzer->analyze($user);
+        $context = [
+            'timeline' => $timeline,
+            'pendencias' => $pendencias,
+            'resumo' => $resumo,
+            'prioridades' => $prioridades,
+            'progresso' => $progresso,
+            'objetivos' => $objetivos,
+            'saude' => $saude,
+            'financeiro' => $financeiro,
+            'objetivos_em_risco' => $objetivosEmRisco,
+        ];
 
         return [
             'cabecalho' => $this->getCabecalho($user),
             'timeline' => $timeline,
             'pendencias' => $pendencias,
             'resumo' => $resumo,
-            'prioridades' => $this->getPrioridades($user, $timeline, $pendencias),
+            'prioridades' => $prioridades,
             'alertas' => $this->getAlertas($user),
-            'progresso' => $this->getProgresso($user, $timeline, $pendencias),
-            'objetivos' => $this->getObjetivos($user),
-            'saude' => $this->getSaude($user),
-            'financeiro' => $this->getFinanceiro($user),
+            'progresso' => $progresso,
+            'objetivos' => $objetivos,
+            'saude' => $saude,
+            'financeiro' => $financeiro,
+            'hero' => $this->getHero($user, $context),
+            'proxima_melhor_acao' => $this->getNextBestAction($user, $context),
+            'tempo_disponivel' => $this->getFreeTimeBlocks($user, $timeline),
+            'score_dia' => $this->getDayScore($user, $context),
+            'radar_vida' => $this->lifeRadar->analyze($user, $context),
+            'objetivos_em_risco' => $objetivosEmRisco,
+            'centro_decisoes' => $this->decisionCenter->analyze($user, $context),
+            'checkin_manha' => $this->getMorningCheckin($user),
         ];
     }
 
@@ -208,6 +237,230 @@ class MeuDiaService
             'saudacao' => $saudacao,
             'nome' => $user->name,
             'data' => now()->translatedFormat('l, d \d\e F \d\e Y'),
+        ];
+    }
+
+    public function getNextBestAction(User $user, ?array $context = null): array
+    {
+        $timeline = collect($context['timeline'] ?? $this->getTimeline($user));
+        $pendencias = collect($context['pendencias'] ?? $this->montarPendencias($user));
+        $objetivos = collect($context['objetivos']['items'] ?? $this->getObjetivos($user)['items']);
+        $checkin = DailyCheckin::ownedBy($user->id)->whereDate('data', today())->first();
+        $energy = (int) ($checkin?->energia ?? 4);
+        $candidates = collect();
+
+        Todo::ownedBy($user->id)
+            ->whereDate('data', '<', today())
+            ->where('status', '!=', 'finalizado')
+            ->orderByRaw("CASE WHEN urgencia = 'urgente' THEN 0 WHEN urgencia = 'alta' THEN 1 ELSE 2 END")
+            ->orderBy('data')
+            ->limit(3)
+            ->get()
+            ->each(fn (Todo $todo) => $candidates->push([
+                'titulo' => $todo->descricao,
+                'motivo' => 'Tarefa atrasada bloqueando o fluxo do dia.',
+                'impacto' => 'Produtividade',
+                'tempo_estimado' => $energy <= 2 ? '15 minutos' : '25 minutos',
+                'tipo' => 'tarefa',
+                'origem_id' => $todo->id,
+                'origem_url' => "/todo/{$todo->id}/edit",
+                'score' => $todo->urgencia === 'urgente' ? 98 : 90,
+            ]));
+
+        $timeline
+            ->where('tipo', 'compromisso')
+            ->where('status', '!=', 'concluido')
+            ->filter(fn (array $item) => filled($item['hora_inicio'] ?? null) && $item['hora_inicio'] >= now()->format('H:i'))
+            ->sortBy('hora_inicio')
+            ->take(2)
+            ->each(fn (array $item) => $candidates->push([
+                'titulo' => "Preparar: {$item['titulo']}",
+                'motivo' => 'Compromisso próximo exige contexto antes da execução.',
+                'impacto' => 'Agenda',
+                'tempo_estimado' => '15 minutos',
+                'tipo' => $item['tipo'],
+                'origem_id' => $item['origem_id'],
+                'origem_url' => $item['origem_url'] ?? null,
+                'score' => 86,
+            ]));
+
+        $timeline
+            ->merge($pendencias)
+            ->where('tipo', 'rotina')
+            ->where('status', '!=', 'concluido')
+            ->take($energy <= 2 ? 1 : 2)
+            ->each(fn (array $item) => $candidates->push([
+                'titulo' => $item['titulo'],
+                'motivo' => 'Rotina pendente mantém consistência e reduz atrito amanhã.',
+                'impacto' => 'Rotinas',
+                'tempo_estimado' => $energy <= 2 ? '10 minutos' : '20 minutos',
+                'tipo' => $item['tipo'],
+                'origem_id' => $item['origem_id'],
+                'origem_url' => $item['origem_url'] ?? null,
+                'score' => 72,
+            ]));
+
+        $objetivos
+            ->sortBy('percentual')
+            ->take(2)
+            ->each(fn (array $goal) => $candidates->push([
+                'titulo' => $goal['proxima_acao'] ?? $goal['nome'],
+                'motivo' => "Avança o objetivo {$goal['nome']}.",
+                'impacto' => $goal['tipo'] === 'financeiro' ? 'Meta Financeira' : 'Objetivos',
+                'tempo_estimado' => $energy <= 2 ? '20 minutos' : '30 minutos',
+                'tipo' => 'objetivo',
+                'origem_id' => $goal['id'] ?? null,
+                'origem_url' => $goal['url'] ?? null,
+                'score' => 80 - (int) ($goal['percentual'] ?? 0),
+            ]));
+
+        if ($user->hasModuleAccess('financeiro')) {
+            $metaFinanceira = MetaEconomia::query()
+                ->where('user_id', $user->id)
+                ->orderBy('prazo_final')
+                ->first();
+
+            if ($metaFinanceira && (float) $metaFinanceira->valor_alvo > 0 && ((float) $metaFinanceira->valor_atual / (float) $metaFinanceira->valor_alvo) < 0.5) {
+                $candidates->push([
+                    'titulo' => 'Prospectar 3 empresas',
+                    'motivo' => "A meta {$metaFinanceira->titulo} precisa de tração financeira.",
+                    'impacto' => 'Meta Financeira',
+                    'tempo_estimado' => $energy <= 2 ? '20 minutos' : '30 minutos',
+                    'tipo' => 'financeiro',
+                    'origem_id' => $metaFinanceira->id,
+                    'origem_url' => '/financeiro',
+                    'score' => 84,
+                ]);
+            }
+        }
+
+        if ($user->hasModuleAccess('saude') && AtividadeFisica::query()->where('user_id', $user->id)->whereDate('data', today())->doesntExist()) {
+            $candidates->push([
+                'titulo' => $energy <= 2 ? 'Caminhar 10 minutos' : 'Pedalar 12 km hoje',
+                'motivo' => $energy <= 2 ? 'Energia baixa pede uma ação leve, mas concreta.' : 'Saúde sem registro hoje reduz o score e a constância.',
+                'impacto' => 'Saúde',
+                'tempo_estimado' => $energy <= 2 ? '10 minutos' : '45 minutos',
+                'tipo' => 'saude',
+                'origem_id' => null,
+                'origem_url' => '/saude/atividades',
+                'score' => $energy <= 2 ? 68 : 76,
+            ]);
+        }
+
+        $best = $candidates->sortByDesc('score')->first();
+
+        return $best ?: [
+            'titulo' => 'Definir a primeira ação do dia',
+            'motivo' => 'Não há bloqueios críticos detectados agora.',
+            'impacto' => 'Clareza',
+            'tempo_estimado' => '10 minutos',
+            'tipo' => 'planejamento',
+            'origem_id' => null,
+            'origem_url' => null,
+        ];
+    }
+
+    public function getFreeTimeBlocks(User $user, ?array $timeline = null): array
+    {
+        $occupied = collect($timeline ?? $this->getTimeline($user))
+            ->filter(fn (array $item) => filled($item['hora_inicio'] ?? null))
+            ->map(function (array $item) {
+                $start = $this->minutesFromTime($item['hora_inicio']);
+                $end = filled($item['hora_fim'] ?? null) ? $this->minutesFromTime($item['hora_fim']) : $start + 45;
+
+                return ['inicio' => $start, 'fim' => max($start + 15, $end)];
+            })
+            ->sortBy('inicio')
+            ->values();
+
+        $cursor = 8 * 60;
+        $endOfDay = 22 * 60;
+        $blocks = collect();
+
+        foreach ($occupied as $block) {
+            if ($block['fim'] <= $cursor || $block['inicio'] >= $endOfDay) {
+                continue;
+            }
+
+            if ($block['inicio'] > $cursor) {
+                $blocks->push(['inicio_minutos' => $cursor, 'fim_minutos' => min($block['inicio'], $endOfDay)]);
+            }
+
+            $cursor = max($cursor, min($block['fim'], $endOfDay));
+        }
+
+        if ($cursor < $endOfDay) {
+            $blocks->push(['inicio_minutos' => $cursor, 'fim_minutos' => $endOfDay]);
+        }
+
+        $blocks = $blocks
+            ->filter(fn (array $block) => ($block['fim_minutos'] - $block['inicio_minutos']) >= 30)
+            ->map(fn (array $block) => [
+                'inicio' => $this->timeFromMinutes($block['inicio_minutos']),
+                'fim' => $this->timeFromMinutes($block['fim_minutos']),
+                'duracao_minutos' => $block['fim_minutos'] - $block['inicio_minutos'],
+            ])
+            ->values();
+
+        $total = (int) $blocks->sum('duracao_minutos');
+
+        return [
+            'total_minutos' => $total,
+            'texto' => 'Você possui ' . $this->formatMinutes($total) . ' livres hoje.',
+            'blocos' => $blocks->all(),
+        ];
+    }
+
+    public function getDayScore(User $user, ?array $context = null): array
+    {
+        $progresso = $context['progresso'] ?? $this->getProgresso($user);
+        $saude = $context['saude'] ?? $this->getSaude($user);
+        $objetivos = collect($context['objetivos']['items'] ?? $this->getObjetivos($user)['items']);
+
+        $produtividade = (int) ($progresso['percentual'] ?? 0);
+        $rotinas = (int) (($progresso['detalhes']['rotinas']['total'] ?? 0) > 0
+            ? round((($progresso['detalhes']['rotinas']['concluidos'] ?? 0) / $progresso['detalhes']['rotinas']['total']) * 100)
+            : 60);
+        $saudeScore = ((int) ($saude['atividades_hoje'] ?? 0) > 0 ? 85 : 35);
+        $objetivosScore = $objetivos->count() > 0 ? (int) round($objetivos->avg('percentual')) : 55;
+        $score = (int) round(($produtividade * 0.35) + ($rotinas * 0.25) + ($saudeScore * 0.2) + ($objetivosScore * 0.2));
+
+        return [
+            'valor' => max(0, min(100, $score)),
+            'evolucao' => $score >= 75 ? 'em alta' : ($score >= 50 ? 'estavel' : 'precisa de atenção'),
+            'componentes' => [
+                'tarefas_concluidas' => $produtividade,
+                'rotinas_executadas' => $rotinas,
+                'atividades_fisicas' => $saudeScore,
+                'objetivos' => $objetivosScore,
+            ],
+        ];
+    }
+
+    public function getMorningCheckin(User $user): array
+    {
+        $checkin = DailyCheckin::ownedBy($user->id)->whereDate('data', today())->first();
+
+        return [
+            'feito' => (bool) $checkin,
+            'humor' => $checkin?->humor,
+            'energia' => $checkin?->energia,
+            'produtividade' => $checkin?->produtividade,
+        ];
+    }
+
+    private function getHero(User $user, array $context): array
+    {
+        $resumo = $context['resumo'];
+        $freeTime = $this->getFreeTimeBlocks($user, $context['timeline']);
+
+        return [
+            'frases' => [
+                ['label' => 'compromisso' . (($resumo['itens_por_tipo']['compromissos'] ?? 0) === 1 ? '' : 's'), 'valor' => (int) ($resumo['itens_por_tipo']['compromissos'] ?? 0)],
+                ['label' => 'tarefas atrasadas', 'valor' => Todo::ownedBy($user->id)->whereDate('data', '<', today())->where('status', '!=', 'finalizado')->count()],
+                ['label' => 'rotinas pendentes', 'valor' => max(0, (int) (($resumo['cards']['rotinas']['total'] ?? 0) - ($resumo['cards']['rotinas']['executadas'] ?? 0)))],
+                ['label' => 'livres', 'valor' => $this->formatMinutes($freeTime['total_minutos'])],
+            ],
         ];
     }
 
@@ -666,5 +919,36 @@ class MeuDiaService
         }
 
         return substr($time, 0, 5);
+    }
+
+    private function minutesFromTime(string $time): int
+    {
+        [$hour, $minute] = array_map('intval', explode(':', substr($time, 0, 5)));
+
+        return ($hour * 60) + $minute;
+    }
+
+    private function timeFromMinutes(int $minutes): string
+    {
+        $hour = (int) floor($minutes / 60);
+        $minute = $minutes % 60;
+
+        return str_pad((string) $hour, 2, '0', STR_PAD_LEFT) . ':' . str_pad((string) $minute, 2, '0', STR_PAD_LEFT);
+    }
+
+    private function formatMinutes(int $minutes): string
+    {
+        $hours = intdiv($minutes, 60);
+        $remaining = $minutes % 60;
+
+        if ($hours <= 0) {
+            return "{$remaining}min";
+        }
+
+        if ($remaining === 0) {
+            return "{$hours}h";
+        }
+
+        return "{$hours}h {$remaining}min";
     }
 }
