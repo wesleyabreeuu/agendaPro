@@ -290,13 +290,13 @@ function MetricCard({ item, isDark = false }) {
 
   return (
     <Card
-      className={`@container/card border shadow-xs ${
+      className={`@container/card h-full justify-between border shadow-xs ${
         isDark
           ? 'border-zinc-700 bg-card'
           : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'
       }`}
     >
-      <CardHeader>
+      <CardHeader className="min-h-[88px]">
         <CardDescription>{item.label}</CardDescription>
         <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
           {item.value}
@@ -308,12 +308,12 @@ function MetricCard({ item, isDark = false }) {
           </Badge>
         </CardAction>
       </CardHeader>
-      <CardFooter className="flex-col items-start gap-1.5 text-sm">
-        <div className="flex items-center gap-2 font-medium">
+      <CardFooter className="min-h-[100px] flex-col items-start justify-start gap-1.5 text-sm">
+        <div className="flex min-h-10 items-start gap-2 font-medium leading-snug">
           <item.icon className="h-4 w-4" />
-          {item.helper}
+          <span>{item.helper}</span>
         </div>
-        <div className="text-muted-foreground">{item.footer}</div>
+        <div className="text-muted-foreground leading-snug">{item.footer}</div>
       </CardFooter>
     </Card>
   )
@@ -321,27 +321,64 @@ function MetricCard({ item, isDark = false }) {
 
 function QuickAction({ label, helper, onClick }) {
   return (
-    <Button type="button" variant="outline" onClick={onClick} className="h-auto justify-between rounded-xl px-4 py-3 text-left">
-      <div>
+    <Button type="button" variant="outline" onClick={onClick} className="h-[72px] w-full justify-between rounded-xl px-4 py-3 text-left">
+      <div className="min-w-0">
         <div className="font-medium text-zinc-950 dark:text-zinc-50">{label}</div>
-        <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{helper}</div>
+        <div className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{helper}</div>
       </div>
-      <ArrowRight className="h-4 w-4" />
+      <ArrowRight className="h-4 w-4 shrink-0" />
     </Button>
   )
 }
 
 function MiniEvent({ title, meta, badge, badgeVariant = 'outline' }) {
   return (
-    <div className="rounded-xl border border-zinc-200/80 bg-background px-4 py-3 dark:border-zinc-800">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-medium text-zinc-950 dark:text-zinc-50">{title}</p>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{meta}</p>
+    <div className="min-h-[82px] rounded-xl border border-zinc-200/80 bg-background px-4 py-3 dark:border-zinc-800">
+      <div className="flex h-full items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="line-clamp-2 font-medium leading-snug text-zinc-950 dark:text-zinc-50">{title}</p>
+          <p className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{meta}</p>
         </div>
-        {badge ? <Badge variant={badgeVariant}>{badge}</Badge> : null}
+        {badge ? <Badge className="shrink-0" variant={badgeVariant}>{badge}</Badge> : null}
       </div>
     </div>
+  )
+}
+
+function IntervalSummary({ dashboard, period, isDark = false }) {
+  const pendingTasks = Number(dashboard?.tarefas?.pendentes?.total || 0)
+  const pendingRoutines = Number(dashboard?.rotina?.rotinas_do_dia?.pendentes || 0)
+  const todayEvents = Number(dashboard?.compromissos?.hoje?.total || 0)
+  const weeklyRate = Math.round(Number(dashboard?.rotina?.taxa_semanal || 0))
+  const monthFlow = dashboard?.financeiro ? formatCurrency(dashboard.financeiro.resultado_mes || 0) : `${dashboard?.lembretes?.ativos?.total || 0} ativos`
+
+  const items = [
+    { label: 'Janela', value: `${period} dias`, icon: Clock3 },
+    { label: 'Pendências', value: pendingTasks + pendingRoutines, icon: CheckSquare },
+    { label: dashboard?.financeiro ? 'Fluxo' : 'Lembretes', value: monthFlow, icon: Wallet },
+    { label: 'Ritmo', value: `${todayEvents} hoje • ${weeklyRate}%`, icon: Flame },
+  ]
+
+  return (
+    <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+      <CardHeader>
+        <CardTitle>Resumo rápido</CardTitle>
+        <CardDescription>Indicadores para fechar a leitura do painel.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3 sm:grid-cols-2">
+        {items.map((item) => (
+          <div key={item.label} className="flex min-h-[72px] items-center gap-3 rounded-xl border border-zinc-200/80 bg-background px-4 py-3 dark:border-zinc-800">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+              <item.icon className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs uppercase tracking-normal text-zinc-500 dark:text-zinc-400">{item.label}</div>
+              <div className="truncate font-semibold text-zinc-950 dark:text-zinc-50">{item.value}</div>
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   )
 }
 
@@ -437,65 +474,69 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.55fr_0.95fr]">
-          <Tabs defaultValue="fluxo" className="gap-4">
-            <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
-              <CardHeader>
-                <div>
-                  <CardTitle>Panorama operacional</CardTitle>
-                  <CardDescription>Estrutura visual inspirada no bloco oficial `dashboard-01`, adaptada aos seus dados.</CardDescription>
-                </div>
-                <CardAction>
-                  <TabsList variant="line" className="flex-wrap justify-start">
-                    <TabsTrigger value="fluxo">Fluxo</TabsTrigger>
-                    <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
-                    <TabsTrigger value="rotinas">Rotinas</TabsTrigger>
-                  </TabsList>
-                </CardAction>
-              </CardHeader>
+        <div className="grid items-start gap-6 xl:grid-cols-[1.55fr_0.95fr]">
+          <div className="flex flex-col gap-6">
+            <Tabs defaultValue="fluxo" className="gap-4">
+              <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+                <CardHeader>
+                  <div>
+                    <CardTitle>Panorama operacional</CardTitle>
+                    <CardDescription>Estrutura visual inspirada no bloco oficial `dashboard-01`, adaptada aos seus dados.</CardDescription>
+                  </div>
+                  <CardAction>
+                    <TabsList variant="line" className="flex-wrap justify-start">
+                      <TabsTrigger value="fluxo">Fluxo</TabsTrigger>
+                      <TabsTrigger value="tarefas">Tarefas</TabsTrigger>
+                      <TabsTrigger value="rotinas">Rotinas</TabsTrigger>
+                    </TabsList>
+                  </CardAction>
+                </CardHeader>
 
-              {Object.entries(chartTabs).map(([key, tab]) => (
-                <TabsContent key={key} value={key}>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">{tab.title}</h3>
-                        <p className="text-sm text-zinc-500 dark:text-zinc-400">{tab.description}</p>
+                {Object.entries(chartTabs).map(([key, tab]) => (
+                  <TabsContent key={key} value={key}>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-base font-semibold text-zinc-950 dark:text-zinc-50">{tab.title}</h3>
+                          <p className="text-sm text-zinc-500 dark:text-zinc-400">{tab.description}</p>
+                        </div>
+                        <Badge variant="outline">{period} dias</Badge>
                       </div>
-                      <Badge variant="outline">{period} dias</Badge>
-                    </div>
 
-                    <ChartContainer config={tab.config} className="h-[320px] w-full">
-                      <AreaChart data={tab.data}>
-                        <defs>
+                      <ChartContainer config={tab.config} className="h-[320px] w-full">
+                        <AreaChart data={tab.data}>
+                          <defs>
+                            {tab.series.map((series) => (
+                              <linearGradient key={series.gradientId} id={series.gradientId} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={series.stroke} stopOpacity={0.35} />
+                                <stop offset="95%" stopColor={series.stroke} stopOpacity={0.05} />
+                              </linearGradient>
+                            ))}
+                          </defs>
+                          <CartesianGrid vertical={false} />
+                          <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                          <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
+                          <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
                           {tab.series.map((series) => (
-                            <linearGradient key={series.gradientId} id={series.gradientId} x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor={series.stroke} stopOpacity={0.35} />
-                              <stop offset="95%" stopColor={series.stroke} stopOpacity={0.05} />
-                            </linearGradient>
+                            <Area
+                              key={series.key}
+                              type="natural"
+                              dataKey={series.key}
+                              fill={`url(#${series.gradientId})`}
+                              stroke={series.stroke}
+                              strokeWidth={2}
+                            />
                           ))}
-                        </defs>
-                        <CartesianGrid vertical={false} />
-                        <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
-                        <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
-                        <ChartTooltip content={<ChartTooltipContent indicator="dot" />} />
-                        {tab.series.map((series) => (
-                          <Area
-                            key={series.key}
-                            type="natural"
-                            dataKey={series.key}
-                            fill={`url(#${series.gradientId})`}
-                            stroke={series.stroke}
-                            strokeWidth={2}
-                          />
-                        ))}
-                      </AreaChart>
-                    </ChartContainer>
-                  </CardContent>
-                </TabsContent>
-              ))}
-            </Card>
-          </Tabs>
+                        </AreaChart>
+                      </ChartContainer>
+                    </CardContent>
+                  </TabsContent>
+                ))}
+              </Card>
+            </Tabs>
+
+            <IntervalSummary dashboard={dashboard} period={period} isDark={isDark} />
+          </div>
 
           <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
             <CardHeader>
