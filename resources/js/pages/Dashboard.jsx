@@ -281,33 +281,39 @@ function MetricCard({ item, isDark = false }) {
   const hasDelta = Number.isFinite(item.delta)
   const tone = hasDelta ? getMetricTone(item.delta, item.inverse) : { badge: item.badgeTone || 'outline', icon: Activity }
   const TrendIcon = tone.icon
+  const badgeText = hasDelta ? `${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}%` : item.badgeLabel
 
   return (
     <Card
-      className={`@container/card h-full justify-between border shadow-xs ${
+      className={`@container/card h-full min-h-[240px] border shadow-xs ${
         isDark
           ? 'border-zinc-700 bg-card'
           : 'border-zinc-200 bg-gradient-to-t from-primary/5 to-card'
       }`}
     >
-      <CardHeader className="min-h-[88px]">
-        <CardDescription>{item.label}</CardDescription>
-        <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-          {item.value}
-        </CardTitle>
-        <CardAction>
-          <Badge variant={tone.badge}>
-            <TrendIcon className="h-3.5 w-3.5" />
-            {hasDelta ? `${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}%` : item.badgeLabel}
+      <CardHeader className="grid min-h-[120px] grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_1fr] items-start gap-x-3 gap-y-4 px-4 pb-4">
+        <CardDescription className="min-h-10 max-w-[9.5rem] text-[13px] leading-5">
+          {item.label}
+        </CardDescription>
+        <CardAction className="col-start-2 row-start-1 row-span-1 self-start justify-self-end">
+          <Badge
+            variant={tone.badge}
+            className="h-8 shrink-0 gap-1.5 px-2.5 text-[11px] font-semibold"
+          >
+            <TrendIcon className="h-3.5 w-3.5 shrink-0" />
+            <span>{badgeText}</span>
           </Badge>
         </CardAction>
+        <CardTitle className="col-span-2 row-start-2 self-end text-[28px] font-semibold leading-none tabular-nums">
+          {item.value}
+        </CardTitle>
       </CardHeader>
-      <CardFooter className="min-h-[100px] flex-col items-start justify-start gap-1.5 text-sm">
-        <div className="flex min-h-10 items-start gap-2 font-medium leading-snug">
-          <item.icon className="h-4 w-4" />
-          <span>{item.helper}</span>
+      <CardFooter className="mt-auto min-h-[104px] flex-col items-start justify-start gap-3 border-t px-4 py-4 text-sm">
+        <div className="flex min-h-10 items-start gap-2 font-semibold leading-snug">
+          <item.icon className="mt-0.5 h-4 w-4 shrink-0" />
+          <span className="line-clamp-2">{item.helper}</span>
         </div>
-        <div className="text-muted-foreground leading-snug">{item.footer}</div>
+        <div className="line-clamp-2 leading-snug text-muted-foreground">{item.footer}</div>
       </CardFooter>
     </Card>
   )
