@@ -9,6 +9,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
+  Activity,
   AlertTriangle,
   ArrowRight,
   CalendarClock,
@@ -17,6 +18,7 @@ import {
   Flame,
   LineChart as LineChartIcon,
   ListChecks,
+  ShieldAlert,
   TrendingDown,
   TrendingUp,
   Wallet,
@@ -53,18 +55,6 @@ function formatCurrency(value) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0))
 }
 
-function getPercentageDelta(currentValue, previousValue) {
-  const current = Number(currentValue || 0)
-  const previous = Number(previousValue || 0)
-
-  if (!previous) {
-    if (!current) return 0
-    return 100
-  }
-
-  return ((current - previous) / Math.abs(previous)) * 100
-}
-
 function getMetricTone(delta, inverse = false) {
   const value = inverse ? delta * -1 : delta
   if (value > 0) return { badge: 'success', icon: TrendingUp }
@@ -73,53 +63,56 @@ function getMetricTone(delta, inverse = false) {
 }
 
 function buildMetricCards(dashboard) {
-  const compromissosHoje = Number(dashboard.compromissos?.hoje?.total || 0)
-  const compromissosProximos = Number(dashboard.compromissos?.proximos?.total || 0)
   const tarefasAtrasadas = Number(dashboard.tarefas?.atrasadas?.total || 0)
   const tarefasPendentes = Number(dashboard.tarefas?.pendentes?.total || 0)
+  const tarefasConcluidasNoPeriodo = (dashboard.graficos?.tarefas_concluidas_por_dia || []).reduce(
+    (total, item) => total + Number(item.concluidas || 0),
+    0
+  )
   const rotinasPendentes = Number(dashboard.rotina?.rotinas_do_dia?.pendentes || 0)
   const rotinasConcluidas = Number(dashboard.rotina?.rotinas_do_dia?.concluidos || 0)
+  const rotinaSemanal = Math.round(Number(dashboard.rotina?.taxa_semanal || 0))
+  const streakAtual = Number(dashboard.rotina?.streak_atual || 0)
   const fluxoMes = Number(dashboard.financeiro?.resultado_mes || 0)
   const pendenciasFinanceiras = Number(dashboard.financeiro?.pendencias || 0)
   const lembretesAtivos = Number(dashboard.lembretes?.ativos?.total || 0)
   const lembretesProximos = Number(dashboard.lembretes?.proximos?.total || 0)
+  const periodo = Number(dashboard.insights?.periodo_dias || 7)
+  const conclusaoPeriodo = Number(dashboard.insights?.percentual_tarefas_concluidas_semana || 0)
+  const variacaoConclusao = Number(dashboard.insights?.comparacao_com_semana_anterior?.variacao || 0)
 
-  const compromissoDelta = getPercentageDelta(compromissosHoje, compromissosProximos)
-  const tarefaDelta = getPercentageDelta(tarefasAtrasadas, tarefasPendentes)
-  const rotinaDelta = getPercentageDelta(rotinasConcluidas, rotinasPendentes || 1)
-  const financeiroDelta = getPercentageDelta(fluxoMes, pendenciasFinanceiras || 1)
-  const lembreteDelta = getPercentageDelta(lembretesAtivos, lembretesProximos)
+  const rotinaTone = rotinaSemanal >= 75 ? 'success' : rotinaSemanal >= 45 ? 'warning' : 'danger'
 
   const cards = [
     {
-      key: 'compromissos',
-      label: 'Compromissos de hoje',
-      value: compromissosHoje,
-      helper: `${compromissosProximos} na fila dos próximos horários`,
-      delta: compromissoDelta,
+      key: 'entrega',
+      label: 'Entrega no período',
+      value: `${conclusaoPeriodo}%`,
+      helper: `${tarefasConcluidasNoPeriodo} tarefas concluídas em ${periodo} dias`,
+      delta: variacaoConclusao,
       inverse: false,
-      icon: CalendarClock,
-      footer: 'Ritmo do dia e próximos encaixes',
+      icon: CheckSquare,
+      footer: 'Comparado à janela anterior',
     },
     {
-      key: 'tarefas',
-      label: 'Tarefas atrasadas',
+      key: 'backlog',
+      label: 'Backlog em risco',
       value: tarefasAtrasadas,
       helper: `${tarefasPendentes} pendentes no total`,
-      delta: tarefaDelta,
-      inverse: true,
+      badgeLabel: tarefasAtrasadas ? 'Atenção' : 'Estável',
+      badgeTone: tarefasAtrasadas ? 'danger' : 'success',
       icon: AlertTriangle,
-      footer: 'Quanto menor, melhor para o fluxo',
+      footer: 'Tarefas vencidas ou fora do prazo',
     },
     {
       key: 'rotinas',
-      label: 'Rotinas pendentes',
-      value: rotinasPendentes,
-      helper: `${rotinasConcluidas} concluídas hoje`,
-      delta: rotinaDelta,
-      inverse: true,
+      label: 'Consistência semanal',
+      value: `${rotinaSemanal}%`,
+      helper: `${rotinasConcluidas} concluídas hoje, ${rotinasPendentes} pendentes`,
+      badgeLabel: `${streakAtual} dias`,
+      badgeTone: rotinaTone,
       icon: ListChecks,
-      footer: 'Mostra a tração do hábito no dia',
+      footer: 'Ritmo de execução das rotinas',
     },
   ]
 
@@ -129,8 +122,8 @@ function buildMetricCards(dashboard) {
       label: 'Fluxo do mês',
       value: formatCurrency(fluxoMes),
       helper: `${formatCurrency(pendenciasFinanceiras)} em pendências`,
-      delta: financeiroDelta,
-      inverse: false,
+      badgeLabel: fluxoMes >= 0 ? 'Positivo' : 'Negativo',
+      badgeTone: fluxoMes >= 0 ? 'success' : 'danger',
       icon: Wallet,
       footer: 'Resultado líquido do mês corrente',
     })
@@ -140,8 +133,8 @@ function buildMetricCards(dashboard) {
       label: 'Lembretes ativos',
       value: lembretesAtivos,
       helper: `${lembretesProximos} próximos lembretes`,
-      delta: lembreteDelta,
-      inverse: false,
+      badgeLabel: lembretesProximos ? 'Próximos' : 'Livre',
+      badgeTone: lembretesProximos ? 'warning' : 'success',
       icon: Clock3,
       footer: 'Disparos previstos nos próximos minutos',
     })
@@ -285,7 +278,8 @@ function DashboardSkeleton({ isDark = false }) {
 }
 
 function MetricCard({ item, isDark = false }) {
-  const tone = getMetricTone(item.delta, item.inverse)
+  const hasDelta = Number.isFinite(item.delta)
+  const tone = hasDelta ? getMetricTone(item.delta, item.inverse) : { badge: item.badgeTone || 'outline', icon: Activity }
   const TrendIcon = tone.icon
 
   return (
@@ -304,7 +298,7 @@ function MetricCard({ item, isDark = false }) {
         <CardAction>
           <Badge variant={tone.badge}>
             <TrendIcon className="h-3.5 w-3.5" />
-            {`${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}%`}
+            {hasDelta ? `${item.delta >= 0 ? '+' : ''}${item.delta.toFixed(1)}%` : item.badgeLabel}
           </Badge>
         </CardAction>
       </CardHeader>
@@ -319,15 +313,103 @@ function MetricCard({ item, isDark = false }) {
   )
 }
 
-function QuickAction({ label, helper, onClick }) {
+function ModuleHealthRow({ icon: Icon, title, value, helper, badge, badgeVariant = 'outline', onClick }) {
   return (
-    <Button type="button" variant="outline" onClick={onClick} className="h-[72px] w-full justify-between rounded-xl px-4 py-3 text-left">
-      <div className="min-w-0">
-        <div className="font-medium text-zinc-950 dark:text-zinc-50">{label}</div>
-        <div className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{helper}</div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-h-[82px] w-full items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-background px-4 py-3 text-left transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="truncate font-medium text-zinc-950 dark:text-zinc-50">{title}</p>
+            {badge ? <Badge className="shrink-0" variant={badgeVariant}>{badge}</Badge> : null}
+          </div>
+          <p className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{helper}</p>
+        </div>
       </div>
-      <ArrowRight className="h-4 w-4 shrink-0" />
-    </Button>
+      <div className="flex shrink-0 items-center gap-2">
+        <span className="font-semibold tabular-nums text-zinc-950 dark:text-zinc-50">{value}</span>
+        <ArrowRight className="h-4 w-4 text-zinc-400" />
+      </div>
+    </button>
+  )
+}
+
+function ModuleHealthPanel({ dashboard, isDark = false, actions }) {
+  const compromissosHoje = Number(dashboard?.compromissos?.hoje?.total || 0)
+  const compromissosProximos = Number(dashboard?.compromissos?.proximos?.total || 0)
+  const tarefasAtrasadas = Number(dashboard?.tarefas?.atrasadas?.total || 0)
+  const tarefasPendentes = Number(dashboard?.tarefas?.pendentes?.total || 0)
+  const rotinaSemanal = Math.round(Number(dashboard?.rotina?.taxa_semanal || 0))
+  const streakAtual = Number(dashboard?.rotina?.streak_atual || 0)
+  const financeiroAtivo = Boolean(dashboard?.financeiro)
+  const fluxoMes = Number(dashboard?.financeiro?.resultado_mes || 0)
+  const pendenciasFinanceiras = Number(dashboard?.financeiro?.pendencias || 0)
+  const lembretesAtivos = Number(dashboard?.lembretes?.ativos?.total || 0)
+  const lembretesProximos = Number(dashboard?.lembretes?.proximos?.total || 0)
+
+  return (
+    <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+      <CardHeader>
+        <CardTitle>Saúde dos módulos</CardTitle>
+        <CardDescription>Leitura executiva dos principais sinais do sistema.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <ModuleHealthRow
+          icon={CalendarClock}
+          title="Agenda"
+          value={compromissosHoje}
+          helper={`${compromissosProximos} próximos compromissos monitorados`}
+          badge={compromissosHoje >= 5 ? 'Carregada' : 'Normal'}
+          badgeVariant={compromissosHoje >= 5 ? 'warning' : 'success'}
+          onClick={actions.openCompromissos}
+        />
+        <ModuleHealthRow
+          icon={ShieldAlert}
+          title="Projetos"
+          value={tarefasAtrasadas}
+          helper={`${tarefasPendentes} tarefas pendentes no backlog`}
+          badge={tarefasAtrasadas ? 'Risco' : 'Estável'}
+          badgeVariant={tarefasAtrasadas ? 'danger' : 'success'}
+          onClick={actions.openKanban}
+        />
+        <ModuleHealthRow
+          icon={Flame}
+          title="Rotinas"
+          value={`${rotinaSemanal}%`}
+          helper={`${streakAtual} dias de streak atual`}
+          badge={rotinaSemanal >= 75 ? 'Forte' : 'Ajustar'}
+          badgeVariant={rotinaSemanal >= 75 ? 'success' : 'warning'}
+          onClick={actions.openRotinas}
+        />
+        {financeiroAtivo ? (
+          <ModuleHealthRow
+            icon={Wallet}
+            title="Financeiro"
+            value={formatCurrency(fluxoMes)}
+            helper={`${formatCurrency(pendenciasFinanceiras)} em pendências`}
+            badge={fluxoMes >= 0 ? 'Positivo' : 'Negativo'}
+            badgeVariant={fluxoMes >= 0 ? 'success' : 'danger'}
+            onClick={actions.openFinanceiro}
+          />
+        ) : (
+          <ModuleHealthRow
+            icon={Clock3}
+            title="Lembretes"
+            value={lembretesAtivos}
+            helper={`${lembretesProximos} próximos disparos`}
+            badge={lembretesProximos ? 'Monitorar' : 'Livre'}
+            badgeVariant={lembretesProximos ? 'warning' : 'success'}
+            onClick={actions.openCompromissos}
+          />
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
@@ -441,9 +523,9 @@ export default function Dashboard() {
           <CardHeader className="gap-3 lg:flex lg:flex-row lg:items-start lg:justify-between">
             <div>
               <CardDescription>Visão geral</CardDescription>
-              <CardTitle className="mt-1 text-3xl font-semibold tracking-tight">O que importa agora</CardTitle>
+              <CardTitle className="mt-1 text-3xl font-semibold tracking-tight">Painel operacional</CardTitle>
               <p className="mt-2 max-w-3xl text-sm text-zinc-500 dark:text-zinc-400">
-                {dashboard?.insights?.mensagem_automatica || 'Acompanhe seus módulos com foco no que exige atenção hoje.'}
+                {dashboard?.insights?.mensagem_automatica || 'Acompanhe tendências, riscos e indicadores dos módulos principais.'}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -481,7 +563,7 @@ export default function Dashboard() {
                 <CardHeader>
                   <div>
                     <CardTitle>Panorama operacional</CardTitle>
-                    <CardDescription>Estrutura visual inspirada no bloco oficial `dashboard-01`, adaptada aos seus dados.</CardDescription>
+                    <CardDescription>Tendências do período para entender volume, entrega e consistência.</CardDescription>
                   </div>
                   <CardAction>
                     <TabsList variant="line" className="flex-wrap justify-start">
@@ -538,46 +620,17 @@ export default function Dashboard() {
             <IntervalSummary dashboard={dashboard} period={period} isDark={isDark} />
           </div>
 
-          <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
-            <CardHeader>
-              <CardTitle>Seu dia</CardTitle>
-              <CardDescription>Agenda, hábitos e prioridades imediatas.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <MiniEvent
-                title={dashboard?.compromissos?.hoje?.items?.[0]?.titulo || 'Nenhum compromisso agora'}
-                meta={dashboard?.compromissos?.hoje?.items?.[0]?.data_inicio ? formatDateTime(dashboard.compromissos.hoje.items[0].data_inicio) : 'Sua agenda está livre neste momento.'}
-                badge={dashboard?.compromissos?.hoje?.total ? `${dashboard.compromissos.hoje.total} hoje` : null}
-                badgeVariant="info"
-              />
-              <MiniEvent
-                title={`${dashboard?.rotina?.rotinas_do_dia?.concluidos || 0} de ${dashboard?.rotina?.rotinas_do_dia?.total || 0} rotinas concluídas`}
-                meta={`Streak atual de ${dashboard?.rotina?.streak_atual || 0} dias • taxa semanal ${Math.round(Number(dashboard?.rotina?.taxa_semanal || 0))}%`}
-                badge={`${dashboard?.rotina?.rotinas_do_dia?.pendentes || 0} pendentes`}
-                badgeVariant="warning"
-              />
-              <MiniEvent
-                title={dashboard?.tarefas?.pendentes?.items?.[0]?.titulo || 'Nenhuma tarefa crítica'}
-                meta={dashboard?.tarefas?.pendentes?.items?.[0] ? `${dashboard.tarefas.pendentes.items[0].quadro || 'Sem quadro'} • prazo ${dashboard.tarefas.pendentes.items[0].data_limite || 'livre'}` : 'Seu quadro está em dia por enquanto.'}
-                badge={dashboard?.tarefas?.atrasadas?.total ? `${dashboard.tarefas.atrasadas.total} atrasadas` : 'Em dia'}
-                badgeVariant={dashboard?.tarefas?.atrasadas?.total ? 'danger' : 'success'}
-              />
-            </CardContent>
-            <CardFooter className="flex-col gap-3">
-              <QuickAction label="Abrir calendário" helper="Compromissos e visão da agenda" onClick={openCompromissos} />
-              <QuickAction label="Abrir rotinas de hoje" helper="Fechar o dia com consistência" onClick={openRotinas} />
-              <QuickAction label="Abrir kanban" helper="Priorizar entregas e tarefas" onClick={openKanban} />
-              {dashboard?.financeiro ? (
-                <QuickAction label="Abrir financeiro" helper="Lançamentos, metas e pendências" onClick={openFinanceiro} />
-              ) : null}
-            </CardFooter>
-          </Card>
+          <ModuleHealthPanel
+            dashboard={dashboard}
+            isDark={isDark}
+            actions={{ openCompromissos, openKanban, openRotinas, openFinanceiro }}
+          />
         </div>
 
         <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
           <CardHeader>
-            <CardTitle>Itens em movimento</CardTitle>
-            <CardDescription>Uma leitura rápida do que está entrando em execução nos módulos principais.</CardDescription>
+            <CardTitle>Movimentações recentes</CardTitle>
+            <CardDescription>Eventos e registros mais relevantes cruzando os módulos principais.</CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
@@ -625,8 +678,8 @@ export default function Dashboard() {
         <div className="grid gap-6 xl:grid-cols-2">
           <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
             <CardHeader>
-              <CardTitle>Atenção agora</CardTitle>
-              <CardDescription>O que merece acompanhamento mais próximo.</CardDescription>
+              <CardTitle>Riscos operacionais</CardTitle>
+              <CardDescription>Sinais que merecem acompanhamento mais próximo.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-3">
               <MiniEvent

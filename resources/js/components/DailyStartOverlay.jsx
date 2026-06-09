@@ -107,14 +107,14 @@ export default function DailyStartOverlay({
   return (
     <Dialog open={open}>
       <DialogContent
-        className={`${theme === 'dark' ? 'dark' : ''} max-h-[calc(100vh-2rem)] w-[calc(100%-2rem)] max-w-[920px] overflow-y-auto border p-0 text-card-foreground shadow-2xl ${
+        className={`${theme === 'dark' ? 'dark' : ''} left-4 right-4 max-h-[calc(100dvh-2rem)] w-auto max-w-none translate-x-0 overflow-x-hidden overflow-y-auto border p-0 text-card-foreground shadow-2xl sm:left-1/2 sm:right-auto sm:w-[calc(100dvw-2rem)] sm:max-w-[920px] sm:-translate-x-1/2 ${
           theme === 'dark'
             ? 'border-zinc-700/70 bg-zinc-950 shadow-black/60'
             : 'border-zinc-200 bg-white shadow-zinc-300/60'
         }`}
       >
-        <div className="grid gap-0 lg:grid-cols-[1fr_0.86fr]">
-          <section className={`p-4 sm:p-5 lg:p-6 ${
+        <div className="grid min-w-0 gap-0 overflow-x-hidden lg:grid-cols-[minmax(0,1fr)_minmax(0,0.86fr)]">
+          <section className={`min-w-0 p-4 sm:p-5 lg:p-6 ${
             theme === 'dark'
               ? 'bg-[radial-gradient(circle_at_16%_8%,rgba(255,255,255,0.08),transparent_34%),#0a0a0a]'
               : 'bg-[radial-gradient(circle_at_16%_8%,rgba(0,0,0,0.05),transparent_32%),#ffffff]'
@@ -131,10 +131,10 @@ export default function DailyStartOverlay({
                 <Sparkles className="h-3.5 w-3.5" />
               Ritual de início
               </Badge>
-              <DialogTitle className="mt-4 text-[32px] font-semibold tracking-tight text-foreground sm:text-[36px]">
+              <DialogTitle className="mt-4 break-words text-[28px] font-semibold tracking-tight text-foreground sm:text-[36px]">
                 {headline}
               </DialogTitle>
-              <DialogDescription className="max-w-lg text-[15px] leading-7 text-muted-foreground">
+              <DialogDescription className="max-w-lg break-words text-[15px] leading-7 text-muted-foreground">
                 {lead}
               </DialogDescription>
             </DialogHeader>
@@ -150,13 +150,13 @@ export default function DailyStartOverlay({
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Foco do dia</p>
-                  <h3 className="mt-1 text-[18px] font-semibold text-foreground">{focusTitle}</h3>
-                  <p className="mt-1 text-[13px] leading-6 text-muted-foreground">{focusDescription}</p>
+                  <h3 className="mt-1 break-words text-[18px] font-semibold text-foreground">{focusTitle}</h3>
+                  <p className="mt-1 break-words text-[13px] leading-6 text-muted-foreground">{focusDescription}</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-4 grid max-w-[520px] gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-4 grid w-full min-w-0 max-w-[520px] gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {summaryItems.map(({ key, label, hint, icon: Icon }) => (
                 <Card
                   key={key}
@@ -181,12 +181,12 @@ export default function DailyStartOverlay({
               ))}
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-3">
+            <div className="mt-5 flex min-w-0 flex-wrap gap-3">
               <Button
                 type="button"
                 onClick={onStart}
                 disabled={starting}
-                className="h-11 w-auto px-5 text-sm font-semibold disabled:opacity-70"
+                className="h-11 w-full px-5 text-sm font-semibold disabled:opacity-70 sm:w-auto"
               >
                 {starting ? 'Iniciando...' : 'Começar meu dia'}
               </Button>
@@ -194,7 +194,7 @@ export default function DailyStartOverlay({
                 type="button"
                 onClick={onSkip}
                 variant="outline"
-                className="h-11 w-auto px-5 text-sm font-semibold"
+                className="h-11 w-full px-5 text-sm font-semibold sm:w-auto"
               >
                 Pular por hoje
               </Button>
@@ -207,15 +207,15 @@ export default function DailyStartOverlay({
             ) : null}
           </section>
 
-          <aside className={`border-t px-4 py-4 text-foreground lg:border-l lg:border-t-0 lg:px-5 lg:py-5 ${
+          <aside className={`min-w-0 border-t px-4 py-4 text-foreground lg:border-l lg:border-t-0 lg:px-5 lg:py-5 ${
             theme === 'dark'
               ? 'border-zinc-700/70 bg-zinc-900'
               : 'border-zinc-200 bg-zinc-50'
           }`}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
                 <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Mini timeline</p>
-                <h3 className="mt-2 text-[18px] font-semibold text-foreground">Seus próximos passos</h3>
+                <h3 className="mt-2 break-words text-[18px] font-semibold text-foreground">Seus próximos passos</h3>
               </div>
               <Card size="sm" className={`w-[112px] gap-2 rounded-lg border py-3 text-right shadow-none ${
                 theme === 'dark' ? 'border-zinc-700 bg-zinc-950/75' : 'border-zinc-200 bg-white'
@@ -237,9 +237,9 @@ export default function DailyStartOverlay({
                     theme === 'dark' ? 'border-zinc-700 bg-zinc-950/75' : 'border-zinc-200 bg-white'
                   }`}
                 >
-                  <CardHeader className="grid-cols-[1fr_auto] gap-3 px-4">
-                    <CardTitle className="text-[14px] font-semibold">{item.titulo}</CardTitle>
-                    <CardAction className="row-span-1 flex items-center gap-1 text-[13px] text-muted-foreground">
+                  <CardHeader className="grid-cols-[minmax(0,1fr)_auto] gap-3 px-4">
+                    <CardTitle className="break-words text-[14px] font-semibold">{item.titulo}</CardTitle>
+                    <CardAction className="row-span-1 flex items-center gap-1 whitespace-nowrap text-[13px] text-muted-foreground">
                       <Clock className="h-3.5 w-3.5" />
                       {formatItemTime(item)}
                     </CardAction>
@@ -247,7 +247,7 @@ export default function DailyStartOverlay({
                   </CardHeader>
                   {item.descricao ? (
                     <CardContent className="px-4">
-                      <p className="text-[13px] leading-6 text-muted-foreground">{item.descricao}</p>
+                      <p className="break-words text-[13px] leading-6 text-muted-foreground">{item.descricao}</p>
                     </CardContent>
                   ) : null}
                 </Card>
@@ -263,10 +263,10 @@ export default function DailyStartOverlay({
             <Card className={`mt-4 rounded-xl border shadow-none ${
               theme === 'dark' ? 'border-zinc-700 bg-zinc-950/75' : 'border-zinc-200 bg-white'
             }`}>
-              <CardHeader className="grid-cols-[1fr_auto] gap-3">
-                <div>
+              <CardHeader className="grid-cols-[minmax(0,1fr)_auto] gap-3">
+                <div className="min-w-0">
                   <CardDescription className="text-xs uppercase tracking-[0.24em]">Leitura rápida</CardDescription>
-                  <CardTitle className="mt-2 text-[14px] font-semibold sm:text-[16px]">O que merece atenção</CardTitle>
+                  <CardTitle className="mt-2 break-words text-[14px] font-semibold sm:text-[16px]">O que merece atenção</CardTitle>
                 </div>
                 <CardAction>
                   <Badge variant="outline" className={`rounded-lg px-2 py-1 text-[10px] font-medium ${
@@ -288,10 +288,10 @@ export default function DailyStartOverlay({
                       <TimerReset className="h-[14px] w-[14px]" />
                     </div>
                     <div className="min-w-0 pr-3">
-                      <p className="text-[13px] font-semibold text-foreground sm:text-[14px]">
+                      <p className="break-words text-[13px] font-semibold text-foreground sm:text-[14px]">
                         {hasSchedule ? 'Agenda com horários definidos' : 'Manhã sem horários travados'}
                       </p>
-                      <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                      <p className="mt-1 break-words text-[13px] leading-6 text-muted-foreground">
                         {hasSchedule
                           ? `${timeline.length} item${timeline.length === 1 ? '' : 's'} na timeline. Comece pelo primeiro pendente e avance em sequência.`
                           : 'Use essa janela para encaixar uma tarefa importante ou revisar as pendências soltas.'}
@@ -310,8 +310,8 @@ export default function DailyStartOverlay({
                       <CheckCircle2 className="h-[14px] w-[14px]" />
                     </div>
                     <div className="min-w-0 pr-3">
-                      <p className="text-[13px] font-semibold text-foreground sm:text-[14px]">Ritmo atual: {completed}/{total || 0}</p>
-                      <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                      <p className="break-words text-[13px] font-semibold text-foreground sm:text-[14px]">Ritmo atual: {completed}/{total || 0}</p>
+                      <p className="mt-1 break-words text-[13px] leading-6 text-muted-foreground">
                         {total > 0
                           ? `${Math.max(total - completed, 0)} item${Math.max(total - completed, 0) === 1 ? '' : 's'} ainda aberto${Math.max(total - completed, 0) === 1 ? '' : 's'} para fechar ou adiar com intenção.`
                           : 'Nada pendente encontrado. Um check-in curto já basta para manter o dia sob controle.'}
@@ -330,10 +330,10 @@ export default function DailyStartOverlay({
                       <ClipboardList className="h-[14px] w-[14px]" />
                     </div>
                     <div className="min-w-0 pr-3">
-                      <p className="text-[13px] font-semibold text-foreground sm:text-[14px]">
+                      <p className="break-words text-[13px] font-semibold text-foreground sm:text-[14px]">
                         {hasLooseItems ? 'Pendências flexíveis' : 'Sem pendências soltas'}
                       </p>
-                      <p className="mt-1 text-[13px] leading-6 text-muted-foreground">
+                      <p className="mt-1 break-words text-[13px] leading-6 text-muted-foreground">
                         {hasLooseItems
                           ? `${pendingLooseItems.length} item${pendingLooseItems.length === 1 ? '' : 's'} sem horário. Reserve um bloco ou adie o que não couber.`
                           : 'As tarefas sem horário estão limpas para hoje.'}

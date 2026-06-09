@@ -202,7 +202,7 @@ class LembreteController extends Controller
 
             if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(now())) {
                 throw ValidationException::withMessages([
-                    'minutos_antes' => 'Esse lembrete dispararia imediatamente. Escolha uma antecedencia menor ou mova o compromisso para um horario futuro.',
+                    'minutos_antes' => $this->immediateReminderMessage($minutosAntes, $momentoDisparo, Carbon::parse($compromisso->data_inicio), 'compromisso'),
                 ]);
             }
 
@@ -245,7 +245,7 @@ class LembreteController extends Controller
 
         if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(now())) {
             throw ValidationException::withMessages([
-                'minutos_antes' => 'Esse lembrete dispararia imediatamente. Escolha uma antecedencia menor ou defina um horario mais a frente.',
+                'minutos_antes' => $this->immediateReminderMessage($minutosAntes, $momentoDisparo, $inicio, 'lembrete'),
             ]);
         }
 
@@ -289,5 +289,19 @@ class LembreteController extends Controller
             5 => 'Sexta',
             6 => 'Sabado',
         ];
+    }
+
+    private function immediateReminderMessage(int $minutosAntes, Carbon $momentoDisparo, Carbon $inicio, string $tipo): string
+    {
+        $unidade = $minutosAntes === 1 ? 'minuto' : 'minutos';
+
+        return sprintf(
+            'Com %d %s de antecedencia, o disparo seria em %s, mas esse horario ja passou. Use uma antecedencia menor que o tempo restante ate o %s (%s) ou escolha um horario mais a frente.',
+            $minutosAntes,
+            $unidade,
+            $momentoDisparo->format('d/m/Y H:i'),
+            $tipo,
+            $inicio->format('d/m/Y H:i')
+        );
     }
 }

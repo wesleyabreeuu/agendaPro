@@ -1039,16 +1039,19 @@ textarea,
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+.login-auth-input {
+    padding-left: 3rem !important;
+}
+
+.login-auth-password-input {
+    padding-right: 3rem !important;
+}
+
 body.theme-dark .login-auth-input {
     background-color: rgba(24, 24, 27, .9) !important;
     color: #f4f4f5 !important;
     caret-color: #f4f4f5;
-    padding-left: 3rem !important;
     -webkit-text-fill-color: #f4f4f5;
-}
-
-body.theme-dark .login-auth-password-input {
-    padding-right: 3rem !important;
 }
 
 body.theme-dark .login-auth-input:focus,

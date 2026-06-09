@@ -146,11 +146,12 @@ class DashboardService
                 'streak_atual' => $rotinaWidget['streak_atual'] ?? 0,
                 'maior_streak' => $rotinaWidget['maior_streak'] ?? 0,
             ],
-            'financeiro' => $financeiroWidget ?? [
-                'saldo_total' => 0,
-                'resultado_mes' => 0,
-                'pendencias' => 0,
-                'transacoes_recentes' => [],
+            'financeiro' => $financeiroWidget,
+            'modulos' => [
+                'compromissos' => $canCompromissos,
+                'projetos' => $canProjetos,
+                'dia_a_dia' => $canDiaADia,
+                'financeiro' => $canFinanceiro,
             ],
             'insights' => [
                 'periodo_dias' => $periodDays,
