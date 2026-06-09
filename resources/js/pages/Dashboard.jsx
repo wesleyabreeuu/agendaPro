@@ -413,6 +413,76 @@ function ModuleHealthPanel({ dashboard, isDark = false, actions }) {
   )
 }
 
+function NextAttentionPanel({ dashboard, isDark = false, actions }) {
+  const lateTask = dashboard?.tarefas?.atrasadas?.items?.[0] || null
+  const nextAppointment = dashboard?.compromissos?.proximos?.items?.[0] || null
+  const nextReminder = dashboard?.lembretes?.proximos?.items?.[0] || null
+
+  const items = [
+    lateTask ? {
+      key: 'late-task',
+      icon: AlertTriangle,
+      title: lateTask.titulo,
+      meta: `Tarefa atrasada${lateTask.data_limite ? ` desde ${formatShortDate(lateTask.data_limite)}` : ''}`,
+      badge: 'Resolver',
+      badgeVariant: 'danger',
+      onClick: actions.openKanban,
+    } : null,
+    nextAppointment ? {
+      key: 'next-appointment',
+      icon: CalendarClock,
+      title: nextAppointment.titulo,
+      meta: `Próximo compromisso em ${formatDateTime(nextAppointment.data_inicio)}`,
+      badge: 'Agenda',
+      badgeVariant: 'info',
+      onClick: actions.openCompromissos,
+    } : null,
+    nextReminder ? {
+      key: 'next-reminder',
+      icon: Clock3,
+      title: nextReminder.titulo,
+      meta: `Lembrete em ${formatDateTime(nextReminder.momento_disparo)}`,
+      badge: 'Alerta',
+      badgeVariant: 'secondary',
+      onClick: actions.openCompromissos,
+    } : null,
+  ].filter(Boolean).slice(0, 3)
+
+  return (
+    <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+      <CardHeader>
+        <CardTitle>Próxima atenção</CardTitle>
+        <CardDescription>O que vale olhar antes de seguir para o próximo bloco.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-3">
+        {items.length ? items.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={item.onClick}
+            className="flex min-h-[74px] items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-background px-4 py-3 text-left transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+          >
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+                <item.icon className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="truncate font-medium text-zinc-950 dark:text-zinc-50">{item.title}</p>
+                <p className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{item.meta}</p>
+              </div>
+            </div>
+            <Badge className="shrink-0" variant={item.badgeVariant}>{item.badge}</Badge>
+          </button>
+        )) : (
+          <div className="rounded-xl border border-dashed border-zinc-200 px-4 py-6 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+            Nenhuma urgência agora. Bom momento para escolher uma prioridade do período.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  )
+}
+
 function MiniEvent({ title, meta, badge, badgeVariant = 'outline' }) {
   return (
     <div className="min-h-[82px] rounded-xl border border-zinc-200/80 bg-background px-4 py-3 dark:border-zinc-800">
@@ -620,11 +690,18 @@ export default function Dashboard() {
             <IntervalSummary dashboard={dashboard} period={period} isDark={isDark} />
           </div>
 
-          <ModuleHealthPanel
-            dashboard={dashboard}
-            isDark={isDark}
-            actions={{ openCompromissos, openKanban, openRotinas, openFinanceiro }}
-          />
+          <div className="flex flex-col gap-6">
+            <ModuleHealthPanel
+              dashboard={dashboard}
+              isDark={isDark}
+              actions={{ openCompromissos, openKanban, openRotinas, openFinanceiro }}
+            />
+            <NextAttentionPanel
+              dashboard={dashboard}
+              isDark={isDark}
+              actions={{ openCompromissos, openKanban }}
+            />
+          </div>
         </div>
 
         <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
