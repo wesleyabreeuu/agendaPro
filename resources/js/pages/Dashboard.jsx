@@ -318,7 +318,7 @@ function ModuleHealthRow({ icon: Icon, title, value, helper, badge, badgeVariant
     <button
       type="button"
       onClick={onClick}
-      className="flex min-h-[82px] w-full items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-background px-4 py-3 text-left transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+      className="flex min-h-[82px] w-full min-w-0 items-center justify-between gap-3 overflow-hidden rounded-xl border border-zinc-200/80 bg-background px-4 py-3 text-left transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
     >
       <div className="flex min-w-0 items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
@@ -332,8 +332,8 @@ function ModuleHealthRow({ icon: Icon, title, value, helper, badge, badgeVariant
           <p className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{helper}</p>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <span className="font-semibold tabular-nums text-zinc-950 dark:text-zinc-50">{value}</span>
+      <div className="flex min-w-0 shrink-0 items-center gap-2">
+        <span className="max-w-[7.5rem] truncate font-semibold tabular-nums text-zinc-950 dark:text-zinc-50">{value}</span>
         <ArrowRight className="h-4 w-4 text-zinc-400" />
       </div>
     </button>
@@ -354,7 +354,7 @@ function ModuleHealthPanel({ dashboard, isDark = false, actions }) {
   const lembretesProximos = Number(dashboard?.lembretes?.proximos?.total || 0)
 
   return (
-    <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+    <Card className={`min-w-0 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <CardHeader>
         <CardTitle>Saúde dos módulos</CardTitle>
         <CardDescription>Leitura executiva dos principais sinais do sistema.</CardDescription>
@@ -449,7 +449,7 @@ function NextAttentionPanel({ dashboard, isDark = false, actions }) {
   ].filter(Boolean).slice(0, 3)
 
   return (
-    <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
+    <Card className={`min-w-0 ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
       <CardHeader>
         <CardTitle>Próxima atenção</CardTitle>
         <CardDescription>O que vale olhar antes de seguir para o próximo bloco.</CardDescription>
@@ -460,7 +460,7 @@ function NextAttentionPanel({ dashboard, isDark = false, actions }) {
             key={item.key}
             type="button"
             onClick={item.onClick}
-            className="flex min-h-[74px] items-center justify-between gap-3 rounded-xl border border-zinc-200/80 bg-background px-4 py-3 text-left transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+            className="flex min-h-[74px] min-w-0 items-center justify-between gap-3 overflow-hidden rounded-xl border border-zinc-200/80 bg-background px-4 py-3 text-left transition hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
           >
             <div className="flex min-w-0 items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
@@ -626,8 +626,8 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <div className="grid items-start gap-6 xl:grid-cols-[1.55fr_0.95fr]">
-          <div className="flex flex-col gap-6">
+        <div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,0.95fr)]">
+          <div className="flex min-w-0 flex-col gap-6">
             <Tabs defaultValue="fluxo" className="gap-4">
               <Card className={isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}>
                 <CardHeader>
@@ -690,7 +690,7 @@ export default function Dashboard() {
             <IntervalSummary dashboard={dashboard} period={period} isDark={isDark} />
           </div>
 
-          <div className="flex flex-col gap-6">
+          <div className="flex min-w-0 flex-col gap-6">
             <ModuleHealthPanel
               dashboard={dashboard}
               isDark={isDark}
