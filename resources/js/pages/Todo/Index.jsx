@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { router } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
@@ -68,6 +68,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
   const [rows, setRows] = useState(tarefas)
   const [savingRowId, setSavingRowId] = useState(null)
   const [observationModal, setObservationModal] = useState(null)
+  const previousSelectedDate = useRef(dataSelecionada)
   const isDark = theme === 'dark'
 
   const { data, setData, post, processing, reset } = useForm({
@@ -83,6 +84,14 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
   useEffect(() => {
     setRows(tarefas)
   }, [tarefas])
+
+  useEffect(() => {
+    if (dataSelecionada !== previousSelectedDate.current && data.data === previousSelectedDate.current) {
+      setData('data', dataSelecionada)
+    }
+
+    previousSelectedDate.current = dataSelecionada
+  }, [data.data, dataSelecionada, setData])
 
   function submit(e) {
     e.preventDefault()
@@ -173,7 +182,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
           <PageCardHeader
             icon={Plus}
             title="Nova tarefa"
-            description="Crie itens com horário, status, urgência e observação."
+            description="Crie itens para qualquer dia, com horário, status, urgência e observação."
             action={
               <div className={`rounded-lg border px-3 py-1.5 text-sm ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-600'}`}>
               Dia selecionado: <span className={`font-medium ${isDark ? 'text-zinc-100' : 'text-zinc-950'}`}>{dataSelecionada}</span>
@@ -182,13 +191,17 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
           />
 
           <PageCardContent>
-          <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[140px_minmax(0,1.5fr)_220px_180px_120px]">
+          <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[160px_140px_minmax(0,1.5fr)_200px_180px_120px]">
+            <div className="grid gap-2">
+              <Label className="text-zinc-900">Data</Label>
+              <Input type="date" value={data.data} onChange={(e) => setData('data', e.target.value)} />
+            </div>
             <div className="grid gap-2">
               <Label className="text-zinc-900">Hora</Label>
               <Input type="time" value={data.hora} onChange={(e) => setData('hora', e.target.value)} />
             </div>
             <div className="grid gap-2">
-              <Label className="text-zinc-900">Descrição</Label>
+              <Label className="text-zinc-900">Nome da tarefa</Label>
               <Input value={data.descricao} onChange={(e) => setData('descricao', e.target.value)} placeholder="Ex.: Revisar proposta do cliente" />
             </div>
             <div className="grid gap-2">
@@ -218,20 +231,20 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               </label>
             </div>
 
-            <div className="grid gap-2 lg:col-span-5">
+            <div className="grid gap-2 lg:col-span-6">
               <Label className="text-zinc-900">Observação</Label>
               <Input value={data.observacao} onChange={(e) => setData('observacao', e.target.value)} placeholder="Detalhes rápidos da tarefa" />
             </div>
 
             {Object.values(errors).length ? (
-              <div className="lg:col-span-5">
+              <div className="lg:col-span-6">
                 <Alert variant="destructive">
                   <AlertDescription>{Object.values(errors)[0]}</AlertDescription>
                 </Alert>
               </div>
             ) : null}
 
-            <div className="lg:col-span-5 flex justify-end">
+            <div className="lg:col-span-6 flex justify-end">
               <Button disabled={processing} className="w-auto gap-2 rounded-xl px-5">
                 <Plus className="h-4 w-4" />
                 Salvar tarefa
@@ -245,7 +258,7 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
           <PageCardHeader
             icon={Clock3}
             title="Tarefas do dia"
-            description="Atualize status, urgência, observações e conclusão direto na tabela."
+            description="Atualize data, nome, status, urgência, observações e conclusão direto na tabela."
             action={
               <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${isDark ? 'border-zinc-700 bg-zinc-950 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>
               <Clock3 className="h-3.5 w-3.5" />
@@ -255,11 +268,12 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
           />
 
           <div className="overflow-x-auto">
-            <Table className="min-w-[980px]">
+            <Table className="min-w-[1180px]">
               <TableHeader className={isDark ? 'bg-white text-black' : 'bg-zinc-50/80 text-zinc-500'}>
                 <TableRow className="hover:bg-transparent">
+                  <TableHead className="py-4 font-medium">Data</TableHead>
                   <TableHead className="py-4 font-medium">Hora</TableHead>
-                  <TableHead className="py-4 font-medium">Descrição</TableHead>
+                  <TableHead className="py-4 font-medium">Nome da tarefa</TableHead>
                   <TableHead className="py-4 font-medium">Status</TableHead>
                   <TableHead className="py-4 font-medium">Urgência</TableHead>
                   <TableHead className="py-4 font-medium">Observação</TableHead>
@@ -270,6 +284,9 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
               <TableBody>
                 {rows.length ? rows.map((row) => (
                   <TableRow key={row.id} className={`align-top ${isDark ? 'border-zinc-700 hover:bg-zinc-900/70' : ''}`}>
+                    <TableCell className="py-4">
+                      <Input type="date" value={row.data || dataSelecionada} onChange={(e) => updateRow(row.id, { data: e.target.value })} className={tableInputClassName('min-w-[150px]')} />
+                    </TableCell>
                     <TableCell className="py-4">
                       <Input type="time" value={row.hora || ''} onChange={(e) => updateRow(row.id, { hora: e.target.value })} className={tableInputClassName()} />
                     </TableCell>
@@ -330,21 +347,20 @@ export default function TodoIndex({ tarefas, dataSelecionada, errors = {} }) {
                           <TooltipContent>Ações da tarefa</TooltipContent>
                         </Tooltip>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => persistRow(row)}>
-                            <Save className="mr-2 h-4 w-4" />
-                            {savingRowId === row.id ? 'Salvando...' : 'Salvar'}
-                          </DropdownMenuItem>
                           <DropdownMenuItem variant="destructive" onClick={() => router.delete(`/todo/${row.id}`, { preserveScroll: true })}>
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      <Button type="button" onClick={() => persistRow(row)} disabled={savingRowId === row.id} className="ml-2 h-10 w-10 rounded-xl p-0" aria-label="Salvar tarefa">
+                        <Save className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan="7" className="px-6 py-14 text-center">
+                    <TableCell colSpan="8" className="px-6 py-14 text-center">
                       <div className="space-y-2">
                         <p className={`text-lg font-semibold ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>Nenhuma tarefa cadastrada para este dia</p>
                         <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Crie a primeira linha acima e acompanhe o dia nesse formato de tabela.</p>

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('lembretes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('compromisso_id')->constrained('compromissos')->onDelete('cascade');
+            $table->foreignId('compromisso_id')->nullable()->constrained('compromissos')->onDelete('cascade');
             $table->integer('minutos_antes');
             $table->timestamps();
         });

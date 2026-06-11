@@ -198,11 +198,13 @@ class LembreteController extends Controller
             $compromisso = Compromisso::where('usuarios_id', Auth::id())
                 ->findOrFail($validated['compromisso_id'] ?? 0);
             $minutosAntes = (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 15));
-            $momentoDisparo = Carbon::parse($compromisso->data_inicio)->subMinutes($minutosAntes);
+            $timezone = config('app.timezone');
+            $inicioCompromisso = Carbon::parse($compromisso->data_inicio, $timezone);
+            $momentoDisparo = $inicioCompromisso->copy()->subMinutes($minutosAntes);
 
-            if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(now())) {
+            if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(Carbon::now($timezone))) {
                 throw ValidationException::withMessages([
-                    'minutos_antes' => $this->immediateReminderMessage($minutosAntes, $momentoDisparo, Carbon::parse($compromisso->data_inicio), 'compromisso'),
+                    'minutos_antes' => $this->immediateReminderMessage($minutosAntes, $momentoDisparo, $inicioCompromisso, 'compromisso'),
                 ]);
             }
 
@@ -238,12 +240,13 @@ class LembreteController extends Controller
             ]);
         }
 
-        $inicio = Carbon::parse($validated['inicio_em'] ?? now());
+        $timezone = config('app.timezone');
+        $inicio = Carbon::parse($validated['inicio_em'] ?? Carbon::now($timezone), $timezone);
         $recorrencia = $validated['recorrencia'] ?? null;
         $minutosAntes = (int) ($validated['minutos_antes'] ?? ($lembrete->minutos_antes ?? 0));
         $momentoDisparo = $inicio->copy()->subMinutes($minutosAntes);
 
-        if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(now())) {
+        if ($request->boolean('ativo', true) && $momentoDisparo->lessThanOrEqualTo(Carbon::now($timezone))) {
             throw ValidationException::withMessages([
                 'minutos_antes' => $this->immediateReminderMessage($minutosAntes, $momentoDisparo, $inicio, 'lembrete'),
             ]);

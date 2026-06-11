@@ -44,9 +44,12 @@ class TodoController extends Controller
             'descricao' => 'required|string|max:255',
             'observacao' => 'nullable|string',
             'urgencia' => 'required|in:baixa,media,alta,urgente',
+            'status' => 'nullable|in:aguardando,execucao,finalizado',
         ]);
 
-        $status = $request->boolean('concluida') ? 'finalizado' : 'aguardando';
+        $status = $request->boolean('concluida')
+            ? 'finalizado'
+            : ($request->status ?? 'aguardando');
 
         Todo::create([
             'user_id' => Auth::id(),
