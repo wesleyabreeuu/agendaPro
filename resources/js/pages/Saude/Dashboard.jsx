@@ -238,51 +238,25 @@ function Panel({ title, subtitle, action = null, children, isDark }) {
 }
 
 function Ranking({ title, items = [], field, isDark }) {
-  const accent = rankingAccent(title, isDark)
-
   return (
-    <div className={`rounded-xl border p-3 ${isDark ? 'border-zinc-700 bg-zinc-950/60' : 'border-zinc-200 bg-zinc-50/80'}`}>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <p className={`text-sm font-semibold ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>{title}</p>
-        <span className={`rounded-full px-2 py-1 text-[11px] font-medium ${accent.badge}`}>Top {items.length || 0}</span>
-      </div>
+    <div className="space-y-3">
+      <p className={`text-sm font-semibold ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{title}</p>
 
       <div className="space-y-2">
       {items.map((item, index) => (
-        <div key={`${title}-${item.id}`} className={`flex h-[124px] flex-col rounded-lg border p-3 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-900' : 'border-zinc-200 bg-white'}`}>
-          <div className="flex items-start justify-between gap-3">
-            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${accent.rank}`}>{index + 1}</span>
-            <span className={`shrink-0 text-xs leading-7 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</span>
+        <div key={`${title}-${item.id}`} className={`flex h-[142px] flex-col rounded-lg border p-3 shadow-xs ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+          <div className="flex items-center justify-between gap-2">
+            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-xs font-semibold ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>{index + 1}</span>
+            <span className={`truncate text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</span>
           </div>
 
-          <p className={`mt-3 h-10 overflow-hidden text-sm font-medium leading-5 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
+          <p className={`mt-3 h-12 overflow-hidden text-sm font-medium leading-4 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
 
-          <div className="mt-auto flex items-end justify-between gap-2">
-            <span className={`h-1.5 w-8 rounded-full ${accent.bar}`} />
-            <p className={`text-right text-xl font-semibold leading-tight [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</p>
-          </div>
+          <p className={`mt-auto text-right text-xl font-semibold leading-tight [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</p>
         </div>
       ))}
       {!items.length ? <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Sem dados suficientes.</p> : null}
       </div>
     </div>
   )
-}
-
-function rankingAccent(title, isDark) {
-  if (title === 'Distância') {
-    return isDark
-      ? { badge: 'bg-emerald-500/15 text-emerald-200', rank: 'bg-emerald-500/15 text-emerald-200', bar: 'bg-emerald-400' }
-      : { badge: 'bg-emerald-50 text-emerald-700', rank: 'bg-emerald-50 text-emerald-700', bar: 'bg-emerald-500' }
-  }
-
-  if (title === 'Altimetria') {
-    return isDark
-      ? { badge: 'bg-orange-500/15 text-orange-200', rank: 'bg-orange-500/15 text-orange-200', bar: 'bg-orange-400' }
-      : { badge: 'bg-orange-50 text-orange-700', rank: 'bg-orange-50 text-orange-700', bar: 'bg-orange-500' }
-  }
-
-  return isDark
-    ? { badge: 'bg-sky-500/15 text-sky-200', rank: 'bg-sky-500/15 text-sky-200', bar: 'bg-sky-400' }
-    : { badge: 'bg-sky-50 text-sky-700', rank: 'bg-sky-50 text-sky-700', bar: 'bg-sky-500' }
 }
