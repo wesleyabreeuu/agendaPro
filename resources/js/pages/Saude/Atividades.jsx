@@ -1,21 +1,21 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link, router } from '@inertiajs/react'
 import { useInertiaForm as useForm } from '@/hooks/useInertiaForm'
 import AppLayout from '../../layouts/AppLayout'
 import { Button, Select, Textarea, Input } from '@/components/ui'
 
 export default function SaudeAtividades({ atividades, categorias = [] }) {
-  const categoriaForm = useForm({
-    nome: '',
-    cor: '#e74c3c',
-    icone: 'fas fa-dumbbell',
-    caloria_leve: 4,
-    caloria_moderada: 6,
-    caloria_intensa: 8,
-  })
+  const [tipoModo, setTipoModo] = useState(categorias.length ? 'existente' : 'novo')
 
   const atividadeForm = useForm({
+    tipo_modo: categorias.length ? 'existente' : 'novo',
     categoria_atividade_fisica_id: '',
+    categoria_nome: '',
+    categoria_cor: '#e74c3c',
+    categoria_icone: 'fas fa-dumbbell',
+    categoria_caloria_leve: 4,
+    categoria_caloria_moderada: 6,
+    categoria_caloria_intensa: 8,
     descricao: '',
     data: '',
     hora_inicio: '',
@@ -29,27 +29,73 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
       <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
         <div className="space-y-6">
           <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Novo tipo de atividade</h2>
-            <form onSubmit={(e) => { e.preventDefault(); categoriaForm.post('/saude/categorias') }} className="mt-5 grid gap-4">
-              <Input placeholder="Nome" value={categoriaForm.data.nome} onChange={(e) => categoriaForm.setData('nome', e.target.value)} />
-              <Input type="color" value={categoriaForm.data.cor} onChange={(e) => categoriaForm.setData('cor', e.target.value)} />
-              <Input placeholder="Ícone" value={categoriaForm.data.icone} onChange={(e) => categoriaForm.setData('icone', e.target.value)} />
-              <div className="grid gap-4 md:grid-cols-3">
-                <Input type="number" step="0.01" min="0" value={categoriaForm.data.caloria_leve} onChange={(e) => categoriaForm.setData('caloria_leve', e.target.value)} />
-                <Input type="number" step="0.01" min="0" value={categoriaForm.data.caloria_moderada} onChange={(e) => categoriaForm.setData('caloria_moderada', e.target.value)} />
-                <Input type="number" step="0.01" min="0" value={categoriaForm.data.caloria_intensa} onChange={(e) => categoriaForm.setData('caloria_intensa', e.target.value)} />
-              </div>
-              <Button variant="outline" className="w-auto">Salvar tipo</Button>
-            </form>
-          </div>
-
-          <div className="rounded-xl border border-zinc-200 bg-gradient-to-t from-primary/5 to-card p-6 shadow-xs">
-            <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Nova atividade</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-zinc-950">Registrar atividade</h2>
             <form onSubmit={(e) => { e.preventDefault(); atividadeForm.post('/saude/atividades') }} className="mt-5 grid gap-4">
-              <Select value={atividadeForm.data.categoria_atividade_fisica_id} onChange={(e) => atividadeForm.setData('categoria_atividade_fisica_id', e.target.value)}>
-                <option value="">Selecione a atividade</option>
-                {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
-              </Select>
+              <div className="grid grid-cols-2 gap-2 rounded-lg border border-zinc-200 bg-white p-1">
+                <button
+                  type="button"
+                  className={`rounded-md px-3 py-2 text-sm font-medium ${tipoModo === 'existente' ? 'bg-zinc-950 text-white' : 'text-zinc-600'}`}
+                  onClick={() => {
+                    setTipoModo('existente')
+                    atividadeForm.setData({ tipo_modo: 'existente' })
+                  }}
+                  disabled={!categorias.length}
+                >
+                  Tipo existente
+                </button>
+                <button
+                  type="button"
+                  className={`rounded-md px-3 py-2 text-sm font-medium ${tipoModo === 'novo' ? 'bg-zinc-950 text-white' : 'text-zinc-600'}`}
+                  onClick={() => {
+                    setTipoModo('novo')
+                    atividadeForm.setData({ tipo_modo: 'novo', categoria_atividade_fisica_id: '' })
+                  }}
+                >
+                  Novo tipo
+                </button>
+              </div>
+
+              {tipoModo === 'existente' ? (
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium text-zinc-700">Tipo de atividade</label>
+                  <Select value={atividadeForm.data.categoria_atividade_fisica_id} onChange={(e) => atividadeForm.setData('categoria_atividade_fisica_id', e.target.value)}>
+                    <option value="">Selecione a atividade</option>
+                    {categorias.map((categoria) => <option key={categoria.id} value={categoria.id}>{categoria.nome}</option>)}
+                  </Select>
+                </div>
+              ) : (
+                <div className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4">
+                  <div className="grid gap-2">
+                    <label className="text-sm font-medium text-zinc-700">Nome do tipo</label>
+                    <Input placeholder="Ex: Musculação" value={atividadeForm.data.categoria_nome} onChange={(e) => atividadeForm.setData('categoria_nome', e.target.value)} />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-[96px_minmax(0,1fr)]">
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-700">Cor</label>
+                      <Input type="color" value={atividadeForm.data.categoria_cor} onChange={(e) => atividadeForm.setData('categoria_cor', e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-700">Ícone</label>
+                      <Input placeholder="fas fa-dumbbell" value={atividadeForm.data.categoria_icone} onChange={(e) => atividadeForm.setData('categoria_icone', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-700">Kcal/min leve</label>
+                      <Input type="number" step="0.01" min="0" value={atividadeForm.data.categoria_caloria_leve} onChange={(e) => atividadeForm.setData('categoria_caloria_leve', e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-700">Kcal/min moderada</label>
+                      <Input type="number" step="0.01" min="0" value={atividadeForm.data.categoria_caloria_moderada} onChange={(e) => atividadeForm.setData('categoria_caloria_moderada', e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <label className="text-sm font-medium text-zinc-700">Kcal/min intensa</label>
+                      <Input type="number" step="0.01" min="0" value={atividadeForm.data.categoria_caloria_intensa} onChange={(e) => atividadeForm.setData('categoria_caloria_intensa', e.target.value)} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Input placeholder="Descrição" value={atividadeForm.data.descricao} onChange={(e) => atividadeForm.setData('descricao', e.target.value)} />
               <Input type="date" value={atividadeForm.data.data} onChange={(e) => atividadeForm.setData('data', e.target.value)} />
               <Input type="time" value={atividadeForm.data.hora_inicio} onChange={(e) => atividadeForm.setData('hora_inicio', e.target.value)} />
@@ -60,7 +106,7 @@ export default function SaudeAtividades({ atividades, categorias = [] }) {
                 <option value="intensa">Intensa</option>
               </Select>
               <Textarea className="min-h-24" placeholder="Notas" value={atividadeForm.data.notas} onChange={(e) => atividadeForm.setData('notas', e.target.value)} />
-              <Button className="w-auto">Salvar atividade</Button>
+              <Button className="w-auto" disabled={atividadeForm.processing}>Salvar atividade</Button>
             </form>
           </div>
         </div>

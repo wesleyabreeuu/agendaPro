@@ -209,9 +209,18 @@ class SaudeController extends Controller
     {
         $user = Auth::user();
         $this->garantirCategoriasPadrao($user->id);
+        $tipoModo = $request->input('tipo_modo', 'existente');
+        $request->merge(['tipo_modo' => $tipoModo]);
 
         $request->validate([
-            'categoria_atividade_fisica_id' => 'required|exists:categoria_atividade_fisica,id',
+            'tipo_modo' => 'nullable|in:existente,novo',
+            'categoria_atividade_fisica_id' => 'required_if:tipo_modo,existente|nullable|exists:categoria_atividade_fisica,id',
+            'categoria_nome' => 'required_if:tipo_modo,novo|nullable|string|max:255',
+            'categoria_icone' => 'nullable|string|max:255',
+            'categoria_cor' => 'nullable|string|max:20',
+            'categoria_caloria_leve' => 'required_if:tipo_modo,novo|nullable|numeric|min:0',
+            'categoria_caloria_moderada' => 'required_if:tipo_modo,novo|nullable|numeric|min:0',
+            'categoria_caloria_intensa' => 'required_if:tipo_modo,novo|nullable|numeric|min:0',
             'descricao' => 'nullable|string|max:255',
             'data' => 'required|date',
             'hora_inicio' => 'nullable|date_format:H:i',
@@ -220,8 +229,24 @@ class SaudeController extends Controller
             'notas' => 'nullable|string',
         ]);
 
-        $categoria = CategoriaAtividadeFisica::ownedBy($user->id)
-            ->findOrFail($request->categoria_atividade_fisica_id);
+        if ($tipoModo === 'novo') {
+            $categoria = CategoriaAtividadeFisica::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'nome' => $request->categoria_nome,
+                ],
+                [
+                    'icone' => $request->filled('categoria_icone') ? $request->categoria_icone : 'fas fa-dumbbell',
+                    'cor' => $request->filled('categoria_cor') ? $request->categoria_cor : '#e74c3c',
+                    'caloria_leve' => $request->categoria_caloria_leve,
+                    'caloria_moderada' => $request->categoria_caloria_moderada,
+                    'caloria_intensa' => $request->categoria_caloria_intensa,
+                ]
+            );
+        } else {
+            $categoria = CategoriaAtividadeFisica::ownedBy($user->id)
+                ->findOrFail($request->categoria_atividade_fisica_id);
+        }
 
         AtividadeFisica::create([
             'user_id' => $user->id,
