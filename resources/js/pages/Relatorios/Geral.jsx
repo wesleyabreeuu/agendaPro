@@ -55,7 +55,7 @@ function inputClass(isDark) {
   return `h-11 rounded-lg border px-3 text-sm outline-none transition ${
     isDark
       ? 'border-zinc-700 bg-zinc-950 text-zinc-50 placeholder:text-zinc-500 focus:border-zinc-400'
-      : 'border-zinc-300 bg-white text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950'
+      : 'border-zinc-300 bg-white text-zinc-950 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
   }`
 }
 
@@ -91,8 +91,8 @@ export default function RelatorioGeral({ relatorio }) {
   const selectedFields = filters.campos.length ? filters.campos : camposKeys
   const graficos = relatorio?.graficos || {}
   const destaques = relatorio?.resumo?.destaques || {}
-  const chartStroke = isDark ? '#fafafa' : '#18181b'
-  const chartFill = isDark ? '#d4d4d8' : '#18181b'
+  const chartStroke = isDark ? '#fafafa' : '#2563eb'
+  const chartFill = isDark ? '#d4d4d8' : '#60a5fa'
   const chartMuted = isDark ? '#52525b' : '#d4d4d8'
 
   function updateFilter(key, value) {
@@ -192,7 +192,11 @@ export default function RelatorioGeral({ relatorio }) {
             </Field>
 
             <div className="flex items-end gap-2">
-              <Button type="submit" className={`h-11 w-auto gap-2 px-4 ${isDark ? 'border border-zinc-600 bg-white text-zinc-950 hover:bg-zinc-200' : ''}`}>
+              <Button type="submit" className={`h-11 w-auto gap-2 px-4 ${
+                isDark
+                  ? 'border border-zinc-600 bg-white text-zinc-950 hover:bg-zinc-200'
+                  : 'border border-blue-200 bg-blue-600 text-white hover:bg-blue-700'
+              }`}>
                 <Filter className="h-4 w-4" />
                 Filtrar
               </Button>
@@ -219,7 +223,7 @@ export default function RelatorioGeral({ relatorio }) {
                   return (
                     <label key={key} className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition ${
                       selected
-                        ? isDark ? 'border-white bg-white text-zinc-950' : 'border-zinc-950 bg-zinc-950 text-white'
+                        ? isDark ? 'border-white bg-white text-zinc-950' : 'border-blue-200 bg-blue-50 text-blue-950 shadow-xs'
                         : subtleClass(isDark)
                     }`}>
                       <input
@@ -230,7 +234,7 @@ export default function RelatorioGeral({ relatorio }) {
                       />
                       <span>
                         <span className="block font-semibold">{item.label}</span>
-                        <span className={selected ? 'opacity-75' : isDark ? 'text-zinc-500' : 'text-zinc-500'}>{item.modulo}</span>
+                        <span className={selected ? isDark ? 'text-zinc-700' : 'text-blue-700' : isDark ? 'text-zinc-500' : 'text-zinc-500'}>{item.modulo}</span>
                       </span>
                     </label>
                   )
@@ -479,7 +483,7 @@ function TopList({ data = [], compact = false, isDark }) {
           </div>
           <div className={`mt-2 h-2 rounded-full ${isDark ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
             <div
-              className={`h-2 rounded-full ${isDark ? 'bg-zinc-100' : 'bg-zinc-950'}`}
+              className={`h-2 rounded-full ${isDark ? 'bg-zinc-100' : 'bg-blue-500'}`}
               style={{ width: `${Math.max(6, (Number(item.total || 0) / max) * 100)}%` }}
             />
           </div>

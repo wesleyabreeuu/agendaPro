@@ -242,17 +242,15 @@ function Ranking({ title, items = [], field, isDark }) {
     <div className="space-y-3">
       <p className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{title}</p>
       {items.map((item, index) => (
-        <div key={`${title}-${item.id}`} className={innerClass(isDark)}>
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
-            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>{index + 1}</span>
-            <div className="min-w-0">
-              <p className={`truncate text-sm font-medium ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
-              <div className="mt-2 flex flex-wrap items-end justify-between gap-2">
-                <span className={`text-lg font-semibold leading-none ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</span>
-                <span className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</span>
-              </div>
-            </div>
+        <div key={`${title}-${item.id}`} className={`min-h-[132px] rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+          <div className="flex items-start justify-between gap-3">
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>{index + 1}</span>
+            <span className={`shrink-0 text-xs leading-8 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</span>
           </div>
+
+          <p className={`mt-3 min-h-[40px] text-sm font-medium leading-5 [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
+
+          <p className={`mt-3 text-2xl font-semibold leading-tight [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</p>
         </div>
       ))}
       {!items.length ? <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Sem dados suficientes.</p> : null}

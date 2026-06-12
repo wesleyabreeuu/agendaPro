@@ -40,11 +40,17 @@ class TodoController extends Controller
     {
         $request->validate([
             'data' => 'required|date',
-            'hora' => 'required',
+            'hora' => 'nullable|date_format:H:i',
             'descricao' => 'required|string|max:255',
             'observacao' => 'nullable|string',
             'urgencia' => 'required|in:baixa,media,alta,urgente',
             'status' => 'nullable|in:aguardando,execucao,finalizado',
+        ], [
+            'data.required' => 'Informe a data da tarefa.',
+            'data.date' => 'Informe uma data válida.',
+            'hora.date_format' => 'Informe um horário válido.',
+            'descricao.required' => 'Informe o nome da tarefa.',
+            'urgencia.required' => 'Informe a urgência da tarefa.',
         ]);
 
         $status = $request->boolean('concluida')
@@ -54,7 +60,7 @@ class TodoController extends Controller
         Todo::create([
             'user_id' => Auth::id(),
             'data' => $request->data,
-            'hora' => $request->hora,
+            'hora' => $request->filled('hora') ? $request->hora : null,
             'descricao' => $request->descricao,
             'observacao' => $request->observacao,
             'urgencia' => $request->urgencia,
@@ -87,11 +93,17 @@ class TodoController extends Controller
     {
         $request->validate([
             'data' => 'required|date',
-            'hora' => 'required',
+            'hora' => 'nullable|date_format:H:i',
             'descricao' => 'required|string|max:255',
             'observacao' => 'nullable|string',
             'urgencia' => 'required|in:baixa,media,alta,urgente',
             'status' => 'nullable|in:aguardando,execucao,finalizado', // opcional
+        ], [
+            'data.required' => 'Informe a data da tarefa.',
+            'data.date' => 'Informe uma data válida.',
+            'hora.date_format' => 'Informe um horário válido.',
+            'descricao.required' => 'Informe o nome da tarefa.',
+            'urgencia.required' => 'Informe a urgência da tarefa.',
         ]);
 
         $tarefa = Todo::ownedBy(Auth::id())->findOrFail($id);
@@ -101,7 +113,7 @@ class TodoController extends Controller
 
         $tarefa->update([
             'data' => $request->data,
-            'hora' => $request->hora,
+            'hora' => $request->filled('hora') ? $request->hora : null,
             'descricao' => $request->descricao,
             'observacao' => $request->observacao,
             'urgencia' => $request->urgencia,
