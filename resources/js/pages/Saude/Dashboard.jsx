@@ -242,15 +242,15 @@ function Ranking({ title, items = [], field, isDark }) {
     <div className="space-y-3">
       <p className={`text-sm font-medium ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{title}</p>
       {items.map((item, index) => (
-        <div key={`${title}-${item.id}`} className={`min-h-[132px] rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
+        <div key={`${title}-${item.id}`} className={`flex h-[156px] flex-col rounded-lg border px-4 py-3 ${isDark ? 'border-zinc-700 bg-zinc-950' : 'border-zinc-200 bg-white'}`}>
           <div className="flex items-start justify-between gap-3">
             <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs font-semibold ${isDark ? 'border-zinc-700 bg-zinc-900 text-zinc-300' : 'border-zinc-200 bg-zinc-50 text-zinc-700'}`}>{index + 1}</span>
             <span className={`shrink-0 text-xs leading-8 ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>{item.data}</span>
           </div>
 
-          <p className={`mt-3 min-h-[40px] text-sm font-medium leading-5 [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
+          <p className={`mt-3 h-[60px] overflow-hidden text-sm font-medium leading-5 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:3] [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{item.nome}</p>
 
-          <p className={`mt-3 text-2xl font-semibold leading-tight [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</p>
+          <p className={`mt-auto text-2xl font-semibold leading-tight [overflow-wrap:anywhere] ${isDark ? 'text-zinc-50' : 'text-zinc-950'}`}>{field(item)}</p>
         </div>
       ))}
       {!items.length ? <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>Sem dados suficientes.</p> : null}
